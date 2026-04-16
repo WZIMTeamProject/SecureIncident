@@ -1,0 +1,22 @@
+Uruchomienie API:
+
+Wejdź do fodleru backendu:
+	cd backend
+
+2. Aktywuj venv:
+	cmd -> venv\Scripts\activate
+
+
+3. Zainstaluj zależności (jeśli nie zrobiłeś):
+	pip install -r requirements.txt
+
+4. Uruchom FastAPI:
+	uvicorn main:app --reload
+
+5. Otwórz w przeglądarce:
+
+	http://127.0.0.1:8000/docs
+
+	Alternatywnie:
+
+	http://127.0.0.1:8000/redoc
