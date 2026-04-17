@@ -1,11 +1,13 @@
 backend/
 ├── api/
 │   ├── routes/
+│   │   ├── __init__.py
 │   │   ├── auth.py
 │   │   ├── users.py
-│   │   ├── organizations.py
+│   │   ├── categories.py
+│   │   ├── incidents.py
+│   │   ├── organization.py
 │   │   ├── projects.py
-│   │   ├── problems.py
 │   │   └── roles.py
 │   │
 │   ├── schemas/            
@@ -19,7 +21,6 @@ backend/
 │   │   │   └── response.py
 │   │   │
 │   │   ├── user/
-│   │   │   ├── request.py
 │   │   │   └── response.py
 │   │   │
 │   │   ├── organization/
@@ -30,7 +31,9 @@ backend/
 │   │   │   ├── request.py
 │   │   │   └── response.py
 │   │   │
-│   │   ├── problem/
+│   │   ├── incident/
+│   │   │   ├── comment.py
+│   │   │   ├── log.py
 │   │   │   ├── request.py
 │   │   │   └── response.py
 │   │   │
@@ -41,8 +44,41 @@ backend/
 │   │   └── __init__.py
 │   │
 │   └── dependencies/
+│   │   ├── __init__.py
+│   │   ├── auth.py
+│   │   ├── db.py
+│   │   ├── permisions.py
 │
 ├── core/
+│   ├── config.py
+│   ├── exceptions.py
+│   ├── security.py
 ├── db/
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── category.py
+│   │   ├── comment.py
+│   │   ├── incident_log.py
+│   │   ├── organization.py
+│   │   ├── project.py
+│   │   ├── role.py
+│   │   ├── user.py
+│   ├── repositories/
+│   │   ├── __init__.py
+│   │   ├── incident_repo.py
+│   │   ├── project_repo.py
+│   │   ├── user_repo.py
+│   ├── __init__.py
+│   ├── base.py
+│   ├── session.py
 ├── services/
+│   ├── __init__.py
+│   ├── auth_service.py
+│   ├── category_service.py
+│   ├── incident_service.py
+│   ├── organization_service.py
+│   ├── project_service.py
+│   ├── role_service.py
+├── requirements.txt
+├── run_API.txt (instrukcja tekstowa jak odpalić serwer)
 └── main.py
