@@ -4,11 +4,18 @@ Wejdź do fodleru backendu:
 	cd backend
 
 2. Aktywuj venv:
+    MUSISZ SPRAWDZIĆ, GDZIE JEST TWÓJ VENV, BO MOŻE BYĆ INNY NIŻ PONIŻSZY PRZYKŁAD.
 	cmd -> venv\Scripts\activate
+	bin/bash -> source venv/bin/activate
 
+	Żeby sprawdzić, gdzie jest venv, możesz użyć polecenia:
+    where python (cmd)
+    which python (bin/bash)
 
 3. Zainstaluj zależności (jeśli nie zrobiłeś):
 	pip install -r requirements.txt
+	dla menażera uv:
+	uv sync lub uv pip sync -r requirements.txt
 
 4. Uruchom FastAPI:
 	uvicorn main:app --reload

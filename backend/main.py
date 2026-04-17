@@ -20,3 +20,14 @@ def custom_openapi():
 
 
 app.openapi = custom_openapi
+
+from api.routes import auth
+app.include_router(auth.router, prefix="/api")
+
+
+from api.routes import organization
+app.include_router(organization.router, prefix="/api")
+
+
+from api.routes import projects
+app.include_router(projects.router, prefix="/api")

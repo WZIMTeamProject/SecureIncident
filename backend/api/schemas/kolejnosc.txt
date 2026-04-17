@@ -1,0 +1,25 @@
+kolejność tworzenia plików w api/schemas
+ETAP 1 — COMMON (fundament)
+    common/enums.py
+    common/base.py
+    common/pagination.py (opcjonalnie / lekko)
+ETAP 2 — AUTH
+    auth/request.py
+    auth/response.py
+ETAP 3 — ORGANIZATION
+    organization/request.py
+    organization/response.py
+ETAP 4 — PROJECT
+    project/request.py
+    project/response.py
+ETAP 5 — ROLE
+    role/request.py
+    role/response.py
+ETAP 6 — CATEGORY
+    category/request.py
+    category/response.py
+ETAP 7 — INCIDENT
+    incident/request.py
+    incident/response.py
+    incident/comment.py
+    incident/log.py

@@ -1,0 +1,62 @@
+KOLEJNOŚĆ TWORZENIA ROUTES:
+
+ETAP 1 — api/routes/auth.py
+kolejność endpointów:
+    POST /auth/register                 (Done)
+    POST /auth/login                    (Done)
+    POST /auth/logout                   (Done)
+    POST /auth/request-password-reset   (Done)
+    POST /auth/reset-password           (Done)
+    GET /me                             (Do poprawy)
+
+ETAP 2 — api/routes/organization.py
+endpointy:
+    POST /organization                  (Done)
+    GET /organization                   (Done)
+    POST /organization/invites          (Done)
+    POST /organization/join             (Done)
+
+ETAP 3 — api/routes/projects.py
+endpointy:
+    POST /projects                                              (Done)
+    GET /projects                                               (Done)
+    GET /projects/{projectId}                                   (Done)
+    PATCH /projects/{projectId}                                 (Done)
+    members:
+        GET /projects/{projectId}/members                       (Done)
+        POST /projects/{projectId}/members                      (Done)
+        PATCH /projects/{projectId}/members/{userId}/role       (Done)
+
+ETAP 4 — api/routes/categories.py
+endpointy:
+    GET /projects/{projectId}/categories
+    POST /projects/{projectId}/categories
+
+ETAP 5 — api/routes/roles.py
+endpointy:
+    GET /projects/{projectId}/roles
+    POST /projects/{projectId}/roles
+
+ETAP 6 — api/routes/incidents.py
+    główne:
+        GET /projects/{projectId}/incidents
+        POST /projects/{projectId}/incidents
+
+    user views:
+        GET /incidents/my-reported
+        GET /incidents/my-assigned
+
+    szczegóły:
+        GET /incidents/{incidentId}
+
+    akcje:
+        PATCH /incidents/{incidentId}/status
+        PATCH /incidents/{incidentId}/assignee
+        PATCH /incidents/{incidentId}/priority
+        PATCH /incidents/{incidentId}/category
+
+    comments:
+        GET /incidents/{incidentId}/comments
+        POST /incidents/{incidentId}/comments
+    logs:
+        GET /incidents/{incidentId}/logs
