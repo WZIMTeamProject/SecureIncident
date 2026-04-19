@@ -2,14 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
-from enum import Enum
-
-
-class IncidentLogType(str, Enum):
-    COMMENT = "COMMENT"
-    STATUS_CHANGED = "STATUS_CHANGED"
-    ASSIGNEE_CHANGED = "ASSIGNEE_CHANGED"
-
+from api.schemas.common.enums import IncidentLogType
 
 class IncidentLogEntry(BaseModel):
     id: UUID

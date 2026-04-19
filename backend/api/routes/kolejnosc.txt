@@ -31,11 +31,17 @@ ETAP 4 — api/routes/categories.py
 endpointy:
     GET /projects/{projectId}/categories                        (Done)
     POST /projects/{projectId}/categories                       (Done)
+extended:
+    PATCH /projects/{project_id}/categories/{category_id}       (Done)
+    DELETE /projects/{project_id}/categories/{category_id}      (Done)
 
 ETAP 5 — api/routes/roles.py
 endpointy:
     GET /projects/{projectId}/roles                             (Done)
     POST /projects/{projectId}/roles                            (Done)
+extended:
+    GET /projects/{project_id}/roles/{role_id}                  (Done)
+    PATCH /projects/{project_id}/roles/{role_id}                (Done)
 
 ETAP 6 — api/routes/incidents.py
     główne:
@@ -45,7 +51,6 @@ ETAP 6 — api/routes/incidents.py
     user views:
         GET /incidents/my-reported                              (Done)
         GET /incidents/my-assigned                              (Done)
-        GET /incidents/history                                  (Done)
 
     szczegóły:
         GET /incidents/{incidentId}                             (Done)
@@ -55,15 +60,17 @@ ETAP 6 — api/routes/incidents.py
         PATCH /incidents/{incidentId}/assignee                  (Done)
         PATCH /incidents/{incidentId}/priority                  (Done)
         PATCH /incidents/{incidentId}/category                  (Done)
-        POST /incidents/{incidentId}/close                      (Done)
-        POST /incidents/{incidentId}/request-reassignment       (Done)
-        POST /incidents/{incidentId}/helpers                    (Done)
 
     comments:
         GET /incidents/{incidentId}/comments                    (Done)
         POST /incidents/{incidentId}/comments                   (Done)
     logs:
         GET /incidents/{incidentId}/logs                        (Done)
+    extended:
+        POST /incidents/{incidentId}/close                      (Done)
+        POST /incidents/{incidentId}/request-reassignment       (Done)
+        POST /incidents/{incidentId}/helpers                    (Done)
+        GET /incidents/history                                  (Done)
 
 ETAP 6 api/routes/users.py
     endpointy:
@@ -71,3 +78,12 @@ ETAP 6 api/routes/users.py
         PATCH /profiles/me                                      (Done)
         GET /users/search                                       (Done)
 
+ETAP 7 api/routes/feedback.py
+    endpointy:
+        POST /feedback                                          (Done)
+
+ETAP 8
+    endpointy:
+        POST /projects/{project_id}/invites                     (Done)
+        POST /projects/join                                     (Done)
+        GET /invites/{token}                                    (Done)
