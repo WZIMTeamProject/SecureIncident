@@ -30,3 +30,6 @@ class UpdateIncidentCategoryRequest(BaseModel):
 
 class AddCommentRequest(BaseModel):
     content: str
+
+class AddHelperRequest(BaseModel):
+    userId: UUID
