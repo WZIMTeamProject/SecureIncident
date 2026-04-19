@@ -23,7 +23,11 @@ from api.schemas.common.enums import (
     IncidentPriority,
     IncidentStatus
 ) 
-from api.schemas.incident.log import IncidentLogType
+from api.schemas.incident.log import (
+    IncidentListResponse,
+    IncidentLogEntry,
+    IncidentLogType
+)
 
 
 router = APIRouter(tags=["Incidents"])
@@ -51,7 +55,13 @@ def get_my_reported():
 def get_my_assigned():
     # TODO: pobierz incydenty przypisane do zalogowanego uzytkownika
     return IncidentListResponse(incidents=[])
- 
+
+@router.get("/incidents/history", response_model=IncidentLogListResponse)
+def get_incident_history(project_id: Optional[UUID] = None, type: Optional[IncidentLogType] = None):
+    # TODO: pobierz historiê incydentów u¿ytkownika
+    return IncidentLogListResponse(logs=[])
+
+
 @router.get("/incidents/{incident_id}", response_model=IncidentDetailsResponse)
 def get_incident(incident_id: UUID):
     # TODO: pobierz szczego³y incydentu
@@ -91,7 +101,22 @@ def update_incident_priority(incident_id: UUID, body: UpdateIncidentPriorityRequ
 def update_incident_category(incident_id: UUID, body: UpdateIncidentCategoryRequest):
     # TODO: zaktualizuj kategorie incydentu
     return
- 
+
+@router.post("/incidents/{incident_id}/close", status_code=status.HTTP_204_NO_CONTENT)
+def close_incident(incident_id: UUID):
+    # TODO: logika zamkniêcia incydentu (zamiana statusu na CLOSED)
+    return
+
+@router.post("/incidents/{incident_id}/request-reassignment", status_code=status.HTTP_204_NO_CONTENT)
+def request_reassignment(incident_id: UUID):
+    # TODO: logika tworzenia wniosku
+    return
+
+@router.post("/incidents/{incident_id}/helpers", status_code=status.HTTP_204_NO_CONTENT)
+async def add_helper(incident_id: UUID, body: AddHelperRequest):
+    # TODO: logika dodania helpera do do incydentu
+    return 
+
 @router.get("/incidents/{incident_id}/comments", response_model=CommentListResponse)
 def get_comments(incident_id: UUID):
     # TODO: pobierz komentarze incydentu
