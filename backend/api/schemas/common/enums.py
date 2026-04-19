@@ -14,3 +14,12 @@ class IncidentPriority(str, Enum):
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
     CRITICAL = "CRITICAL"
+
+class InviteScope(str, Enum):
+    ORGANIZATION = "ORGANIZATION"
+    PROJECT = "PROJECT"
+
+class IncidentLogType(str, Enum):
+    COMMENT = "COMMENT"
+    STATUS_CHANGED = "STATUS_CHANGED"
+    ASSIGNEE_CHANGED = "ASSIGNEE_CHANGED"
