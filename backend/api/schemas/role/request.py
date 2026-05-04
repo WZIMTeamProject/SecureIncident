@@ -8,6 +8,7 @@ class RolePermissions(BaseModel):
     canMakeRoles: bool
     canChangeRoles: bool
     canAssignPeopleToProject: bool
+    canChangeStatus: bool
 
 class CreateRoleRequest(BaseModel):
     name: str
