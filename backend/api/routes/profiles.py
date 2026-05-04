@@ -1,8 +1,8 @@
 from fastapi import APIRouter, status
 from uuid import UUID
 
-from api.schemas.profiles.request import UpdateProfileRequest
-from api.schemas.profiles.response import (
+from api.schemas.profile.request import UpdateProfileRequest
+from api.schemas.profile.response import (
     ProfileResponse,
     UserSearchResponse,
     UserSearchResult

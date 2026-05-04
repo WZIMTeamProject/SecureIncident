@@ -2,7 +2,7 @@ from fastapi import APIRouter, status
 from uuid import UUID
 from typing import Optional
 from datetime import datetime
- 
+from api.schemas.common.base import CreatedIdResponse
 from api.schemas.incident.request import (
     CreateIncidentRequest,
     UpdateIncidentStatusRequest,
@@ -15,20 +15,17 @@ from api.schemas.incident.request import (
 from api.schemas.incident.response import (
     IncidentListResponse,
     IncidentDetailsResponse,
-    CreatedIdResponse,
-    CommentListResponse,
-    IncidentLogListResponse,
+    IncidentSummary
 )
 from api.schemas.common.enums import (
     IncidentPriority,
-    IncidentStatus
-) 
-from api.schemas.incident.log import (
-    IncidentListResponse,
-    IncidentLogEntry,
+    IncidentStatus,
     IncidentLogType
+) 
+from api.schemas.incident.comment import (
+    CommentListResponse,
+    CommentResponse
 )
-
 
 router = APIRouter(tags=["Incidents"])
  
@@ -56,10 +53,10 @@ def get_my_assigned():
     # TODO: pobierz incydenty przypisane do zalogowanego uzytkownika
     return IncidentListResponse(incidents=[])
 
-@router.get("/incidents/history", response_model=IncidentLogListResponse)
+@router.get("/incidents/history", response_model=IncidentListResponse)
 def get_incident_history(project_id: Optional[UUID] = None, type: Optional[IncidentLogType] = None):
     # TODO: pobierz historiê incydentów u¿ytkownika
-    return IncidentLogListResponse(logs=[])
+    return IncidentListResponse(logs=[])
 
 
 @router.get("/incidents/{incident_id}", response_model=IncidentDetailsResponse)
@@ -72,7 +69,7 @@ def get_incident(incident_id: UUID):
         description="Test description",
         categoryId="00000000-0000-0000-0000-000000000000",
         priority=IncidentPriority.LOW,
-        status=IncidentStatus.OPEN,
+        status=IncidentStatus.NEW,
         reporterId="00000000-0000-0000-0000-000000000000",
         primaryAssigneeId=None,
         reportDate=datetime.now(),
@@ -129,7 +126,7 @@ def add_comment(incident_id: UUID, body: AddCommentRequest):
     return CreatedIdResponse(id="00000000-0000-0000-0000-000000000000")
  
  
-@router.get("/incidents/{incident_id}/logs", response_model=IncidentLogListResponse)
+@router.get("/incidents/{incident_id}/logs", response_model=IncidentListResponse)
 def get_logs(incident_id: UUID):
     # TODO: pobierz logi incydentu
-    return IncidentLogListResponse(logs=[])
+    return IncidentListResponse(logs=[])
