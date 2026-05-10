@@ -1,11 +1,13 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime
+from sqlalchemy import Column, String, Text, ForeignKey, DateTime, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from backend.db.base import Base
-from enum import Enum
+from enum import Enum as PyEnum
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 
 
-class LogType(Enum):
+class LogType(str, PyEnum):
     PRIORITY_CHANGE = "priority_change"
     COMMENT = "comment"
     HELPER_ADDED = "helper_added"
@@ -18,11 +20,11 @@ class LogType(Enum):
 class IncidentLog(Base):
     __tablename__ = "incident_log"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    incident_id = Column(Integer, ForeignKey("incident.id"), nullable=False)
-    person_id = Column(Integer, ForeignKey("user.id"), nullable=False)
-    type = Column(String(50), nullable=False)
-    comment = Column(Text, nullable=False)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    incident_id = Column(UUID(as_uuid=True), ForeignKey("incident.id"), nullable=False)
+    person_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
+    type = Column(Enum(LogType), nullable=False)
+    comment = Column(Text, nullable=True)
     date = Column(DateTime, server_default=func.now())
 
     # Relationships
