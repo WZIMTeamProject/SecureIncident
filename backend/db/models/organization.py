@@ -1,16 +1,19 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime
+from sqlalchemy import Column, String, Text, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from backend.db.base import Base
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 
 
 class Organization(Base):
     __tablename__ = "organization"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    org_owner_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    org_owner_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
     name = Column(String(100), nullable=False, index=True)
     description = Column(Text, nullable=True)
+    join_code = Column(String(20), unique=True, nullable=True, index=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
