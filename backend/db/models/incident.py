@@ -1,27 +1,37 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Enum
+from sqlalchemy import Column, String, Text, ForeignKey, DateTime, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from backend.db.base import Base
 from enum import Enum as PyEnum
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 
 
-class IncidentStatus(PyEnum):
-    OPEN = "Open"
-    IN_PROGRESS = "In Progress"
-    RESOLVED = "Resolved"
-    CLOSED = "Closed"
+class IncidentStatus(str, PyEnum):
+    NEW = "NEW"
+    PROBLEM_IS_BEING_SOLVED = "PROBLEM_IS_BEING_SOLVED"
+    RESOLVED = "RESOLVED"
+    CLOSED = "CLOSED"
+    REJECTED = "REJECTED"
+
+
+class IncidentPriority(str, PyEnum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
 
 
 class Incident(Base):
     __tablename__ = "incident"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
-    project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
-    helper_id = Column(Integer, ForeignKey("user.id"), nullable=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
+    project_id = Column(UUID(as_uuid=True), ForeignKey("project.id"), nullable=False)
+    helper_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=True)
     title = Column(String(200), nullable=False)
-    status = Column(String(50), default="Open", nullable=False)
-    priority_level = Column(Integer, default=1, nullable=False)
+    status = Column(Enum(IncidentStatus), default=IncidentStatus.NEW, nullable=False)
+    priority = Column(Enum(IncidentPriority), default=IncidentPriority.LOW, nullable=False)
     description = Column(Text, nullable=False)
     creation_date = Column(DateTime, server_default=func.now())
     closing_date = Column(DateTime, nullable=True)
