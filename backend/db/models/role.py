@@ -1,18 +1,21 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
+from sqlalchemy import Column, String, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from backend.db.base import Base
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 
 
 class Role(Base):
     __tablename__ = "role"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    project_id = Column(UUID(as_uuid=True), ForeignKey("project.id"), nullable=False)
     name = Column(String(50), nullable=False)
     can_write_tickets = Column(Boolean, default=False)
     can_help = Column(Boolean, default=False)
     can_assign_help = Column(Boolean, default=False)
+    can_change_status = Column(Boolean, default=False)
     can_make_roles = Column(Boolean, default=False)
     can_change_roles = Column(Boolean, default=False)
     can_assign_people_to_project = Column(Boolean, default=False)
