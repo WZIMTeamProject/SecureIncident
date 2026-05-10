@@ -1,18 +1,19 @@
-from sqlalchemy import Column, Integer, Text, ForeignKey, DateTime
+from sqlalchemy import Column, Text, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from backend.db.base import Base
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 
 
 class Comment(Base):
     __tablename__ = "comment"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    incident_id = Column(Integer, ForeignKey("incident.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    incident_id = Column(UUID(as_uuid=True), ForeignKey("incident.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
     # Relationships
     incident = relationship("Incident", back_populates="comments", foreign_keys=[incident_id])
