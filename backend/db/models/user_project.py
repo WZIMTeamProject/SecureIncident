@@ -1,15 +1,17 @@
-from sqlalchemy import Column, Integer, ForeignKey, DateTime
+from sqlalchemy import Column, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from backend.db.base import Base
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 
 
 class UserProject(Base):
     __tablename__ = "user_project"
 
-    user_id = Column(Integer, ForeignKey("user.id"), primary_key=True)
-    project_id = Column(Integer, ForeignKey("project.id"), primary_key=True)
-    role_id = Column(Integer, ForeignKey("role.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), primary_key=True)
+    project_id = Column(UUID(as_uuid=True), ForeignKey("project.id"), primary_key=True)
+    role_id = Column(UUID(as_uuid=True), ForeignKey("role.id"), nullable=False)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
