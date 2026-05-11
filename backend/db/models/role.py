@@ -1,27 +1,38 @@
-from sqlalchemy import Column, String, Boolean, ForeignKey, DateTime
-from sqlalchemy.orm import relationship
+from datetime import datetime
+from typing import List
+from sqlalchemy import String, Boolean, ForeignKey, DateTime, Index
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.sql import func
-from backend.db.base import Base
+from db.base import Base
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 
 
 class Role(Base):
-    __tablename__ = "role"
+    __tablename__ = "roles"
+    __table_args__ = (
+        Index("ix_roles_project_id", "project_id"),
+    )
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    project_id = Column(UUID(as_uuid=True), ForeignKey("project.id"), nullable=False)
-    name = Column(String(50), nullable=False)
-    can_write_tickets = Column(Boolean, default=False)
-    can_help = Column(Boolean, default=False)
-    can_assign_help = Column(Boolean, default=False)
-    can_change_status = Column(Boolean, default=False)
-    can_make_roles = Column(Boolean, default=False)
-    can_change_roles = Column(Boolean, default=False)
-    can_assign_people_to_project = Column(Boolean, default=False)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String(50), nullable=False)
+    can_write_tickets: Mapped[bool] = mapped_column(Boolean, default=False)
+    can_help: Mapped[bool] = mapped_column(Boolean, default=False)
+    can_assign_help: Mapped[bool] = mapped_column(Boolean, default=False)
+    can_change_status: Mapped[bool] = mapped_column(Boolean, default=False)
+    can_make_roles: Mapped[bool] = mapped_column(Boolean, default=False)
+    can_change_roles: Mapped[bool] = mapped_column(Boolean, default=False)
+    can_assign_people_to_project: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
     # Relationships
-    project = relationship("Project", back_populates="roles", foreign_keys=[project_id])
-    user_projects = relationship("UserProject", back_populates="role")
+    project: Mapped["Project"] = relationship(
+        "Project", back_populates="roles", foreign_keys=[project_id], lazy="selectin"
+    )
+    user_projects: Mapped[List["UserProject"]] = relationship(
+        "UserProject", back_populates="role", lazy="selectin"
+    )
