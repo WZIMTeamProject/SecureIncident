@@ -7,6 +7,8 @@ from db.models.incident import Incident
 from db.models.comment import Comment
 from db.models.incident_log import IncidentLog
 from db.models.category import Category
+from db.models.organization_invite import OrganizationInvite
+from db.models.password_reset_token import PasswordResetToken
 
 __all__ = [
     "User",
@@ -18,4 +20,6 @@ __all__ = [
     "Comment",
     "IncidentLog",
     "Category",
+    "OrganizationInvite",
+    "PasswordResetToken",
 ]
