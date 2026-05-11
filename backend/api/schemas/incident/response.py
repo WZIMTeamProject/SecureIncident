@@ -1,32 +1,32 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
 from uuid import UUID
 from datetime import datetime
 from api.schemas.common.enums import IncidentPriority, IncidentStatus
+from api.schemas.common.pagination import PaginatedResponse
 
 
 class IncidentSummary(BaseModel):
     id: UUID
     title: str
-    categoryId: UUID
+    category_id: Optional[UUID] = None
     priority: IncidentPriority
     status: IncidentStatus
-    primaryAssigneeId: Optional[UUID] = None
-    reportDate: datetime
+    primary_assignee_id: Optional[UUID] = None
+    report_date: datetime
 
 
-class IncidentListResponse(BaseModel):
-    incidents: List[IncidentSummary]
+IncidentListResponse = PaginatedResponse[IncidentSummary]
 
 
 class IncidentDetailsResponse(BaseModel):
     id: UUID
-    projectId: UUID
+    project_id: UUID
     title: str
     description: str
-    categoryId: UUID
+    category_id: Optional[UUID] = None
     priority: IncidentPriority
     status: IncidentStatus
-    reporterId: UUID
-    primaryAssigneeId: Optional[UUID] = None
-    reportDate: datetime
+    reporter_id: UUID
+    primary_assignee_id: Optional[UUID] = None
+    report_date: datetime

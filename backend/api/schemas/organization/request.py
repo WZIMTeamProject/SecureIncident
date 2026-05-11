@@ -9,8 +9,8 @@ class CreateOrganizationRequest(BaseModel):
 
 
 class CreateInviteRequest(BaseModel):
-    expiresAt: Optional[datetime] = None
-    maxUses: Optional[int] = None
+    expires_at: Optional[datetime] = None
+    max_uses: Optional[int] = None
 
 
 class JoinByInviteRequest(BaseModel):

@@ -12,13 +12,13 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     username: str
     password: str
-    rememberUser: bool = False
+    remember_user: bool = False
 
 
 class PasswordResetRequest(BaseModel):
-    emailOrUsername: str
+    email_or_username: str
 
 
 class PasswordResetConfirmRequest(BaseModel):
-    resetToken: str
-    newPassword: str
+    reset_token: str
+    new_password: str

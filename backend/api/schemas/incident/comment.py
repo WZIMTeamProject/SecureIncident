@@ -6,10 +6,10 @@ from datetime import datetime
 
 class CommentResponse(BaseModel):
     id: UUID
-    authorId: UUID
-    authorUsername: Optional[str] = None
+    author_id: UUID
+    author_username: Optional[str] = None
     content: str
-    createdAt: datetime
+    created_at: datetime
 
 
 class CommentListResponse(BaseModel):

@@ -1,19 +1,22 @@
+from typing import Optional
+import uuid
+import datetime
+
 from pydantic import BaseModel
-from typing import Optional, List
-from uuid import UUID
-from datetime import datetime
-from backend.api.schemas.common.enums import IncidentLogType
+
+from api.schemas.common.enums import IncidentLogType
+from api.schemas.common.pagination import PaginatedResponse
 
 
 class IncidentLogEntry(BaseModel):
-    id: UUID
+    id: uuid.UUID
+    incident_id: uuid.UUID
+    actor_id: uuid.UUID
     type: IncidentLogType
-    createdAt: datetime
-    actorId: Optional[UUID] = None
     comment: Optional[str] = None
-    oldValue: Optional[str] = None
-    newValue: Optional[str] = None
+    old_value: Optional[str] = None
+    new_value: Optional[str] = None
+    created_at: datetime.datetime
 
 
-class IncidentLogListResponse(BaseModel):
-    logs: List[IncidentLogEntry]
+IncidentLogListResponse = PaginatedResponse[IncidentLogEntry]
