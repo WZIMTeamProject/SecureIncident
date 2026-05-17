@@ -59,7 +59,6 @@ async def logout_user(
 async def request_password_reset(
     data: PasswordResetRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     # TODO: sprawdzić czy user istnieje (ale NIE ujawniać tego), wygenerować token, wysłać email
     return
@@ -69,7 +68,6 @@ async def request_password_reset(
 async def reset_password(
     data: PasswordResetConfirmRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     # TODO: sprawdzić token, zmienić hasło
     return

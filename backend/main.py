@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from core.config import settings
 
 BASE_DIR = Path(__file__).resolve().parent
 OPENAPI_PATH = BASE_DIR.parent / "docs" / "api" / "openapi-core.json"
@@ -10,7 +11,7 @@ app = FastAPI(title="Secure Incident API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
