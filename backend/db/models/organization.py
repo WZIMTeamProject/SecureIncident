@@ -34,3 +34,6 @@ class Organization(Base):
     projects: Mapped[List["Project"]] = relationship(
         "Project", back_populates="organization", cascade="all, delete-orphan", lazy="selectin"
     )
+    organization_invites: Mapped[List["OrganizationInvite"]] = relationship(
+        "OrganizationInvite", back_populates="organization", lazy="selectin"
+    )

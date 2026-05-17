@@ -20,8 +20,8 @@ class OrganizationInvite(Base):
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
-    organization: Mapped["Organization"] = relationship("Organization", lazy="selectin")
-    created_by: Mapped["User"] = relationship("User", lazy="selectin")
+    organization: Mapped["Organization"] = relationship("Organization", back_populates="organization_invites", lazy="selectin")
+    created_by: Mapped["User"] = relationship("User", back_populates="created_invites", foreign_keys=[created_by_id], lazy="selectin")
 
     __table_args__ = (
         Index("ix_organization_invites_organization_id", "organization_id"),

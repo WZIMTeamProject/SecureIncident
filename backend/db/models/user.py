@@ -52,3 +52,6 @@ class User(Base):
     comments: Mapped[List["Comment"]] = relationship(
         "Comment", back_populates="author", lazy="selectin"
     )
+    created_invites: Mapped[List["OrganizationInvite"]] = relationship(
+        "OrganizationInvite", back_populates="created_by", foreign_keys="OrganizationInvite.created_by_id", lazy="selectin"
+    )
