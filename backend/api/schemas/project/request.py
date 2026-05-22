@@ -21,9 +21,9 @@ class UpdateProjectRequest(BaseModel):
 
 
 class AddProjectMemberRequest(BaseModel):
-    userId: UUID
-    roleId: UUID
+    user_id: UUID
+    role_id: UUID
 
 
 class AssignRoleRequest(BaseModel):
-    roleId: UUID
+    role_id: UUID

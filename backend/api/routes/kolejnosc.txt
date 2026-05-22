@@ -29,34 +29,61 @@ endpointy:
 
 ETAP 4 — api/routes/categories.py
 endpointy:
-    GET /projects/{projectId}/categories
-    POST /projects/{projectId}/categories
+    GET /projects/{projectId}/categories                        (Done)
+    POST /projects/{projectId}/categories                       (Done)
+extended:
+    PATCH /projects/{project_id}/categories/{category_id}       (Done)
+    DELETE /projects/{project_id}/categories/{category_id}      (Done)
 
 ETAP 5 — api/routes/roles.py
 endpointy:
-    GET /projects/{projectId}/roles
-    POST /projects/{projectId}/roles
+    GET /projects/{projectId}/roles                             (Done)
+    POST /projects/{projectId}/roles                            (Done)
+extended:
+    GET /projects/{project_id}/roles/{role_id}                  (Done)
+    PATCH /projects/{project_id}/roles/{role_id}                (Done)
 
 ETAP 6 — api/routes/incidents.py
     główne:
-        GET /projects/{projectId}/incidents
-        POST /projects/{projectId}/incidents
+        GET /projects/{projectId}/incidents                     (Done)
+        POST /projects/{projectId}/incidents                    (Done)
 
     user views:
-        GET /incidents/my-reported
-        GET /incidents/my-assigned
+        GET /incidents/my-reported                              (Done)
+        GET /incidents/my-assigned                              (Done)
 
     szczegóły:
-        GET /incidents/{incidentId}
+        GET /incidents/{incidentId}                             (Done)
 
     akcje:
-        PATCH /incidents/{incidentId}/status
-        PATCH /incidents/{incidentId}/assignee
-        PATCH /incidents/{incidentId}/priority
-        PATCH /incidents/{incidentId}/category
+        PATCH /incidents/{incidentId}/status                    (Done)
+        PATCH /incidents/{incidentId}/assignee                  (Done)
+        PATCH /incidents/{incidentId}/priority                  (Done)
+        PATCH /incidents/{incidentId}/category                  (Done)
 
     comments:
-        GET /incidents/{incidentId}/comments
-        POST /incidents/{incidentId}/comments
+        GET /incidents/{incidentId}/comments                    (Done)
+        POST /incidents/{incidentId}/comments                   (Done)
     logs:
-        GET /incidents/{incidentId}/logs
+        GET /incidents/{incidentId}/logs                        (Done)
+    extended:
+        POST /incidents/{incidentId}/close                      (Done)
+        POST /incidents/{incidentId}/request-reassignment       (Done)
+        POST /incidents/{incidentId}/helpers                    (Done)
+        GET /incidents/history                                  (Done)
+
+ETAP 6 api/routes/users.py
+    endpointy:
+        GET /profiles/me                                        (Done)
+        PATCH /profiles/me                                      (Done)
+        GET /users/search                                       (Done)
+
+ETAP 7 api/routes/feedback.py
+    endpointy:
+        POST /feedback                                          (Done)
+
+ETAP 8
+    endpointy:
+        POST /projects/{project_id}/invites                     (Done)
+        POST /projects/join                                     (Done)
+        GET /invites/{token}                                    (Done)

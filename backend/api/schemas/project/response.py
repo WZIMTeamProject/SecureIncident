@@ -2,25 +2,25 @@ from pydantic import BaseModel
 from typing import Optional, List
 from uuid import UUID
 from .request import ProjectScope
+from api.schemas.common.pagination import PaginatedResponse
 
 
 class ProjectResponse(BaseModel):
     id: UUID
-    organizationId: Optional[UUID] = None
+    organization_id: Optional[UUID] = None
     name: str
     description: Optional[str] = None
     scope: ProjectScope
 
 
-class ProjectListResponse(BaseModel):
-    projects: List[ProjectResponse]
+ProjectListResponse = PaginatedResponse[ProjectResponse]
 
 
 class ProjectMemberResponse(BaseModel):
-    userId: UUID
+    user_id: UUID
     username: str
-    roleId: UUID
-    roleName: str
+    role_id: UUID
+    role_name: str
 
 
 class ProjectMemberListResponse(BaseModel):

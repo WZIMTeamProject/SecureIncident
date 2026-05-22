@@ -7,9 +7,9 @@ from api.schemas.common.enums import IncidentPriority, IncidentStatus
 class CreateIncidentRequest(BaseModel):
     title: str
     description: str
-    categoryId: UUID
+    category_id: Optional[UUID] = None
     priority: Optional[IncidentPriority] = None
-    primaryAssigneeId: Optional[UUID] = None
+    primary_assignee_id: Optional[UUID] = None
 
 
 class UpdateIncidentStatusRequest(BaseModel):
@@ -17,7 +17,7 @@ class UpdateIncidentStatusRequest(BaseModel):
 
 
 class UpdateIncidentAssigneeRequest(BaseModel):
-    primaryAssigneeId: Optional[UUID] = None
+    primary_assignee_id: Optional[UUID] = None
 
 
 class UpdateIncidentPriorityRequest(BaseModel):
@@ -25,8 +25,12 @@ class UpdateIncidentPriorityRequest(BaseModel):
 
 
 class UpdateIncidentCategoryRequest(BaseModel):
-    categoryId: UUID
+    category_id: Optional[UUID] = None
 
 
 class AddCommentRequest(BaseModel):
     content: str
+
+
+class AddHelperRequest(BaseModel):
+    user_id: UUID

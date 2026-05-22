@@ -1,7 +1,7 @@
 from pydantic import BaseModel
-from typing import List
 from uuid import UUID
 from .request import RolePermissions
+from api.schemas.common.pagination import PaginatedResponse
 
 
 class RoleResponse(BaseModel):
@@ -10,5 +10,4 @@ class RoleResponse(BaseModel):
     permissions: RolePermissions
 
 
-class RoleListResponse(BaseModel):
-    roles: List[RoleResponse]
+RoleListResponse = PaginatedResponse[RoleResponse]

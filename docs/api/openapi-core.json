@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Secure Incydent API - Core MVP",
+    "title": "Secure Incident API",
     "version": "0.1.1",
     "description": "Core API draft for the first implementation stage of Secure Incydent. This version follows the domain rule that a user can belong to many projects, but only within one organization or in private projects."
   },
@@ -34,6 +34,18 @@
     {
       "name": "Incidents",
       "description": "Incident reporting, workflow, comments, and visible logs."
+    },
+    {
+      "name": "Profiles",
+      "description": "User profile and optional presentation data."
+    },
+    {
+      "name": "Invitations",
+      "description": "Extended invite handling for organizations and projects."
+    },
+    {
+      "name": "Feedback",
+      "description": "Optional product feedback/contact endpoints."
     }
   ],
   "paths": {
@@ -182,7 +194,7 @@
         }
       }
     },
-    "/me": {
+    "/auth/me": {
       "get": {
         "tags": [
           "Auth"
@@ -1197,6 +1209,530 @@
           }
         }
       }
+    },
+    "/feedback": {
+      "post": {
+        "tags": [
+          "Feedback"
+        ],
+        "summary": "Send platform feedback",
+        "description": "Optional contact/feedback endpoint, not required for core incident workflow.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Feedback accepted"
+          }
+        }
+      }
+    },
+    "/profiles/me": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Get current user's profile",
+        "description": "Returns editable profile data of the current user.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profile returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Update current user's profile",
+        "description": "Updates optional user profile fields such as bio or display preferences.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Profile updated"
+          }
+        }
+      }
+    },
+    "/users/search": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Search users by username or partial text",
+        "description": "Convenience endpoint useful for assignment dialogs and member lookup.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching users returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/invites": {
+      "post": {
+        "tags": [
+          "Invitations"
+        ],
+        "summary": "Create project invite",
+        "description": "Generates an invite token that lets a user join a specific project directly.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInviteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Project invite created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/join": {
+      "post": {
+        "tags": [
+          "Invitations"
+        ],
+        "summary": "Join project using invite token",
+        "description": "Accepts a project invite and joins the current user to the project.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinByInviteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Joined project successfully"
+          }
+        }
+      }
+    },
+    "/invites/{token}": {
+      "get": {
+        "tags": [
+          "Invitations"
+        ],
+        "summary": "Inspect invite before accepting",
+        "description": "Lets frontend validate an invite link and preview whether it grants access to an organization or a project.",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invite details returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitePreviewResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invite not found"
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/categories/{categoryId}": {
+      "patch": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Update category",
+        "description": "Updates category name or metadata.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/CategoryId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Category updated"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Delete category",
+        "description": "Deletes a category when it is not used or after a safe migration.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/CategoryId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Category deleted"
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/roles/{roleId}": {
+      "get": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Get role details",
+        "description": "Returns details of one role with all permissions.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/RoleId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Update role definition",
+        "description": "Updates role name or boolean permissions.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/RoleId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRoleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Role updated"
+          }
+        }
+      }
+    },
+    "/incidents/{incidentId}/close": {
+      "post": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Close incident explicitly",
+        "description": "Convenience endpoint if frontend prefers a dedicated close action instead of generic status patch.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IncidentId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Incident closed"
+          }
+        }
+      }
+    },
+    "/incidents/{incidentId}/request-reassignment": {
+      "post": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Request solver reassignment",
+        "description": "Allows the current solver to request reassignment without directly removing themselves.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IncidentId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Reassignment request created"
+          }
+        }
+      }
+    },
+    "/incidents/{incidentId}/helpers": {
+      "post": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Add supporting helper to incident",
+        "description": "Optional extension if you later want to formally model helper participants.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IncidentId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddHelperRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Helper added"
+          }
+        }
+      }
+    },
+    "/incidents/{incidentId}/helpers/{helperId}": {
+      "delete": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Remove helper from incident",
+        "description": "Removes a previously added helper from the incident.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IncidentId"
+          },
+          {
+            "$ref": "#/components/parameters/HelperId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Helper removed"
+          },
+          "403": {
+            "description": "Access denied"
+          },
+          "404": {
+            "description": "Incident or helper not found"
+          }
+        }
+      }
+    },
+    "/incidents/history": {
+      "get": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Get user-centric incident history",
+        "description": "Extended reporting endpoint for user history across projects in the user's single organization and/or private projects.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "COMMENT",
+                "STATUS_CHANGED",
+                "ASSIGNEE_CHANGED",
+                "HELPER_ADDED",
+                "HELPER_REMOVED",
+                "PRIORITY_CHANGED",
+                "CATEGORY_CHANGED",
+                "CREATED",
+                "CLOSED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "History returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentLogListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1228,6 +1764,33 @@
       },
       "UserId": {
         "name": "userId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "CategoryId": {
+        "name": "categoryId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "RoleId": {
+        "name": "roleId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "HelperId": {
+        "name": "helperId",
         "in": "path",
         "required": true,
         "schema": {
@@ -1472,14 +2035,26 @@
       "ProjectListResponse": {
         "type": "object",
         "required": [
-          "projects"
+          "items",
+          "total",
+          "offset",
+          "limit"
         ],
         "properties": {
-          "projects": {
+          "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProjectResponse"
             }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
           }
         }
       },
@@ -1575,20 +2150,36 @@
           },
           "name": {
             "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
       "CategoryListResponse": {
         "type": "object",
         "required": [
-          "categories"
+          "items",
+          "total",
+          "offset",
+          "limit"
         ],
         "properties": {
-          "categories": {
+          "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CategoryResponse"
             }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
           }
         }
       },
@@ -1630,19 +2221,40 @@
       "RoleListResponse": {
         "type": "object",
         "required": [
-          "roles"
+          "items",
+          "total",
+          "offset",
+          "limit"
         ],
         "properties": {
-          "roles": {
+          "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RoleResponse"
             }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
           }
         }
       },
       "RolePermissions": {
         "type": "object",
+        "required": [
+          "canWriteTickets",
+          "canHelp",
+          "canAssignHelp",
+          "canChangeStatus",
+          "canMakeRoles",
+          "canChangeRoles",
+          "canAssignPeopleToProject"
+        ],
         "properties": {
           "canWriteTickets": {
             "type": "boolean"
@@ -1651,6 +2263,9 @@
             "type": "boolean"
           },
           "canAssignHelp": {
+            "type": "boolean"
+          },
+          "canChangeStatus": {
             "type": "boolean"
           },
           "canMakeRoles": {
@@ -1668,8 +2283,7 @@
         "type": "object",
         "required": [
           "title",
-          "description",
-          "categoryId"
+          "description"
         ],
         "properties": {
           "title": {
@@ -1698,7 +2312,8 @@
           "id",
           "title",
           "status",
-          "reportDate"
+          "reportDate",
+          "priority"
         ],
         "properties": {
           "id": {
@@ -1732,14 +2347,26 @@
       "IncidentListResponse": {
         "type": "object",
         "required": [
-          "incidents"
+          "items",
+          "total",
+          "offset",
+          "limit"
         ],
         "properties": {
-          "incidents": {
+          "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/IncidentSummary"
             }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
           }
         }
       },
@@ -1749,7 +2376,11 @@
           "id",
           "title",
           "status",
-          "description"
+          "description",
+          "projectId",
+          "reporterId",
+          "priority",
+          "reportDate"
         ],
         "properties": {
           "id": {
@@ -1804,9 +2435,6 @@
       },
       "UpdateIncidentAssigneeRequest": {
         "type": "object",
-        "required": [
-          "primaryAssigneeId"
-        ],
         "properties": {
           "primaryAssigneeId": {
             "type": "string",
@@ -1896,6 +2524,8 @@
         "type": "object",
         "required": [
           "id",
+          "incidentId",
+          "actorId",
           "type",
           "createdAt"
         ],
@@ -1904,12 +2534,22 @@
             "type": "string",
             "format": "uuid"
           },
+          "incidentId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "type": {
             "type": "string",
             "enum": [
               "COMMENT",
               "STATUS_CHANGED",
-              "ASSIGNEE_CHANGED"
+              "ASSIGNEE_CHANGED",
+              "HELPER_ADDED",
+              "HELPER_REMOVED",
+              "PRIORITY_CHANGED",
+              "CATEGORY_CHANGED",
+              "CREATED",
+              "CLOSED"
             ]
           },
           "createdAt": {
@@ -1918,8 +2558,7 @@
           },
           "actorId": {
             "type": "string",
-            "format": "uuid",
-            "nullable": true
+            "format": "uuid"
           },
           "comment": {
             "type": "string",
@@ -1938,14 +2577,26 @@
       "IncidentLogListResponse": {
         "type": "object",
         "required": [
-          "logs"
+          "items",
+          "total",
+          "offset",
+          "limit"
         ],
         "properties": {
-          "logs": {
+          "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/IncidentLogEntry"
             }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
           }
         }
       },
@@ -1990,6 +2641,155 @@
           "HIGH",
           "CRITICAL"
         ]
+      },
+      "FeedbackRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "email",
+          "message"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "ProfileResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "username"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "bio": {
+            "type": "string",
+            "nullable": true
+          },
+          "profilePictureUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "UpdateProfileRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "bio": {
+            "type": "string",
+            "nullable": true
+          },
+          "profilePictureUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "UserSearchResult": {
+        "type": "object",
+        "required": [
+          "id",
+          "username"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "UserSearchResponse": {
+        "type": "object",
+        "required": [
+          "users"
+        ],
+        "properties": {
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserSearchResult"
+            }
+          }
+        }
+      },
+      "InvitePreviewResponse": {
+        "type": "object",
+        "required": [
+          "scope",
+          "targetName",
+          "isValid"
+        ],
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "ORGANIZATION",
+              "PROJECT"
+            ]
+          },
+          "targetName": {
+            "type": "string"
+          },
+          "isValid": {
+            "type": "boolean"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "UpdateCategoryRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateRoleRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "permissions": {
+            "$ref": "#/components/schemas/RolePermissions"
+          }
+        }
+      },
+      "AddHelperRequest": {
+        "type": "object",
+        "required": [
+          "userId"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
       }
     }
   }

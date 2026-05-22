@@ -11,4 +11,4 @@ class OrganizationResponse(BaseModel):
 
 class InviteResponse(BaseModel):
     token: str
-    inviteUrl: Optional[str] = None
+    invite_url: Optional[str] = None

@@ -1,57 +1,58 @@
-from fastapi import APIRouter, Response, status
-from api.schemas.organization.request import CreateOrganizationRequest
-from api.schemas.organization.response import OrganizationResponse
-from api.schemas.common.base import CreatedIdResponse
-from api.schemas.organization.response import InviteResponse
+from fastapi import APIRouter, Depends, Response, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.dependencies.db import get_db
+from api.dependencies.auth import get_current_user
 from api.schemas.organization.request import (
+    CreateOrganizationRequest,
     CreateInviteRequest,
-    JoinByInviteRequest
+    JoinByInviteRequest,
 )
+from api.schemas.organization.response import OrganizationResponse, InviteResponse
+from api.schemas.common.base import CreatedIdResponse
+from db.models.user import User
+
 
 router = APIRouter(prefix="/organization", tags=["Organization"])
 
 
 @router.post("", response_model=CreatedIdResponse, status_code=status.HTTP_201_CREATED)
-def create_organization(data: CreateOrganizationRequest):
-    # TODO:
-    # - stworzyć organizację
-    # - przypisać ownera
-    
+async def create_organization(
+    data: CreateOrganizationRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    # TODO: stworzyć organizację, przypisać ownera
     return CreatedIdResponse(id="00000000-0000-0000-0000-000000000000")
 
 
 @router.get("", response_model=OrganizationResponse)
-def get_current_organization():
-    # TODO:
-    # - zwrócić organizację użytkownika (jeśli jest przypisany, inaczej 404)
-    
+async def get_current_organization(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # TODO: zwrócić organizację użytkownika (jeśli jest przypisany, inaczej 404)
     return OrganizationResponse(
         id="00000000-0000-0000-0000-000000000000",
         name="Test Organization",
-        description="Test description"
+        description="Test description",
     )
-
-
 
 
 @router.post("/invites", response_model=InviteResponse, status_code=status.HTTP_201_CREATED)
-def create_invite(data: CreateInviteRequest):
-    # TODO:
-    # - sprawdzić uprawnienia (owner/admin)
-    # - wygenerować token zaproszenia
-
-    return InviteResponse(
-        token="mock-invite-token",
-        inviteUrl=None
-    )
-
+async def create_invite(
+    data: CreateInviteRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # TODO: sprawdzić uprawnienia (owner/admin), wygenerować token zaproszenia
+    return InviteResponse(token="mock-invite-token", invite_url=None)
 
 
 @router.post("/join", status_code=status.HTTP_204_NO_CONTENT)
-def join_organization(data: JoinByInviteRequest):
-    # TODO:
-    # - sprawdzić token
-    # - dodać usera do organizacji
-    
+async def join_organization(
+    data: JoinByInviteRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # TODO: sprawdzić token, dodać usera do organizacji
     return Response(status_code=204)
