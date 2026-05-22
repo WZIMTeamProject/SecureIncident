@@ -6,4 +6,4 @@ from typing import Optional
 class UserResponse(BaseModel):
     id: UUID
     username: str
-    organizationId: Optional[UUID] = None
+    organization_id: Optional[UUID] = None
