@@ -4,10 +4,13 @@ import {createBrowserRouter} from 'react-router'
 import {RouterProvider} from 'react-router/dom'
 import './index.css'
 import App from './App.tsx'
-import SIStartPage from "./SIStartPage.tsx";
-import SIDashboard from "./dashboard/SIDashboard.tsx";
-import SILoginPage from "./login/SILoginPage.tsx";
-import SIRegisterPage from "./login/SIRegisterPage.tsx";
+import SIStartPage from "./ui/SIStartPage.tsx";
+import SIDashboard from "./ui/SIDashboard.tsx";
+import SILoginPage from "./ui/SILoginPage.tsx";
+import SIRegisterPage from "./ui/SIRegisterPage.tsx";
+import {loadDashboard, loadLoginPage} from "./auth/middleware.ts";
+import SIPageNotFound from "./ui/SIPageNotFound.tsx";
+import SIForgotPassword from "./ui/SIForgotPassword.tsx";
 
 const router = createBrowserRouter([
     {
@@ -15,9 +18,17 @@ const router = createBrowserRouter([
         Component: App,
         children: [
             {index: true, Component: SIStartPage},
-            {path: "/dashboard", Component: SIDashboard},
-            {path: "/login", Component: SILoginPage},
-            {path: "/register", Component: SIRegisterPage}
+
+            // Dashboards and other important stuff
+            {path: "/dashboard", Component: SIDashboard, loader: loadDashboard},
+
+            // Login related stuff
+            {path: "/forgot_password", Component: SIForgotPassword, loader: loadLoginPage},
+            {path: "/login", Component: SILoginPage, loader: loadLoginPage},
+            {path: "/register", Component: SIRegisterPage, loader: loadLoginPage},
+
+            // Catch all 404 page for invalid routes
+            {path: "*", Component: SIPageNotFound }
         ]
     }
 ])

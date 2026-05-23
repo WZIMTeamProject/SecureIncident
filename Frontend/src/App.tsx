@@ -1,13 +1,13 @@
 import './App.css'
 import {Outlet} from "react-router";
-import {SIToolbar} from "./SIToolbar.tsx";
+import SIToolbar from "./ui/SIToolbar.tsx";
 
 function App() {
     return (
         <>
             <SIToolbar/>
-            <div>
-                <Outlet />
+            <div className={`flex justify-center`}>
+                <Outlet/>
             </div>
         </>
     )
