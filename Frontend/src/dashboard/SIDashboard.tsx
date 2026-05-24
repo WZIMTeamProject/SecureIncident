@@ -1,6 +1,7 @@
 import {Link} from "react-router";
+import {FORM_LOGOUT} from "../login/forms.ts";
 
-export default function SIDashboard() {
+export function SIDashboard() {
     return <div>
         <div>
             <h1>Dashboard</h1>
@@ -8,8 +9,10 @@ export default function SIDashboard() {
         <div>
             <Link to={{
                 pathname: "/login",
-                search: "?logout=true"
-            }}>Wyloguj</Link>
+                search: `?${FORM_LOGOUT}=true`
+            }}>
+                Wyloguj
+            </Link>
         </div>
     </div>
 }

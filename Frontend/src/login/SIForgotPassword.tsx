@@ -1,6 +1,8 @@
 import {Link} from "react-router";
 
-export default function SIForgotPassword() {
+export function SIForgotPassword() {
+    // TODO: Password reset page
+
     return <div>
         <div>
             <h1>Forgot password</h1>

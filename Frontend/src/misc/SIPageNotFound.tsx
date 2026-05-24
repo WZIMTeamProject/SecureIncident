@@ -1,6 +1,6 @@
 import {Link} from "react-router";
 
-export default function SIPageNotFound() {
+export function SIPageNotFound() {
     return <div>
         <div>
             <h1 className={`text-4xl`}>404 not found</h1>
