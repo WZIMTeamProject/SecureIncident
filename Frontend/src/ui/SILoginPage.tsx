@@ -1,11 +1,9 @@
-import {Link, useFetcher} from "react-router";
+import {Form, Link} from "react-router";
 
 export default function SILoginPage() {
-    const fetcher = useFetcher()
-
     return <div>
         <div className={`w-lg p-2 bg-purple-400 text-black`}>
-            <fetcher.Form>
+            <Form method="post" navigate={false}>
                 <div className={`m-2 flex flex-col`}>
                     <label htmlFor="login">Podaj swoją nazwę użytkownika:</label>
                     <input type="text" name="login" className={`bg-white`}/>
@@ -24,7 +22,7 @@ export default function SILoginPage() {
                         <input className={`p-2 cursor-pointer bg-purple-500 text-white underline`} type="submit" value="Zaloguj się"/>
                     </div>
                 </div>
-            </fetcher.Form>
+            </Form>
         </div>
         <div>
             <Link to="/register">Zarejestruj się</Link>
