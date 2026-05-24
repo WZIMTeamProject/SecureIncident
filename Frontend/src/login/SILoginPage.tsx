@@ -1,10 +1,12 @@
-import {Form, Link} from "react-router";
+import {Link, useFetcher} from "react-router";
 import {FORM_PASSWORD, FORM_REMEMBER_ME, FORM_USERNAME} from "./forms.ts";
 
 export function SILoginPage() {
+    const fetcher = useFetcher();
+
     return <div>
         <div className={`w-lg p-2 bg-purple-400 text-black`}>
-            <Form method="POST" navigate={false}>
+            <fetcher.Form method="POST">
                 <div className={`m-2 flex flex-col`}>
                     <label htmlFor={FORM_USERNAME}>Podaj swoją nazwę użytkownika:</label>
                     <input type="text" name={FORM_USERNAME} className={`bg-white`}/>
@@ -23,10 +25,10 @@ export function SILoginPage() {
                         <input
                             className={`p-2 cursor-pointer bg-purple-500 text-white underline`}
                             type="submit"
-                            value="Zaloguj się"/>
+                            value={fetcher.state != "idle" ? "Logowanie..." : "Zaloguj się"}/>
                     </div>
                 </div>
-            </Form>
+            </fetcher.Form>
         </div>
         <div>
             <Link to="/register">Zarejestruj się</Link>
@@ -36,6 +38,10 @@ export function SILoginPage() {
         </div>
         <div>
             <Link to="/">Powrót do strony głównej</Link>
+        </div>
+
+        <div>
+            {fetcher.data ? fetcher.data.error : undefined}
         </div>
     </div>
 }
