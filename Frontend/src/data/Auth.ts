@@ -1,5 +1,5 @@
 import {createDummyUser, type User} from "./User.ts";
-import Api from "../Api.ts";
+import Api from "./Api.ts";
 
 export default class Auth {
     static debugMode: boolean = true

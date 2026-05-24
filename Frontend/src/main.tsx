@@ -2,20 +2,20 @@ import {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
 import {createBrowserRouter} from 'react-router'
 import {RouterProvider} from 'react-router/dom'
+
 import './index.css'
-import {dashboardMiddleware, loginAction, loginMiddleware} from "./auth/middleware.ts";
+
 import App from './App.tsx'
-import SIStartPage from "./ui/SIStartPage.tsx";
-import SIDashboard from "./ui/SIDashboard.tsx";
-import SILoginPage from "./ui/SILoginPage.tsx";
-import SIRegisterPage from "./ui/SIRegisterPage.tsx";
-import SIPageNotFound from "./ui/SIPageNotFound.tsx";
-import SIForgotPassword from "./ui/SIForgotPassword.tsx";
+
+import {dashboardMiddleware, SIDashboard} from "./dashboard";
+import {loginAction, loginMiddleware, SIForgotPassword, SILoginPage, SIRegisterPage} from "./login";
+import {SIPageNotFound, SIStartPage} from "./misc"
 
 const router = createBrowserRouter([
     {
         path: "/",
         Component: App,
+
         children: [
             {index: true, Component: SIStartPage},
 
@@ -28,7 +28,7 @@ const router = createBrowserRouter([
             {path: "/register", Component: SIRegisterPage},
 
             // Catch all 404 page for invalid routes
-            {path: "*", Component: SIPageNotFound }
+            {path: "*", Component: SIPageNotFound}
         ]
     }
 ])

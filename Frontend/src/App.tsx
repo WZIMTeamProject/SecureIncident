@@ -1,6 +1,6 @@
-import './App.css'
 import {Outlet} from "react-router";
-import SIToolbar from "./ui/SIToolbar.tsx";
+
+import {SIToolbar} from "./misc";
 
 function App() {
     return (

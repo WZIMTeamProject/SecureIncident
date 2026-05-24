@@ -14,12 +14,7 @@
 
 
 import * as runtime from '../runtime';
-import type {
-    CategoryListResponse,
-    CreateCategoryRequest,
-    CreatedIdResponse,
-    UpdateCategoryRequest,
-} from '../models';
+import type {CategoryListResponse, CreateCategoryRequest, CreatedIdResponse, UpdateCategoryRequest,} from '../models';
 import {
     CategoryListResponseFromJSON,
     CreateCategoryRequestToJSON,

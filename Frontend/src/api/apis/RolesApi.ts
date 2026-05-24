@@ -14,13 +14,7 @@
 
 
 import * as runtime from '../runtime';
-import type {
-    CreatedIdResponse,
-    CreateRoleRequest,
-    RoleListResponse,
-    RoleResponse,
-    UpdateRoleRequest,
-} from '../models';
+import type {CreatedIdResponse, CreateRoleRequest, RoleListResponse, RoleResponse, UpdateRoleRequest,} from '../models';
 import {
     CreatedIdResponseFromJSON,
     CreateRoleRequestToJSON,
