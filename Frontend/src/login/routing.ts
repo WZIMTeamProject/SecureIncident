@@ -3,6 +3,11 @@ import {redirect} from "react-router";
 import type {MiddlewareArgs, MiddlewareNext} from "../misc";
 import {FORM_USERNAME, FORM_LOGOUT, FORM_PASSWORD, FORM_REMEMBER_ME} from "./forms.ts";
 
+export interface LoginActionResult {
+    ok: boolean,
+    error: "invalid_credentials" | "invalid_data"
+}
+
 export async function loginMiddleware(
     {request}: MiddlewareArgs,
     next: MiddlewareNext
@@ -40,9 +45,9 @@ export async function loginAction(
         if (user) {
             return redirect("/dashboard");
         } else {
-            // TODO: Notify about failed login attempt
+            return { ok: false, error: "invalid_credentials" } satisfies LoginActionResult;
         }
     } else {
-        // TODO: Notify about incorrect input data
+        return { ok: false, error: "invalid_data" } satisfies LoginActionResult;
     }
 }
