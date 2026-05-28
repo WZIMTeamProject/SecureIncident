@@ -5,22 +5,24 @@
 Use SQLAlchemy 2.0 declarative style with `DeclarativeBase` and typed columns:
 
 ```python
-from sqlalchemy import String, Integer, DateTime, ForeignKey, func
+from sqlalchemy import String, DateTime, ForeignKey, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from backend.db.base import Base
 import datetime
+import uuid
 
 class Incident(Base):
     __tablename__ = "incidents"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str] = mapped_column(String(5000), nullable=False)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="open")
 
-    project_id: Mapped[int] = mapped_column(Integer, ForeignKey("projects.id"), nullable=False)
-    reporter_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
-    assignee_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
+    project_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False)
+    reporter_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    assignee_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
 
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime.datetime] = mapped_column(
@@ -41,7 +43,7 @@ class Incident(Base):
 
 ## Required Fields on Every Model
 
-- `id` — integer primary key with autoincrement
+- `id` — UUID primary key with `default=uuid.uuid4`
 - `created_at` — server-side default timestamp
 - `updated_at` — server-side default + `onupdate` timestamp
 
