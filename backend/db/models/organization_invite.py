@@ -11,7 +11,10 @@ class OrganizationInvite(Base):
     __tablename__ = "organization_invites"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    organization_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
+    organization_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True)
+    scope: Mapped[str] = mapped_column(String(20), nullable=False, default="ORGANIZATION", server_default="ORGANIZATION")
+    project_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=True)
+    role_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("roles.id", ondelete="SET NULL"), nullable=True)
     created_by_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     token: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     expires_at: Mapped[datetime.datetime | None] = mapped_column(DateTime, nullable=True)
@@ -26,4 +29,5 @@ class OrganizationInvite(Base):
     __table_args__ = (
         Index("ix_organization_invites_organization_id", "organization_id"),
         Index("ix_organization_invites_created_by_id", "created_by_id"),
+        Index("ix_organization_invites_project_id", "project_id"),
     )
