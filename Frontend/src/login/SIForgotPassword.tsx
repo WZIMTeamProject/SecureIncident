@@ -1,7 +1,7 @@
 import {Link} from "react-router";
 
 export function SIForgotPassword() {
-    // TODO: Password reset page
+    // TODO: Password reset page, should also redirect if already logged in?
 
     return <div>
         <div>

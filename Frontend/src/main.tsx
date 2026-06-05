@@ -1,21 +1,23 @@
 import {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
-import {createBrowserRouter} from 'react-router'
+import {createBrowserRouter, RouterContextProvider} from 'react-router'
 import {RouterProvider} from 'react-router/dom'
 
 import './index.css'
 
-import App from './App.tsx'
+import {loggedUserLoader, SIAppRoot} from './SIAppRoot.tsx'
 
 import {SIDashboard} from "./dashboard";
 import {loginFormAction, loginMiddleware, SIForgotPassword, SILoginPage, SIRegisterPage} from "./login";
-import {SIPageNotFound, SIStartPage} from "./misc"
-import {authGuardMiddleware} from "./data/auth.ts";
+import {authGuardMiddleware, AuthRouterContext, getAuthState} from "./data/auth.ts";
+import {SIStartPage} from "./SIStartPage.tsx";
+import {SIPageNotFound} from "./SIPageNotFound.tsx";
 
 const router = createBrowserRouter([
     {
         path: "/",
-        Component: App,
+        Component: SIAppRoot,
+        loader: loggedUserLoader,
 
         children: [
             {index: true, Component: SIStartPage},
@@ -32,7 +34,14 @@ const router = createBrowserRouter([
             {path: "*", Component: SIPageNotFound}
         ]
     }
-])
+], {
+    getContext: async () => {
+        const context = new RouterContextProvider();
+        context.set(AuthRouterContext, await getAuthState());
+
+        return context;
+    }
+});
 
 if (import.meta.env.DEV) {
     console.log("DEV mode enabled.");

@@ -1,8 +1,10 @@
 import {createContext, type MiddlewareFunction, redirect} from "react-router";
 import Api from "./Api.ts";
 import {CURRENT_USER_ID_COOKIE, CURRENT_USER_IS_DEBUG_COOKIE, CURRENT_USER_NAME_COOKIE} from "./cookies.ts";
+import * as React from "react";
 
-export const AuthContext = createContext<AuthState | null>(null);
+export const AuthRouterContext = createContext<AuthState | null>(null);
+export const AuthUserContext = React.createContext<AuthState | null>(null);
 
 export class AuthState {
     name: string;
@@ -71,11 +73,9 @@ export async function getAuthState(forceValidate: boolean = true): Promise<AuthS
  * When used as router middleware, redirects the user to the login page if they are not logged in.
  */
 export const authGuardMiddleware: MiddlewareFunction = async ({context}, next) => {
-    const currentAuthState = await getAuthState();
+    const currentAuthState = context.get(AuthRouterContext);
 
-    if (currentAuthState) {
-        context.set(AuthContext, currentAuthState);
-    } else {
+    if (!currentAuthState) {
         throw redirect("/login");
     }
 

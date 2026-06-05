@@ -2,7 +2,7 @@ import {Form, Link} from "react-router";
 import {FORM_EMAIL, FORM_PASSWORD, FORM_USERNAME} from "./forms.ts";
 
 export function SIRegisterPage() {
-    // TODO: Account creation page functionality
+    // TODO: Account creation page functionality, should also probably redirect if logged in?
 
     return <div>
         <div className={`w-lg p-2 bg-purple-400 text-black`}>
