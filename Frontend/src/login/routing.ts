@@ -1,5 +1,4 @@
-import {redirect} from "react-router";
-import type {MiddlewareArgs, MiddlewareNext} from "../misc";
+import {type ActionFunction, type MiddlewareFunction, redirect} from "react-router";
 import {FORM_USERNAME, FORM_LOGOUT, FORM_PASSWORD, FORM_REMEMBER_ME} from "./forms.ts";
 import {attemptLogin, attemptLogout, getAuthState} from "../data/auth.ts";
 
@@ -8,10 +7,7 @@ export interface LoginActionResult {
     error: "invalid_credentials" | "invalid_data"
 }
 
-export async function loginMiddleware(
-    {request}: MiddlewareArgs,
-    next: MiddlewareNext
-) : Promise<unknown> {
+export const loginMiddleware: MiddlewareFunction = async ({request}, next) => {
     const urlParams = new URL(request.url).searchParams;
 
     if (urlParams.has(FORM_LOGOUT)) {
@@ -26,9 +22,7 @@ export async function loginMiddleware(
     return await next();
 }
 
-export async function loginFormAction(
-    {request}: MiddlewareArgs
-) : Promise<unknown> {
+export const loginFormAction: ActionFunction = async ({request}) => {
     const formData = await request.formData();
 
     const login = formData.get(FORM_USERNAME)?.toString();
