@@ -9,7 +9,7 @@ import {appRootLoader, SIAppRoot} from './SIAppRoot.tsx'
 
 import {SIDashboard} from "./dashboard";
 import {loginFormAction, loginMiddleware, SIForgotPassword, SILoginPage, SIRegisterPage} from "./login";
-import {authGuardMiddleware, AuthRouterContext, authUserLoader, getAuthState} from "./data/auth.ts";
+import {AuthRouterContext, authUserLoader, getAuthState} from "./data/auth.ts";
 import {SIStartPage} from "./SIStartPage.tsx";
 import {SIPageNotFound} from "./SIPageNotFound.tsx";
 import {SIAccountPage, SINotificationPage} from "./account";
@@ -24,7 +24,7 @@ const router = createBrowserRouter([
             {index: true, Component: SIStartPage},
 
             // Dashboards and other important stuff
-            {path: "/dashboard", Component: SIDashboard, middleware: [authGuardMiddleware]},
+            {path: "/dashboard", Component: SIDashboard, loader: authUserLoader},
 
             // Login related stuff
             {path: "/forgot_password", Component: SIForgotPassword},
@@ -34,7 +34,6 @@ const router = createBrowserRouter([
             // Account related stuff
             {
                 path: "/account",
-                middleware: [authGuardMiddleware],
                 children: [
                     {index: true, Component: SIAccountPage, loader: authUserLoader},
                     {path: "/account/notifications", Component: SINotificationPage, loader: authUserLoader}

@@ -45,6 +45,10 @@ export async function getAuthState(forceValidate: boolean = true): Promise<AuthS
         const isDebugCookie = await cookieStore.get(CURRENT_USER_IS_DEBUG_COOKIE);
 
         if (id && username && isDebugCookie && isDebugCookie.value == "1") {
+            // Simulate a 100ms delay each time auth state is requested while using dummy data
+            const simulatedDelay = 100;
+            await new Promise((resolve) => setTimeout(resolve, simulatedDelay));
+
             return new AuthState(username, id, true);
         }
     }
@@ -91,7 +95,7 @@ export const authGuardMiddleware: MiddlewareFunction = async ({context}, next) =
 /**
  * Utility loader that works similarly to `authGuardMiddleware`, but allows getting the actual AuthState with `useLoaderData()`.
  */
-export const authUserLoader: LoaderFunction = async({context}) => {
+export const authUserLoader: LoaderFunction = async ({context}) => {
     const middlewareContext = (context as Readonly<RouterContextProvider>);
 
     const currentAuthState = middlewareContext.get(AuthRouterContext);
