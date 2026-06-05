@@ -4,6 +4,8 @@ import {FORM_PASSWORD, FORM_REMEMBER_ME, FORM_USERNAME} from "./forms.ts";
 export function SILoginPage() {
     const fetcher = useFetcher();
 
+    // TODO: Clear credentials on failed login attempts.
+
     return <div>
         <div className={`w-lg p-2 bg-purple-400 text-black`}>
             <fetcher.Form method="POST">

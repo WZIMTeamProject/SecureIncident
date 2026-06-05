@@ -1,7 +1,7 @@
-import Auth from "../data/Auth.ts";
 import {redirect} from "react-router";
 import type {MiddlewareArgs, MiddlewareNext} from "../misc";
 import {FORM_USERNAME, FORM_LOGOUT, FORM_PASSWORD, FORM_REMEMBER_ME} from "./forms.ts";
+import {attemptLogin, attemptLogout, getAuthState} from "../data/auth.ts";
 
 export interface LoginActionResult {
     ok: boolean,
@@ -15,22 +15,18 @@ export async function loginMiddleware(
     const urlParams = new URL(request.url).searchParams;
 
     if (urlParams.has(FORM_LOGOUT)) {
-        await Auth.logout();
+        await attemptLogout();
     } else {
-        // If user is already logged in, redirect to their dashboard
-        const user = await Auth.getCurrentUser();
-
+        const user = await getAuthState();
         if (user) {
             throw redirect("/dashboard");
         }
     }
 
-    await next();
-
-    return undefined;
+    return await next();
 }
 
-export async function loginAction(
+export async function loginFormAction(
     {request}: MiddlewareArgs
 ) : Promise<unknown> {
     const formData = await request.formData();
@@ -40,9 +36,9 @@ export async function loginAction(
     const remember = Boolean(formData.get(FORM_REMEMBER_ME));
 
     if (login && password) {
-        const user = await Auth.login(login, password, remember);
+        const loginSuccessful = await attemptLogin(login, password, remember);
 
-        if (user) {
+        if (loginSuccessful) {
             return redirect("/dashboard");
         } else {
             return { ok: false, error: "invalid_credentials" } satisfies LoginActionResult;
