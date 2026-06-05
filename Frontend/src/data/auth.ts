@@ -13,6 +13,18 @@ import {
     CURRENT_USER_ORGANIZATION_COOKIE
 } from "./cookies.ts";
 import * as React from "react";
+import {
+    getDummyProjects,
+    type Incident,
+    type IncidentHistoryEntry,
+    type IncidentHistoryType,
+    type IncidentPriority,
+    type IncidentStatus,
+    type Organization,
+    type Project,
+    type ProjectScope
+} from "./project.ts";
+import type {UserProfile} from "./profile.ts";
 
 export const AuthRouterContext = createContext<AuthState | null>(null);
 export const AuthUserContext = React.createContext<AuthState | null>(null);
@@ -27,6 +39,155 @@ export class AuthState {
         this.name = name;
         this.id = id;
         this.isDummyUser = isDummyUser;
+
+        if (import.meta.env.DEV && isDummyUser) {
+            this.organization = "0000-0000-0000-0001"
+        }
+    }
+
+    async getOrganization(): Promise<Organization | null> {
+        if (import.meta.env.DEV && this.isDummyUser) {
+            return {
+                id: "0000-0000-0000-0001",
+                name: "Moja organizacja",
+                description: "Coś tam, coś tam"
+            };
+        }
+
+        try {
+            const organization = await Api.organization.organizationGet();
+            return {
+                name: organization.name,
+                id: organization.id,
+                description: organization.description ?? undefined,
+            }
+        } catch {
+            return null;
+        }
+    }
+
+    async getProjects(scope?: ProjectScope): Promise<Project[]> {
+        if (import.meta.env.DEV && this.isDummyUser) {
+            const dummyProjects = getDummyProjects();
+
+            if (scope) {
+                return dummyProjects.filter((project) => project.scope == scope);
+            } else {
+                return dummyProjects;
+            }
+        }
+
+        try {
+            const projectList = await Api.projects.projectsGet({scope: scope});
+            return projectList.items.map((rawProject) => {
+                return {
+                    name: rawProject.name,
+                    description: rawProject.description ?? undefined,
+                    id: rawProject.id,
+                    scope: rawProject.scope,
+                    organizationId: rawProject.organizationId ?? undefined,
+                };
+            });
+        } catch {
+            return [];
+        }
+    }
+
+    async getReportedIncidents(): Promise<Incident[]> {
+        if (import.meta.env.DEV && this.isDummyUser) {
+            return [];
+        }
+
+        try {
+            const incidentList = await Api.incidents.incidentsMyReportedGet();
+            return incidentList.items.map((rawIncident) => {
+                return {
+                    id: rawIncident.id,
+                    title: rawIncident.title,
+                    primaryAssigneeId: rawIncident.primaryAssigneeId ?? undefined,
+                    categoryId: rawIncident.categoryId,
+                    reportDate: rawIncident.reportDate,
+                    status: rawIncident.status as IncidentStatus,
+                    priority: rawIncident.priority as IncidentPriority,
+                };
+            });
+        } catch {
+            return [];
+        }
+    }
+
+    async getAssignedIncidents(): Promise<Incident[]> {
+        if (import.meta.env.DEV && this.isDummyUser) {
+            return [];
+        }
+
+        try {
+            const incidentList = await Api.incidents.incidentsMyAssignedGet();
+            return incidentList.items.map((rawIncident) => {
+                return {
+                    id: rawIncident.id,
+                    title: rawIncident.title,
+                    primaryAssigneeId: rawIncident.primaryAssigneeId ?? undefined,
+                    categoryId: rawIncident.categoryId,
+                    reportDate: rawIncident.reportDate,
+                    status: rawIncident.status as IncidentStatus,
+                    priority: rawIncident.priority as IncidentPriority,
+                };
+            });
+        } catch {
+            return [];
+        }
+    }
+
+    async getIncidentHistory(projectId?: string, type?: IncidentHistoryType): Promise<IncidentHistoryEntry[]> {
+        if (import.meta.env.DEV && this.isDummyUser) {
+            return [];
+        }
+
+        try {
+            const incidentEntry = await Api.incidents.incidentsHistoryGet({
+                projectId: projectId,
+                type: type
+            });
+
+            return incidentEntry.items.map((rawEntry) => {
+                return {
+                    id: rawEntry.id,
+                    incidentId: rawEntry.incidentId,
+                    type: rawEntry.type,
+                    actorId: rawEntry.actorId,
+                    createdAt: rawEntry.createdAt,
+                    newValue: rawEntry.newValue ?? undefined,
+                    oldValue: rawEntry.oldValue ?? undefined,
+                    comment: rawEntry.comment ?? undefined,
+                };
+            });
+        } catch {
+            return [];
+        }
+    }
+
+    async getProfile(): Promise<UserProfile | null> {
+        if (import.meta.env.DEV && this.isDummyUser) {
+            return {
+                id: this.id,
+                username: this.name,
+                bio: "Zrobię to jutro",
+                profilePictureURL: "https://cdn.7tv.app/emote/01HBVADK180003KFD14YHJ4PRZ/4x.png"
+            };
+        }
+
+        try {
+            const profile = await Api.profiles.profilesMeGet();
+            return {
+                id: profile.id,
+                username: profile.username,
+                bio: profile.bio ?? undefined,
+                profilePictureURL: profile.profilePictureUrl ?? undefined,
+            };
+        } catch {
+            return null;
+        }
     }
 }
 
@@ -57,10 +218,7 @@ export async function getAuthState(forceValidate: boolean = true): Promise<AuthS
             const simulatedDelay = 100;
             await new Promise((resolve) => setTimeout(resolve, simulatedDelay));
 
-            const createdAuth = new AuthState(username, id, true);
-            createdAuth.organization = organizationId ?? undefined;
-
-            return createdAuth;
+            return new AuthState(username, id, true);
         }
     }
 
