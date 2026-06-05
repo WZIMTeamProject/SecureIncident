@@ -6,7 +6,12 @@ import {
     type RouterContextProvider
 } from "react-router";
 import Api from "./Api.ts";
-import {CURRENT_USER_ID_COOKIE, CURRENT_USER_IS_DEBUG_COOKIE, CURRENT_USER_NAME_COOKIE} from "./cookies.ts";
+import {
+    CURRENT_USER_ID_COOKIE,
+    CURRENT_USER_IS_DEBUG_COOKIE,
+    CURRENT_USER_NAME_COOKIE,
+    CURRENT_USER_ORGANIZATION_COOKIE
+} from "./cookies.ts";
 import * as React from "react";
 
 export const AuthRouterContext = createContext<AuthState | null>(null);
@@ -15,6 +20,7 @@ export const AuthUserContext = React.createContext<AuthState | null>(null);
 export class AuthState {
     name: string;
     id: string;
+    organization?: string;
     isDummyUser: boolean;
 
     constructor(name: string, id: string, isDummyUser: boolean) {
@@ -31,14 +37,16 @@ export class AuthState {
  * @returns The auth state of the current user, or `null` if not logged in.
  */
 export async function getAuthState(forceValidate: boolean = true): Promise<AuthState | null> {
-    const [idCookie, usernameCookie] = await Promise.all([
+    const [idCookie, usernameCookie, organizationCookie] = await Promise.all([
         cookieStore.get(CURRENT_USER_ID_COOKIE),
-        cookieStore.get(CURRENT_USER_NAME_COOKIE)
+        cookieStore.get(CURRENT_USER_NAME_COOKIE),
+        cookieStore.get(CURRENT_USER_ORGANIZATION_COOKIE)
     ]);
 
-    const [id, username] = [
+    const [id, username, organizationId] = [
         idCookie?.value,
-        usernameCookie?.value
+        usernameCookie?.value,
+        organizationCookie?.value,
     ];
 
     if (import.meta.env.DEV) {
@@ -49,7 +57,10 @@ export async function getAuthState(forceValidate: boolean = true): Promise<AuthS
             const simulatedDelay = 100;
             await new Promise((resolve) => setTimeout(resolve, simulatedDelay));
 
-            return new AuthState(username, id, true);
+            const createdAuth = new AuthState(username, id, true);
+            createdAuth.organization = organizationId ?? undefined;
+
+            return createdAuth;
         }
     }
 
@@ -57,10 +68,16 @@ export async function getAuthState(forceValidate: boolean = true): Promise<AuthS
         const currentUser = await Api.auth.authMeGet().catch(() => null);
 
         if (currentUser) {
-            const {username, id} = currentUser;
+            const {username, id, organizationId} = currentUser;
 
             await cookieStore.set(CURRENT_USER_ID_COOKIE, id);
             await cookieStore.set(CURRENT_USER_NAME_COOKIE, username);
+
+            if (organizationId) {
+                await cookieStore.set(CURRENT_USER_ORGANIZATION_COOKIE, organizationId);
+            } else {
+                await cookieStore.delete(CURRENT_USER_ORGANIZATION_COOKIE);
+            }
 
             if (import.meta.env.DEV) {
                 const isDebugCookie = await cookieStore.get(CURRENT_USER_IS_DEBUG_COOKIE);
@@ -70,13 +87,19 @@ export async function getAuthState(forceValidate: boolean = true): Promise<AuthS
                 }
             }
 
-            return new AuthState(username, id, false);
+            const createdAuth = new AuthState(username, id, false);
+            createdAuth.organization = organizationId ?? undefined;
+
+            return createdAuth;
         } else {
             return null;
         }
     }
 
-    return new AuthState(username, id, false);
+    const createdAuth = new AuthState(username, id, false);
+    createdAuth.organization = organizationId ?? undefined;
+
+    return createdAuth;
 }
 
 /**
@@ -133,7 +156,8 @@ export async function attemptLogin(name: string, password: string, remember_user
                 await Promise.all([
                     cookieStore.set(CURRENT_USER_ID_COOKIE, "0000-0000-0000-0000"),
                     cookieStore.set(CURRENT_USER_NAME_COOKIE, customDebugUsername),
-                    cookieStore.set(CURRENT_USER_IS_DEBUG_COOKIE, "1")
+                    cookieStore.set(CURRENT_USER_IS_DEBUG_COOKIE, "1"),
+                    cookieStore.delete(CURRENT_USER_ORGANIZATION_COOKIE)
                 ]);
 
                 return true;
@@ -161,4 +185,5 @@ export async function attemptLogout() {
     await cookieStore.delete(CURRENT_USER_ID_COOKIE).catch(() => null);
     await cookieStore.delete(CURRENT_USER_NAME_COOKIE).catch(() => null);
     await cookieStore.delete(CURRENT_USER_IS_DEBUG_COOKIE).catch(() => null);
+    await cookieStore.delete(CURRENT_USER_ORGANIZATION_COOKIE).catch(() => null);
 }
