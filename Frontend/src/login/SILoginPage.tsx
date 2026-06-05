@@ -33,10 +33,10 @@ export function SILoginPage() {
             </fetcher.Form>
         </div>
         <div>
-            <Link to="/register">Zarejestruj się</Link>
+            <Link to="/login/register">Zarejestruj się</Link>
         </div>
         <div>
-            <Link to="/forgot_password">Nie pamiętasz hasła?</Link>
+            <Link to="/login/forgot_password">Nie pamiętasz hasła?</Link>
         </div>
         <div>
             <Link to="/">Powrót do strony głównej</Link>

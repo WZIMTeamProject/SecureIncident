@@ -25,7 +25,7 @@ function AnonymousUserToolbar() {
     return <>
         <div><Link to={`/`}>Strona Główna</Link></div>
         <div><Link to={`/login`}>Logowanie</Link></div>
-        <div><Link to={`/register`}>Rejestracja</Link></div>
+        <div><Link to={`/login/register`}>Rejestracja</Link></div>
     </>;
 }
 

@@ -27,9 +27,14 @@ const router = createBrowserRouter([
             {path: "/dashboard", Component: SIDashboard, loader: authUserLoader},
 
             // Login related stuff
-            {path: "/forgot_password", Component: SIForgotPassword},
-            {path: "/login", Component: SILoginPage, middleware: [loginMiddleware], action: loginFormAction},
-            {path: "/register", Component: SIRegisterPage},
+            {
+                path: "/login",
+                children: [
+                    {index: true, Component: SILoginPage, middleware: [loginMiddleware], action: loginFormAction},
+                    {path: "/login/forgot_password", Component: SIForgotPassword},
+                    {path: "/login/register", Component: SIRegisterPage}
+                ]
+            },
 
             // Account related stuff
             {
