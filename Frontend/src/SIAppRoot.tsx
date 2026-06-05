@@ -16,7 +16,7 @@ export function SIAppRoot() {
     )
 }
 
-export const loggedUserLoader: LoaderFunction = async ({context}) => {
+export const appRootLoader: LoaderFunction = async ({context}) => {
     const middlewareContext = (context as Readonly<RouterContextProvider>);
     return middlewareContext.get(AuthRouterContext);
 }
@@ -33,5 +33,6 @@ function LoggedUserToolbar() {
     return <>
         <div><Link to={`/`}>Strona Główna</Link></div>
         <div><Link to={`/dashboard`}>Dashboard</Link></div>
+        <div><Link to={`/account`}>Moje Konto</Link></div>
     </>;
 }

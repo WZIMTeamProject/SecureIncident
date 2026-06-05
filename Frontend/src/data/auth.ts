@@ -1,4 +1,10 @@
-import {createContext, type MiddlewareFunction, redirect} from "react-router";
+import {
+    createContext,
+    type LoaderFunction,
+    type MiddlewareFunction,
+    redirect,
+    type RouterContextProvider
+} from "react-router";
 import Api from "./Api.ts";
 import {CURRENT_USER_ID_COOKIE, CURRENT_USER_IS_DEBUG_COOKIE, CURRENT_USER_NAME_COOKIE} from "./cookies.ts";
 import * as React from "react";
@@ -81,6 +87,21 @@ export const authGuardMiddleware: MiddlewareFunction = async ({context}, next) =
 
     return await next();
 }
+
+/**
+ * Utility loader that works similarly to `authGuardMiddleware`, but allows getting the actual AuthState with `useLoaderData()`.
+ */
+export const authUserLoader: LoaderFunction = async({context}) => {
+    const middlewareContext = (context as Readonly<RouterContextProvider>);
+
+    const currentAuthState = middlewareContext.get(AuthRouterContext);
+
+    if (!currentAuthState) {
+        throw redirect("/login");
+    }
+
+    return currentAuthState;
+};
 
 /**
  * Attempts to log in a user with the given credentials.
