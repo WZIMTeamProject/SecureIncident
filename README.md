@@ -22,9 +22,8 @@ FastAPI + SQLAlchemy + Alembic + PostgreSQL.
 |-------------------------|-------------------------------------------------------------|
 | Python                  | 3.14+                                                       |
 | uv                      | latest (`curl -LsSf https://astral.sh/uv/install.sh \| sh`) |
+| pip                     | bundled with Python (alternative to uv)                     |
 | Docker + Docker Compose | latest (for the local DB option)                            |
-
-> **pip users**: `pip install -e .` from the repo root works as an alternative to `uv sync`.
 
 ---
 
@@ -38,7 +37,7 @@ Pick **one** option below.
 
 #### Option A — Docker (recommended for local development)
 
-The `docker-compose.yml` is already in this directory. Start PostgreSQL 16:
+The `docker-compose.yml` should be in `backend/` directory. Start PostgreSQL 16:
 
 ```bash
 docker compose up -d
@@ -129,11 +128,11 @@ ALLOWED_ORIGINS=["http://localhost:5173"]
 From the **repository root** (one level up, where `pyproject.toml` lives):
 
 ```bash
-# with uv
+# with uv (recommended)
 uv sync
 
 # or with pip
-pip install -e .
+pip install -r requirements.txt
 ```
 
 ---
