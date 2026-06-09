@@ -17,7 +17,6 @@ export * from './CreateRoleRequest';
 export * from './CreatedIdResponse';
 export * from './CurrentUserResponse';
 export * from './ErrorResponse';
-export * from './FeedbackRequest';
 export * from './IncidentDetailsResponse';
 export * from './IncidentListResponse';
 export * from './IncidentLogEntry';
