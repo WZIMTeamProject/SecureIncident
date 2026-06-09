@@ -26,7 +26,6 @@ async def get_roles(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: logika pobierania ról
     return RoleListResponse(items=[], total=0, offset=0, limit=20)
 
 
@@ -37,7 +36,6 @@ async def create_role(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: logika utworzenia roli
     return CreatedIdResponse(id="00000000-0000-0000-0000-000000000000")
 
 
@@ -48,7 +46,6 @@ async def get_role(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: logika pobierania szczegółów roli
     return RoleResponse(
         id=role_id,
         name="Test Role",
@@ -72,5 +69,4 @@ async def update_role(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: logika aktualizacji roli
     return

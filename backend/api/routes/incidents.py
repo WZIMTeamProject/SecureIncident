@@ -39,7 +39,6 @@ async def get_incidents(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: pobierz incydenty dla projektu
     return IncidentListResponse(items=[], total=0, offset=0, limit=20)
 
 
@@ -50,7 +49,6 @@ async def create_incident(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: utworz incydent w projekcie
     return CreatedIdResponse(id="00000000-0000-0000-0000-000000000000")
 
 
@@ -59,7 +57,6 @@ async def get_my_reported(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: pobierz incydenty zgłoszone przez zalogowanego użytkownika
     return IncidentListResponse(items=[], total=0, offset=0, limit=20)
 
 
@@ -68,7 +65,6 @@ async def get_my_assigned(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: pobierz incydenty przypisane do zalogowanego użytkownika
     return IncidentListResponse(items=[], total=0, offset=0, limit=20)
 
 
@@ -79,7 +75,6 @@ async def get_incident_history(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: pobierz historię incydentów użytkownika
     return IncidentLogListResponse(items=[], total=0, offset=0, limit=20)
 
 
@@ -89,7 +84,6 @@ async def get_incident(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: pobierz szczegóły incydentu
     return IncidentDetailsResponse(
         id=incident_id,
         project_id="00000000-0000-0000-0000-000000000000",
@@ -111,7 +105,6 @@ async def update_incident_status(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: zaktualizuj status incydentu
     return
 
 
@@ -122,7 +115,6 @@ async def update_incident_assignee(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: zaktualizuj przypisaną osobę
     return
 
 
@@ -133,7 +125,6 @@ async def update_incident_priority(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: zaktualizuj priorytet incydentu
     return
 
 
@@ -144,7 +135,6 @@ async def update_incident_category(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: zaktualizuj kategorię incydentu
     return
 
 
@@ -154,7 +144,6 @@ async def close_incident(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: logika zamknięcia incydentu (zmiana statusu na CLOSED)
     return
 
 
@@ -164,7 +153,6 @@ async def request_reassignment(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: logika tworzenia wniosku o zmianę przypisania
     return
 
 
@@ -175,7 +163,6 @@ async def add_helper(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: logika dodania helpera do incydentu
     return
 
 
@@ -186,7 +173,6 @@ async def remove_helper(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: logika usunięcia helpera z incydentu
     return
 
 
@@ -196,7 +182,6 @@ async def get_comments(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: pobierz komentarze incydentu
     return CommentListResponse(comments=[])
 
 
@@ -207,7 +192,6 @@ async def add_comment(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: dodaj komentarz do incydentu
     return CreatedIdResponse(id="00000000-0000-0000-0000-000000000000")
 
 
@@ -217,5 +201,4 @@ async def get_logs(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: pobierz logi incydentu
     return IncidentLogListResponse(items=[], total=0, offset=0, limit=20)

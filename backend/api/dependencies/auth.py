@@ -20,7 +20,6 @@ async def get_current_user(
     ],
     db: AsyncSession = Depends(get_db),
 ) -> User:
-    """Pobierz aktualnie zalogowanego u¿ytkownika z Bearer tokenu."""
     if credentials is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

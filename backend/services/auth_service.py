@@ -87,10 +87,7 @@ class AuthService:
         
         token_record, user = result
         
-        # Marks token as used
         await self.user_repo.mark_token_as_used(token_record)
-        
-        # Update users password
         await self.user_repo.update_password(user, new_password)
         
         return True

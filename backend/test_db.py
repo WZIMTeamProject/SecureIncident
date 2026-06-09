@@ -11,7 +11,6 @@ async def test_db():
     print("Rozpoczynam test bazy danych...")
     async with AsyncSessionLocal() as session:
         try:
-            # 1. Tworzenie uzytkownika
             user = User(
                 first_name="Jan",
                 last_name="Kowalski",
@@ -24,7 +23,6 @@ async def test_db():
             await session.flush()
             print(f"[OK] Utworzono uzytkownika: {user.id}")
 
-            # 2. Tworzenie organizacji
             org = Organization(
                 name="Testowa Organizacja",
                 org_owner_id=user.id
@@ -33,7 +31,6 @@ async def test_db():
             await session.flush()
             print(f"[OK] Utworzono organizacje: {org.id}")
 
-            # 3. Tworzenie projektu
             target_project = Project(
                 name="Testowy Projekt",
                 project_owner_id=user.id,
@@ -44,7 +41,6 @@ async def test_db():
             await session.flush()
             print(f"[OK] Utworzono projekt: {target_project.id}")
 
-            # 4. Tworzenie zaproszenia z nowymi polami (ADR-002) - scope PROJECT
             invite = OrganizationInvite(
                 scope="PROJECT",
                 project_id=target_project.id,
@@ -55,7 +51,6 @@ async def test_db():
             await session.flush()
             print(f"[OK] Utworzono zaproszenie dla projektu: {invite.id} (Scope: {invite.scope})")
 
-            # MOCK ODCZYTU
             result = await session.execute(select(OrganizationInvite).where(OrganizationInvite.id == invite.id))
             db_invite = result.scalar_one_or_none()
             if db_invite and db_invite.scope == "PROJECT" and db_invite.project_id == target_project.id:
@@ -63,7 +58,6 @@ async def test_db():
             else:
                 print("[BŁĄD] Odczyt zaproszenia nie powiódł się lub dane się nie zgadzają!")
 
-            # Wycofujemy zeby nie brudzic bazy swoimi testowymi danymi
             await session.rollback()
             print("[OK] Baza danych wyczyszczona z testowych danych (rollback).")
             print("\nWSZYSTKIE TESTY ZAKOŃCZONE POMYŚLNIE!")

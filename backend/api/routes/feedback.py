@@ -16,5 +16,4 @@ async def send_feedback(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: logika przesyłania feedbacku
     return

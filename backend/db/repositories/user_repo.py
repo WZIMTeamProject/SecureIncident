@@ -10,28 +10,23 @@ from db.models.user import User
 from db.models.password_reset_token import PasswordResetToken
 
 class UserRepository:
-    """Repozytorium dla User i PasswordResetToken."""
-    
+
     def __init__(self, db: AsyncSession):
         self.db = db
 
 async def get_user_by_id(self, user_id: UUID) -> Optional[User]:
-    """Pobierz u¿ytkownika po ID."""
     stmt = select(User).where(User.id == user_id)
     return await self.db.scalar_one_or_none(stmt)
 
 async def get_user_by_username(self, username: str) -> Optional[User]:
-    """Pobierz u¿ytkownika po username."""
     stmt = select(User).where(User.username == username)
     return await self.db.scalar_one_or_none(stmt)
 
 async def get_user_by_email(self, email: str) -> Optional[User]:
-    """Pobierz u¿ytkownika po email."""
     stmt = select(User).where(User.email == email)
     return await self.db.scalar_one_or_none(stmt)
 
 async def get_user_by_email_or_username(self, email_or_username: str) -> Optional[User]:
-    """Pobierz u¿ytkownika po email lub username."""
     stmt = select(User).where(
         (User.email == email_or_username) | (User.username == email_or_username)
     )
@@ -46,7 +41,6 @@ async def create_user(
     password: str,
     organization_id: Optional[UUID] = None,
 ) -> User:
-    """Utwórz nowego u¿ytkownika."""
     hashed_password = hash_password(password)
     
     user = User(
@@ -65,7 +59,6 @@ async def create_user(
     return user
 
 async def user_exists(self, username: str, email: str) -> bool:
-    """SprawdŸ czy u¿ytkownik ju¿ istnieje (username lub email)."""
     stmt = select(User).where(
         (User.username == username) | (User.email == email)
     )
@@ -78,7 +71,6 @@ async def create_password_reset_token(
     raw_token: str,
     expire_minutes: int = 30,
 ) -> PasswordResetToken:
-    """Utwórz token resetowania has³a (zapisz hasz tokenu)."""
     hashed_token = hash_token(raw_token)
     expires_at = datetime.now(timezone.utc) + timedelta(minutes=expire_minutes)
     
@@ -97,7 +89,6 @@ async def get_valid_password_reset_token(
     self,
     raw_token: str,
 ) -> Optional[tuple[PasswordResetToken, User]]:
-    """Pobierz wa¿ny token resetowania has³a."""
     hashed_token = hash_token(raw_token)
     now = datetime.now(timezone.utc)
     
@@ -117,13 +108,11 @@ async def get_valid_password_reset_token(
     return (token_record, user)
 
 async def mark_token_as_used(self, token_record: PasswordResetToken) -> None:
-    """Oznacz token resetowania has³a jako u¿yty."""
     token_record.used_at = datetime.now(timezone.utc)
     await self.db.commit()
     await self.db.refresh(token_record)
 
 async def update_password(self, user: User, new_password: str) -> None:
-    """Zaktualizuj has³o u¿ytkownika."""
     user.password = hash_password(new_password)
     await self.db.commit()
     await self.db.refresh(user)
