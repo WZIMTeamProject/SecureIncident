@@ -18,6 +18,11 @@ app.add_middleware(
 )
 
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
@@ -32,31 +37,41 @@ def custom_openapi():
 app.openapi = custom_openapi
 
 from api.routes import auth
+
 app.include_router(auth.router, prefix="/api")
 
 from api.routes import organization
+
 app.include_router(organization.router, prefix="/api")
 
 from api.routes import projects
+
 app.include_router(projects.router, prefix="/api")
 
 from api.routes import incidents
+
 app.include_router(incidents.router, prefix="/api")
 
 from api.routes import categories
+
 app.include_router(categories.router, prefix="/api")
 
 from api.routes import roles
+
 app.include_router(roles.router, prefix="/api")
 
 from api.routes import invitations
+
 app.include_router(invitations.router, prefix="/api")
 
 from api.routes import profiles
+
 app.include_router(profiles.router, prefix="/api")
 
 from api.routes import feedback
+
 app.include_router(feedback.router, prefix="/api")
 
 from api.routes import users
+
 app.include_router(users.router, prefix="/api")
