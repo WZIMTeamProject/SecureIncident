@@ -2,8 +2,7 @@ import {AuthApi, Configuration, IncidentsApi, OrganizationApi, ProfilesApi, Proj
 
 export default class Api {
     private static configuration: Configuration = new Configuration({
-        basePath: "http://localhost:8000/api"
-    });
+        basePath: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api"    });
 
     static auth: AuthApi = new AuthApi(Api.configuration);
     static incidents: IncidentsApi = new IncidentsApi(Api.configuration);
