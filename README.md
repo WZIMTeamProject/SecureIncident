@@ -6,8 +6,8 @@ Web-based incident reporting platform — React 19 frontend + FastAPI backend + 
 
 ```
 SecureIncident/
-├── Frontend/    # React 19 + Vite + Tailwind CSS  →  see Frontend/README.md
-├── backend/     # FastAPI + SQLAlchemy + Alembic   →  see backend/README.md
+├── Frontend/    # React 19 + Vite + Tailwind CSS
+├── backend/     # FastAPI + SQLAlchemy + Alembic
 └── docs/api/    # OpenAPI specification
 ```
 # Backend — SecureIncident API
