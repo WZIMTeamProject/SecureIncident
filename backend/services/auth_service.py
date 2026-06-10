@@ -12,7 +12,7 @@ from db.repositories.user_repo import UserRepository
 
 
 class AuthService:
-    """Serwis biznesowy dla autentykacji."""
+    """Business authentication service."""
     
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -26,7 +26,7 @@ class AuthService:
         email: str,
         password: str,
     ):
-        """Zarejestruj nowego u¿ytkownika."""
+        """Register a user."""
         if await self.user_repo.user_exists(username, email):
             raise ValueError("User already exists")
         
@@ -43,7 +43,7 @@ class AuthService:
         username: str,
         password: str,
     ):
-        """Uwierzytelnij u¿ytkownika po username i has³o."""
+        """Authenticate a user using username and password."""
         user = await self.user_repo.get_user_by_username(username)
         if not user:
             return None
@@ -61,11 +61,11 @@ class AuthService:
         user_id: UUID,
         remember_user: bool = False,
     ) -> str:
-        """Utwórz JWT token dla u¿ytkownika."""
+        """Create an access token for a user."""
         return create_access_token(str(user_id), remember_user=remember_user)
     
     async def request_password_reset(self, email_or_username: str) -> Optional[tuple[str, UUID]]:
-        """Wygeneruj token resetowania has³a."""
+        """Get a user's password reset token."""
         user = await self.user_repo.get_user_by_email_or_username(email_or_username)
         if not user:
             return None
@@ -80,17 +80,14 @@ class AuthService:
         reset_token: str,
         new_password: str,
     ) -> bool:
-        """Zresetuj has³o korzystaj¹c z tokenu."""
+        """Reset a user's password."""
         result = await self.user_repo.get_valid_password_reset_token(reset_token)
         if not result:
             return False
         
         token_record, user = result
         
-        # Oznacz token jako u¿yty
         await self.user_repo.mark_token_as_used(token_record)
-        
-        # Zaktualizuj has³o
         await self.user_repo.update_password(user, new_password)
         
         return True

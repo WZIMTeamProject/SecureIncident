@@ -1,11 +1,9 @@
 import {Link} from "react-router";
 
-export function SIForgotPassword() {
-    // TODO: Password reset page, should also redirect if already logged in?
-
+export function SIPageNotFound() {
     return <div>
         <div>
-            <h1>Forgot password</h1>
+            <h1 className={`text-4xl`}>404 not found</h1>
         </div>
         <div>
             <Link to="/">Wróć na stronę główną</Link>

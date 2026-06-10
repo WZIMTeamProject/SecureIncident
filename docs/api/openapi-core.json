@@ -42,10 +42,6 @@
     {
       "name": "Invitations",
       "description": "Extended invite handling for organizations and projects."
-    },
-    {
-      "name": "Feedback",
-      "description": "Optional product feedback/contact endpoints."
     }
   ],
   "paths": {
@@ -1206,35 +1202,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/feedback": {
-      "post": {
-        "tags": [
-          "Feedback"
-        ],
-        "summary": "Send platform feedback",
-        "description": "Optional contact/feedback endpoint, not required for core incident workflow.",
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FeedbackRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": "Feedback accepted"
           }
         }
       }
@@ -2641,26 +2608,6 @@
           "HIGH",
           "CRITICAL"
         ]
-      },
-      "FeedbackRequest": {
-        "type": "object",
-        "required": [
-          "name",
-          "email",
-          "message"
-        ],
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
       },
       "ProfileResponse": {
         "type": "object",
