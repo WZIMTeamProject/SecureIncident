@@ -38,14 +38,13 @@ def create_access_token(user_id: str, remember_user: bool = False) -> str:
     encoded_jwt = jwt.encode(payload, settings.SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def decode_token(token: str) -> Optional[str]:
-    """Dekoduj JWT i zwróć user_id."""
+def decode_token(token: str) -> Optional[dict]:
+    """Dekoduj JWT i zwróć payload."""
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id is None:
+        if payload.get("sub") is None:
             return None
-        return user_id
+        return payload
     except jwt.ExpiredSignatureError:
         return None
     except jwt.InvalidTokenError:
