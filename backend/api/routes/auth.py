@@ -1,4 +1,4 @@
-from uuid import UUID
+Ôªøfrom uuid import UUID
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -22,14 +22,14 @@ logger = logging.getLogger(__name__)
 
 @router.post("/register", response_model=CreatedIdResponse, status_code=status.HTTP_201_CREATED)
 async def register_user(data: RegisterRequest, db: AsyncSession = Depends(get_db)):
-    """Zarejestruj nowego uøytkownika."""
+    """Zarejestruj nowego u≈ºytkownika."""
     user = await auth_service.register_user(db, data)
     return CreatedIdResponse(id=user.id)
 
 
 @router.post("/login", response_model=LoginResponse)
 async def login_user(data: LoginRequest, db: AsyncSession = Depends(get_db)):
-    """Zaloguj uøytkownika i zwrÛÊ JWT token."""
+    """Zaloguj u≈ºytkownika i zwr√≥ƒá JWT token."""
     user, token = await auth_service.login_user(db, data)
     return LoginResponse(
         access_token=token,
@@ -46,7 +46,7 @@ async def get_me(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> CurrentUserResponse:
-    """Pobierz dane aktualnie zalogowanego uøytkownika."""
+    """Pobierz dane aktualnie zalogowanego u≈ºytkownika."""
     return CurrentUserResponse(
         id=current_user.id,
         username=current_user.username,
@@ -59,7 +59,7 @@ async def logout_user(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Wyloguj uøytkownika (stateless ó MVP)."""
+    """Wyloguj u≈ºytkownika (stateless ‚Äî MVP)."""
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -69,7 +69,7 @@ async def request_password_reset(
     data: PasswordResetRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    """Poproú o reset has≥a (zawsze 204, nawet jeúli user nie istnieje)."""
+    """Popro≈õ o reset has≈Ça (zawsze 204, nawet je≈õli user nie istnieje)."""
     await auth_service.request_password_reset(db, data.email_or_username)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -79,6 +79,6 @@ async def reset_password(
     data: PasswordResetConfirmRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    """Zresetuj has≥o za pomocπ tokenu."""
+    """Zresetuj has≈Ço za pomocƒÖ tokenu."""
     await auth_service.reset_password(db, data.reset_token, data.new_password)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

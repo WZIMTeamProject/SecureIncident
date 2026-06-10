@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+Ôªøfrom datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID
 
@@ -11,25 +11,25 @@ from db.models.password_reset_token import PasswordResetToken
 
 
 async def get_user_by_id(db: AsyncSession, user_id: UUID) -> Optional[User]:
-    """Pobierz uøytkownika po ID."""
+    """Pobierz u≈ºytkownika po ID."""
     result = await db.execute(select(User).where(User.id == user_id))
     return result.scalar_one_or_none()
 
 
 async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User]:
-    """Pobierz uøytkownika po username."""
+    """Pobierz u≈ºytkownika po username."""
     result = await db.execute(select(User).where(User.username == username))
     return result.scalar_one_or_none()
 
 
 async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
-    """Pobierz uøytkownika po email."""
+    """Pobierz u≈ºytkownika po email."""
     result = await db.execute(select(User).where(User.email == email))
     return result.scalar_one_or_none()
 
 
 async def get_user_by_email_or_username(db: AsyncSession, value: str) -> Optional[User]:
-    """Pobierz uøytkownika po email lub username."""
+    """Pobierz u≈ºytkownika po email lub username."""
     result = await db.execute(
         select(User).where(or_(User.email == value, User.username == value))
     )
@@ -45,7 +45,7 @@ async def create_user(
     email: str,
     password: str,
 ) -> User:
-    """UtwÛrz nowego uøytkownika (has≥o juø zahashowane)."""
+    """Utw√≥rz nowego u≈ºytkownika (has≈Ço ju≈º zahashowane)."""
     user = User(
         first_name=first_name,
         last_name=last_name,
@@ -60,7 +60,7 @@ async def create_user(
 
 
 async def update_user_password(db: AsyncSession, user_id: UUID, hashed_password: str) -> None:
-    """Zaktualizuj has≥o uøytkownika."""
+    """Zaktualizuj has≈Ço u≈ºytkownika."""
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if user:
@@ -74,7 +74,7 @@ async def create_password_reset_token(
     token_hash: str,
     expires_at: datetime,
 ) -> PasswordResetToken:
-    """UtwÛrz token resetowania has≥a (zapisz hasz tokenu)."""
+    """Utw√≥rz token resetowania has≈Ça (zapisz hasz tokenu)."""
     record = PasswordResetToken(
         user_id=user_id,
         token=token_hash,
@@ -89,7 +89,7 @@ async def create_password_reset_token(
 async def get_valid_password_reset_token(
     db: AsyncSession, token_hash: str
 ) -> Optional[PasswordResetToken]:
-    """Pobierz waøny (nie wygas≥y, nie uøyty) token resetowania has≥a."""
+    """Pobierz wa≈ºny (nie wygas≈Çy, nie u≈ºyty) token resetowania has≈Ça."""
     now = datetime.now(timezone.utc)
     result = await db.execute(
         select(PasswordResetToken).where(
@@ -104,5 +104,5 @@ async def get_valid_password_reset_token(
 async def mark_password_reset_token_used(
     db: AsyncSession, token: PasswordResetToken
 ) -> None:
-    """Oznacz token resetowania has≥a jako uøyty."""
+    """Oznacz token resetowania has≈Ça jako u≈ºyty."""
     token.used_at = datetime.now(timezone.utc)

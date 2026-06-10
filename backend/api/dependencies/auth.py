@@ -1,4 +1,4 @@
-from typing import Annotated
+﻿from typing import Annotated
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, Security, status
@@ -22,7 +22,7 @@ async def get_current_user(
     ],
     db: AsyncSession = Depends(get_db),
 ) -> User:
-    """Pobierz aktualnie zalogowanego u�ytkownika z Bearer tokenu."""
+    """Pobierz aktualnie zalogowanego użytkownika z Bearer tokenu."""
     if credentials is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

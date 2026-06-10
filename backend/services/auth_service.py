@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+Ôªøfrom datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,11 +11,11 @@ from db import repositories
 
 
 async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
-    """Zarejestruj nowego uøytkownika."""
+    """Zarejestruj nowego u≈ºytkownika."""
     if await repositories.user_repo.get_user_by_username(db, data.username):
-        raise HTTPException(status_code=409, detail="Nazwa uøytkownika juø zarejestrowana")
+        raise HTTPException(status_code=409, detail="Nazwa u≈ºytkownika ju≈º zarejestrowana")
     if await repositories.user_repo.get_user_by_email(db, data.email):
-        raise HTTPException(status_code=409, detail="Email juø zarejestrowany")
+        raise HTTPException(status_code=409, detail="Email ju≈º zarejestrowany")
 
     hashed = security.hash_password(data.password)
     return await repositories.user_repo.create_user(
@@ -29,11 +29,11 @@ async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
 
 
 async def login_user(db: AsyncSession, data: LoginRequest) -> tuple[User, str]:
-    """Uwierzytelnij i zwrÛÊ (user, token)."""
+    """Uwierzytelnij i zwr√≥ƒá (user, token)."""
     user = await repositories.user_repo.get_user_by_username(db, data.username)
     if user is None or not security.verify_password(data.password, user.password):
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Nieprawid≥owe dane uwierzytelniajπce"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Nieprawid≈Çowe dane uwierzytelniajƒÖce"
         )
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Konto jest nieaktywne")
@@ -43,12 +43,12 @@ async def login_user(db: AsyncSession, data: LoginRequest) -> tuple[User, str]:
 
 
 async def request_password_reset(db: AsyncSession, email_or_username: str) -> None:
-    """Wygeneruj token resetowania has≥a (nie ujawniaj czy user istnieje)."""
+    """Wygeneruj token resetowania has≈Ça (nie ujawniaj czy user istnieje)."""
     user = await repositories.user_repo.get_user_by_email_or_username(
         db, email_or_username.strip()
     )
     if user is None:
-        return  # Silent ó do not reveal user existence
+        return  # Silent ‚Äî do not reveal user existence
 
     raw_token = security.generate_token()
     token_hash = security.hash_token(raw_token)
@@ -62,11 +62,11 @@ async def request_password_reset(db: AsyncSession, email_or_username: str) -> No
 
 
 async def reset_password(db: AsyncSession, raw_token: str, new_password: str) -> None:
-    """Zresetuj has≥o korzystajπc z tokenu."""
+    """Zresetuj has≈Ço korzystajƒÖc z tokenu."""
     token_hash = security.hash_token(raw_token)
     token_record = await repositories.user_repo.get_valid_password_reset_token(db, token_hash)
     if token_record is None:
-        raise HTTPException(status_code=400, detail="Nieprawid≥owy lub wygas≥y token resetowania has≥a")
+        raise HTTPException(status_code=400, detail="Nieprawid≈Çowy lub wygas≈Çy token resetowania has≈Ça")
 
     hashed = security.hash_password(new_password)
     await repositories.user_repo.update_user_password(db, token_record.user_id, hashed)

@@ -1,4 +1,4 @@
-import hashlib
+ï»¿import hashlib
 import secrets
 from datetime import datetime, timedelta, timezone
 
@@ -13,17 +13,17 @@ ALGORITHM = settings.ALGORITHM
 
 
 def hash_password(password: str) -> str:
-    """Hash has³a za pomoc¹ bcrypt."""
+    """Hash hasÅ‚a za pomocÄ… bcrypt."""
     return pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Weryfikuj has³o w stosunku do hasha."""
+    """Weryfikuj hasÅ‚o w stosunku do hasha."""
     return pwd_context.verify(plain_password, hashed_password)
 
 
 def create_access_token(user_id: str, remember_user: bool = False) -> str:
-    """Utwórz JWT token."""
+    """UtwÃ³rz JWT token."""
     if remember_user:
         expire_minutes = settings.REMEMBER_ME_EXPIRE_MINUTES
     else:
@@ -42,7 +42,7 @@ def create_access_token(user_id: str, remember_user: bool = False) -> str:
 
 
 def decode_token(token: str) -> dict:
-    """Dekoduj JWT i zwróæ pe³ny payload (dict). Zg³asza wyj¹tek na nieudane dekodowanie."""
+    """Dekoduj JWT i zwrÃ³Ä‡ peÅ‚ny payload (dict). ZgÅ‚asza wyjÄ…tek na nieudane dekodowanie."""
     return jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
 
 
