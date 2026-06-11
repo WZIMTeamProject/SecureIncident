@@ -55,8 +55,5 @@ app.include_router(invitations.router, prefix="/api")
 from api.routes import profiles
 app.include_router(profiles.router, prefix="/api")
 
-from api.routes import feedback
-app.include_router(feedback.router, prefix="/api")
-
 from api.routes import users
 app.include_router(users.router, prefix="/api")

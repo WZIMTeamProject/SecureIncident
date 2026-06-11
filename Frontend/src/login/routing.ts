@@ -1,38 +1,27 @@
-import Auth from "../data/Auth.ts";
-import {redirect} from "react-router";
-import type {MiddlewareArgs, MiddlewareNext} from "../misc";
+import {type ActionFunction, type MiddlewareFunction, redirect} from "react-router";
 import {FORM_USERNAME, FORM_LOGOUT, FORM_PASSWORD, FORM_REMEMBER_ME} from "./forms.ts";
+import {attemptLogin, attemptLogout, AuthRouterContext} from "../data/auth.ts";
 
 export interface LoginActionResult {
     ok: boolean,
     error: "invalid_credentials" | "invalid_data"
 }
 
-export async function loginMiddleware(
-    {request}: MiddlewareArgs,
-    next: MiddlewareNext
-) : Promise<unknown> {
+export const loginMiddleware: MiddlewareFunction = async ({request, context}, next) => {
     const urlParams = new URL(request.url).searchParams;
+    const user = context.get(AuthRouterContext);
 
     if (urlParams.has(FORM_LOGOUT)) {
-        await Auth.logout();
-    } else {
-        // If user is already logged in, redirect to their dashboard
-        const user = await Auth.getCurrentUser();
-
-        if (user) {
-            throw redirect("/dashboard");
-        }
+        await attemptLogout();
+        context.set(AuthRouterContext, null);
+    } else if (user) {
+        throw redirect("/dashboard");
     }
 
-    await next();
-
-    return undefined;
+    return await next();
 }
 
-export async function loginAction(
-    {request}: MiddlewareArgs
-) : Promise<unknown> {
+export const loginFormAction: ActionFunction = async ({request}) => {
     const formData = await request.formData();
 
     const login = formData.get(FORM_USERNAME)?.toString();
@@ -40,9 +29,9 @@ export async function loginAction(
     const remember = Boolean(formData.get(FORM_REMEMBER_ME));
 
     if (login && password) {
-        const user = await Auth.login(login, password, remember);
+        const loginSuccessful = await attemptLogin(login, password, remember);
 
-        if (user) {
+        if (loginSuccessful) {
             return redirect("/dashboard");
         } else {
             return { ok: false, error: "invalid_credentials" } satisfies LoginActionResult;

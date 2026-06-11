@@ -31,7 +31,6 @@ async def create_project(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: sprawdzić scope (PRIVATE / ORGANIZATION), przypisać ownera
     return CreatedIdResponse(id="00000000-0000-0000-0000-000000000000")
 
 
@@ -41,7 +40,6 @@ async def list_projects(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: filtrowanie po scope (PRIVATE / ORGANIZATION)
     return ProjectListResponse(items=[], total=0, offset=0, limit=20)
 
 
@@ -51,7 +49,6 @@ async def get_project(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: sprawdzić dostęp
     return ProjectResponse(
         id=project_id,
         organization_id=None,
@@ -68,7 +65,6 @@ async def update_project(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: update name / description
     return Response(status_code=204)
 
 
@@ -78,7 +74,6 @@ async def list_members(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: return members list
     return ProjectMemberListResponse(members=[])
 
 
@@ -89,7 +84,6 @@ async def add_member(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: sprawdzić czy user istnieje, czy już jest w projekcie (409)
     return Response(status_code=204)
 
 
@@ -101,5 +95,4 @@ async def change_member_role(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: zmiana roli
     return Response(status_code=204)

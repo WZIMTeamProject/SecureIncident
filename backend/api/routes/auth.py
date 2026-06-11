@@ -92,8 +92,6 @@ async def request_password_reset(
 
     await service.request_password_reset(data.email_or_username)
 
-    # tutaj później wysyłka maila
-
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -102,7 +100,6 @@ async def reset_password(
     data: PasswordResetConfirmRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    """Zresetuj hasło korzystając z tokenu."""
 
     service = AuthService(db)
 

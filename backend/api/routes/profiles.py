@@ -21,7 +21,6 @@ async def get_my_profile(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: pobierz profil zalogowanego użytkownika
     return ProfileResponse(
         id="00000000-0000-0000-0000-000000000000",
         username="test_user",
@@ -36,7 +35,6 @@ async def update_my_profile(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: zaktualizuj profil zalogowanego użytkownika
     return
 
 
@@ -46,7 +44,6 @@ async def search_users(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: wyszukaj użytkowników po username
     return UserSearchResponse(users=[
         UserSearchResult(
             id="00000000-0000-0000-0000-000000000000",

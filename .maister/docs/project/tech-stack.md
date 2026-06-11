@@ -10,7 +10,7 @@ This document describes the technology choices and rationale for SecureIncident.
 - **Rationale**: Type safety and IDE support reduce errors across a 3-person frontend team
 - **Key Features Used**: Strict mode, ES2023 target, TSX for React components, `noUnusedLocals`, `noUnusedParameters`
 
-### Python (3.x)
+### Python (3.14+)
 - **Usage**: 100% of backend codebase
 - **Rationale**: FastAPI ecosystem maturity, rapid REST API development, strong typing via Pydantic
 - **Key Features Used**: Type hints throughout, async/await, Pydantic v2 integration
@@ -24,28 +24,30 @@ This document describes the technology choices and rationale for SecureIncident.
 - **Tailwind CSS 4** (`^4.2.2`) — Utility-first CSS with CSS custom variables for light/dark theming
 
 ### Backend
-- **FastAPI 0.104.1** — Async REST API framework; automatic OpenAPI docs, Pydantic integration
-- **Uvicorn 0.24.0** — ASGI server running the FastAPI application
-- **Pydantic 2.5.0** — Request/response validation and serialization
-- **SQLAlchemy 2.0.23** — ORM with declarative models and relationship management
-- **Alembic 1.12.1** — Database schema migration management
+- **FastAPI 0.136+** — Async REST API framework; automatic OpenAPI docs, Pydantic integration
+- **Uvicorn 0.49+** — ASGI server running the FastAPI application
+- **Pydantic 2.13+** — Request/response validation and serialization
+- **pydantic-settings 2.14+** — Settings management via environment variables
+- **SQLAlchemy 2.0.50+** — ORM with declarative models and relationship management
+- **Alembic 1.18+** — Database schema migration management
+- **greenlet 3.5+** — Required for SQLAlchemy async support
 
 ### Testing
-- **pytest 7.4.3** — Backend unit and integration testing
-- **pytest-asyncio 0.21.1** — Async test support for FastAPI endpoint tests
-- **httpx 0.25.2** — HTTP client used for API integration testing
+- **pytest 9.0+** — Backend unit and integration testing
+- **pytest-asyncio 1.4+** — Async test support for FastAPI endpoint tests
+- **httpx 0.28+** — HTTP client used for API integration testing
 
 ## Database
 
-### PostgreSQL (primary) / MySQL (alternative)
+### PostgreSQL (only)
 - **Type**: Relational
-- **ORM**: SQLAlchemy 2.0 (`psycopg2-binary` for PostgreSQL, `PyMySQL 1.1.0` for MySQL)
-- **Rationale**: Dual-database support allows development flexibility; PostgreSQL is the target for production (AWS RDS)
+- **Driver**: `asyncpg 0.31+` — async PostgreSQL driver for SQLAlchemy
+- **Rationale**: PostgreSQL is the sole supported database; MySQL support was dropped to reduce complexity
 - **Migrations**: Managed via Alembic
 
 ## Authentication
-- **python-jose 3.3.0** + **PyJWT 2.12.1** — JWT token generation and validation (stateless auth)
-- **passlib[bcrypt] 1.7.4** — Secure password hashing
+- **PyJWT 2.13+** — JWT token generation and validation (stateless auth); `python-jose` was removed due to known CVEs
+- **passlib[bcrypt] 1.7+** + **bcrypt 5.0+** — Secure password hashing
 
 ## API Specification
 - **OpenAPI 3.0.3** — Schema-first API design documented in `docs/api/openapi-core.json` (MVP) and `docs/api/openapi-extended.json`
@@ -57,8 +59,10 @@ This document describes the technology choices and rationale for SecureIncident.
 - **Vite** — Development server and production bundler
 
 ### Backend
-- **pip** + `requirements.txt` — Python dependency management with pinned versions
-- **python-dotenv 1.0.0** — Environment variable loading from `.env`
+- **uv** + `pyproject.toml` — Primary Python dependency management (`uv sync` to install)
+- **pip** — Alternative: `pip install -e .` from `pyproject.toml` also works for contributors not using uv
+- **python-dotenv 1.2+** — Environment variable loading from `.env`
+- **python-multipart 0.0.32+** — Multipart form data parsing (required for FastAPI form endpoints)
 
 ## Infrastructure
 
@@ -69,7 +73,7 @@ This document describes the technology choices and rationale for SecureIncident.
 - GitHub Actions — Planned for automated test → build → deploy pipeline
 
 ### Hosting
-- **AWS** — Target deployment platform (ECS/Fargate + RDS or EC2 + RDS), managed by 3-person DevOps team
+- **AWS** — Target deployment platform (EC2 + RDS), managed by 3-person DevOps team
 
 ## Development Tools
 
@@ -83,23 +87,26 @@ This document describes the technology choices and rationale for SecureIncident.
 ## Key Dependencies
 
 | Package | Version | Purpose |
-|---------|---------|---------|
-| react | ^19.2.4 | UI framework |
-| react-router-dom | ^7.14.0 | Client-side routing |
-| tailwindcss | ^4.2.2 | Utility CSS |
-| fastapi | 0.104.1 | Backend REST framework |
-| sqlalchemy | 2.0.23 | ORM |
-| alembic | 1.12.1 | DB migrations |
-| pydantic | 2.5.0 | Validation |
-| python-jose | 3.3.0 | JWT |
-| passlib | 1.7.4 | Password hashing |
-| pytest | 7.4.3 | Testing |
+|---------|--------|---------|
+| react | 19.2.4 | UI framework |
+| react-router-dom | 7.14.0 | Client-side routing |
+| tailwindcss | 4.2.2  | Utility CSS |
+| fastapi | 0.136.3 | Backend REST framework |
+| sqlalchemy | >=2.0.50 | ORM |
+| alembic | 1.18.4 | DB migrations |
+| pydantic | 2.13.4 | Validation |
+| pydantic-settings | 2.14.1 | Settings/env management |
+| asyncpg | 0.31.0 | PostgreSQL async driver |
+| pyjwt | 2.13.0 | JWT (python-jose removed — CVE) |
+| passlib | 1.7.4  | Password hashing |
+| bcrypt | 5.0.0  | Bcrypt backend for passlib |
+| pytest | 9.0.3  | Testing |
 
 ## Version Management
 - Frontend: Semantic versioning in `package.json` with committed npm lock file
-- Backend: Pinned exact versions in `requirements.txt`
+- Backend: Minimum-version constraints in `pyproject.toml`, managed with `uv`
 
 ---
-*Last Updated*: 2026-05-04
+*Last Updated*: 2026-06-09
 *Auto-detected*: React, TypeScript, Vite, Tailwind, FastAPI, SQLAlchemy, Alembic, Pydantic, all npm/pip dependencies
-*User-provided*: AWS hosting target, 5-6 week delivery timeline
+*User-provided*: AWS hosting target, June 18, 2026 deadline; python-jose removed due to CVE
