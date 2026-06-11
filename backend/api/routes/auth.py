@@ -1,4 +1,4 @@
-from uuid import UUID
+﻿from uuid import UUID
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -13,45 +13,26 @@ from api.schemas.auth.request import (
     PasswordResetRequest,
     PasswordResetConfirmRequest,
 )
-from api.schemas.auth.response import (
-    CurrentUserResponse,
-	LoginResponse
-)
+from api.schemas.auth.response import CurrentUserResponse, LoginResponse
 from db.models.user import User
-
-from services.auth_service import AuthService
+from services import auth_service
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 logger = logging.getLogger(__name__)
 
 @router.post("/register", response_model=CreatedIdResponse, status_code=status.HTTP_201_CREATED)
 async def register_user(data: RegisterRequest, db: AsyncSession = Depends(get_db)):
-    service = AuthService(db)
-    try:
-        user = await service.register_user(
-            first_name=data.first_name,
-            last_name=data.last_name,
-            username=data.username,
-            email=data.email,
-            password=data.password,
-        )
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists")
-
+    """Zarejestruj nowego użytkownika."""
+    user = await auth_service.register_user(db, data)
     return CreatedIdResponse(id=user.id)
 
 
 @router.post("/login", response_model=LoginResponse)
 async def login_user(data: LoginRequest, db: AsyncSession = Depends(get_db)):
-    service = AuthService(db)
-    user = await service.authenticate_user(username=data.username, password=data.password)
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-
-    access_token = await service.create_access_token_for_user(user.id, remember_user=data.remember_user)
-
+    """Zaloguj użytkownika i zwróć JWT token."""
+    user, token = await auth_service.login_user(db, data)
     return LoginResponse(
-        access_token=access_token,
+        access_token=token,
         user=CurrentUserResponse(
             id=user.id,
             username=user.username,
@@ -65,6 +46,7 @@ async def get_me(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> CurrentUserResponse:
+    """Pobierz dane aktualnie zalogowanego użytkownika."""
     return CurrentUserResponse(
         id=current_user.id,
         username=current_user.username,
@@ -77,6 +59,7 @@ async def logout_user(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Wyloguj użytkownika (stateless — MVP)."""
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -86,12 +69,8 @@ async def request_password_reset(
     data: PasswordResetRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    """Wygeneruj token resetowania hasła."""
-    
-    service = AuthService(db)
-
-    await service.request_password_reset(data.email_or_username)
-
+    """Poproś o reset hasła (zawsze 204, nawet jeśli user nie istnieje)."""
+    await auth_service.request_password_reset(db, data.email_or_username)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -100,12 +79,6 @@ async def reset_password(
     data: PasswordResetConfirmRequest,
     db: AsyncSession = Depends(get_db),
 ):
-
-    service = AuthService(db)
-
-    await service.reset_password(
-        data.reset_token,
-        data.new_password,
-    )
-
+    """Zresetuj hasło za pomocą tokenu."""
+    await auth_service.reset_password(db, data.reset_token, data.new_password)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

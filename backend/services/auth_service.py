@@ -1,14 +1,13 @@
-from typing import Optional
-from uuid import UUID
+﻿from datetime import datetime, timedelta, timezone
 
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.security import (
-    verify_password,
-    create_access_token,
-    generate_secure_token,
-)
-from db.repositories.user_repo import UserRepository
+from api.schemas.auth.request import LoginRequest, RegisterRequest
+from core import security
+from core.config import settings
+from db.models.user import User
+from db import repositories
 
 
 class AuthService:
