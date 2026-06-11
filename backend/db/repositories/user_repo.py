@@ -1,6 +1,8 @@
-﻿from datetime import datetime, timezone
+﻿from datetime import datetime, timezone, timedelta
+import datetime
 from typing import Optional
 from uuid import UUID
+from core.config import settings
 
 from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,7 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.security import hash_password, hash_token
 from db.models.user import User
 from db.models.password_reset_token import PasswordResetToken
-
 
 async def get_user_by_id(db: AsyncSession, user_id: UUID) -> Optional[User]:
     """Pobierz użytkownika po ID."""
@@ -35,6 +36,17 @@ async def get_user_by_email_or_username(db: AsyncSession, value: str) -> Optiona
     )
     return result.scalar_one_or_none()
 
+async def get_valid_password_reset_token(db: AsyncSession, token: str):
+    now_naive = datetime.datetime.now(timezone.utc).replace(tzinfo=None)
+    
+    result = await db.execute(
+        select(PasswordResetToken).where(
+            PasswordResetToken.token == token,
+            PasswordResetToken.used_at == None,
+            PasswordResetToken.expires_at > now_naive,
+        )
+    )
+    return result.scalar_one_or_none()
 
 async def create_user(
     db: AsyncSession,
@@ -72,13 +84,14 @@ async def create_password_reset_token(
     *,
     user_id: UUID,
     token_hash: str,
-    expires_at: datetime,
+    expires_at: datetime.datetime,
 ) -> PasswordResetToken:
     """Utwórz token resetowania hasła (zapisz hasz tokenu)."""
+
     record = PasswordResetToken(
         user_id=user_id,
         token=token_hash,
-        expires_at=expires_at,
+        expires_at = get_now_naive() + timedelta(minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES)
     )
     db.add(record)
     await db.commit()
@@ -86,23 +99,15 @@ async def create_password_reset_token(
     return record
 
 
-async def get_valid_password_reset_token(
-    db: AsyncSession, token_hash: str
-) -> Optional[PasswordResetToken]:
-    """Pobierz ważny (nie wygasły, nie użyty) token resetowania hasła."""
-    now = datetime.now(timezone.utc)
-    result = await db.execute(
-        select(PasswordResetToken).where(
-            PasswordResetToken.token == token_hash,
-            PasswordResetToken.used_at == None,
-            PasswordResetToken.expires_at > now,
-        )
-    )
-    return result.scalar_one_or_none()
-
-
 async def mark_password_reset_token_used(
     db: AsyncSession, token: PasswordResetToken
 ) -> None:
     """Oznacz token resetowania hasła jako użyty."""
-    token.used_at = datetime.now(timezone.utc)
+    token.used_at = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+    
+    db.add(token)
+    await db.commit()
+
+def get_now_naive():
+    """Zawsze zwraca czas UTC bez strefy czasowej (tzinfo=None)."""
+    return datetime.datetime.now(timezone.utc).replace(tzinfo=None)

@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     DATABASE_URL: str
+    TEST_DATABASE_URL: str = ""
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     REMEMBER_ME_EXPIRE_MINUTES: int = 10080
@@ -11,7 +12,7 @@ class Settings(BaseSettings):
     PASSWORD_RESET_EXPIRE_MINUTES: int = 30
     ALLOWED_ORIGINS: list[str] = ["http://localhost:5173"]
 
-    model_config = SettingsConfigDict(env_file=Path(__file__).parent / ".env")
-
+    model_config = SettingsConfigDict(env_file=Path(__file__).parent.parent.parent / ".env"
+)
 
 settings = Settings()

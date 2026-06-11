@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 import jwt
 from passlib.context import CryptContext
-
+import bcrypt
 from core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -14,12 +14,14 @@ ALGORITHM = settings.ALGORITHM
 
 def hash_password(password: str) -> str:
     """Hash hasła za pomocą bcrypt."""
-    return pwd_context.hash(password)
-
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Weryfikuj hasło w stosunku do hasha."""
-    return pwd_context.verify(plain_password, hashed_password)
+    return bcrypt.checkpw(
+        plain_password.encode("utf-8"),
+        hashed_password.encode("utf-8"),
+    )
 
 
 def create_access_token(user_id: str, remember_user: bool = False) -> str:

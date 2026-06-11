@@ -8,15 +8,26 @@ from core import security
 from core.config import settings
 from db.models.user import User
 from db import repositories
-
+import datetime
 
 async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
     """Zarejestruj nowego użytkownika."""
+    if len(data.username) < 3:
+        raise HTTPException(status_code=422, detail="Nazwa użytkownika jest za krótka")
     if await repositories.user_repo.get_user_by_username(db, data.username):
         raise HTTPException(status_code=409, detail="Nazwa użytkownika już zarejestrowana")
     if await repositories.user_repo.get_user_by_email(db, data.email):
         raise HTTPException(status_code=409, detail="Email już zarejestrowany")
-
+    
+    if not any(char.isupper() for char in data.password):
+        raise HTTPException(status_code=422, detail="Hasło musi zawierać co najmniej jedną wielką literę")
+        
+    if not any(char.isdigit() for char in data.password):
+        raise HTTPException(status_code=422, detail="Hasło musi zawierać co najmniej jedną cyfrę")
+    if len(data.password.encode("utf-8")) < 8:
+       raise HTTPException(status_code=422, detail="Hasło nie może być krótsze niż 8 bajtów")
+    if len(data.password.encode("utf-8")) > 72:
+       raise HTTPException(status_code=422, detail="Hasło nie może być dłuższe niż 72 bajty")
     hashed = security.hash_password(data.password)
     return await repositories.user_repo.create_user(
         db,
@@ -52,11 +63,14 @@ async def request_password_reset(db: AsyncSession, email_or_username: str) -> No
 
     raw_token = security.generate_token()
     token_hash = security.hash_token(raw_token)
-    expires_at = datetime.now(timezone.utc) + timedelta(
+    expires_at = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) + datetime.timedelta(
         minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES
     )
     await repositories.user_repo.create_password_reset_token(
-        db, user_id=user.id, token_hash=token_hash, expires_at=expires_at
+        db, 
+        user_id=user.id, 
+        token_hash=token_hash,  
+        expires_at=expires_at
     )
     # EMAIL_TODO: send reset email with raw_token
 
