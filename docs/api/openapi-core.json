@@ -42,10 +42,6 @@
     {
       "name": "Invitations",
       "description": "Extended invite handling for organizations and projects."
-    },
-    {
-      "name": "Feedback",
-      "description": "Optional product feedback/contact endpoints."
     }
   ],
   "paths": {
@@ -133,7 +129,7 @@
         "description": "Invalidates the current session.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "responses": {
@@ -203,7 +199,7 @@
         "description": "Returns the currently authenticated user resolved from the session, including the current organization id if the user belongs to one.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "responses": {
@@ -232,7 +228,7 @@
         "description": "Creates an organization and assigns the current user as owner/admin. This should fail if the user already belongs to another organization.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "requestBody": {
@@ -269,7 +265,7 @@
         "description": "Returns the single organization the current user belongs to. If the user does not belong to any organization, return null or 404 depending on backend convention.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "responses": {
@@ -298,7 +294,7 @@
         "description": "Generates a one-time or limited-use invite for joining the current organization.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "requestBody": {
@@ -334,7 +330,7 @@
         "description": "Uses a valid organization invite token to join the user's single allowed organization. Should fail if the user already belongs to another organization.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "requestBody": {
@@ -369,7 +365,7 @@
         "description": "Creates a project. Project scope can be PRIVATE or ORGANIZATION. A user may have many projects, but organization projects must belong to the user's single organization.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "requestBody": {
@@ -403,7 +399,7 @@
         "description": "Returns private projects and organization projects visible to the current user.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -434,7 +430,7 @@
         }
       }
     },
-    "/projects/{projectId}": {
+    "/projects/{project_id}": {
       "get": {
         "tags": [
           "Projects"
@@ -443,7 +439,7 @@
         "description": "Returns project metadata visible to the current user.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -478,7 +474,7 @@
         "description": "Allows authorized users to update project name and description.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -506,7 +502,7 @@
         }
       }
     },
-    "/projects/{projectId}/members": {
+    "/projects/{project_id}/members": {
       "get": {
         "tags": [
           "Projects"
@@ -515,7 +511,7 @@
         "description": "Returns project members with their single assigned role in that project.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -544,7 +540,7 @@
         "description": "Adds a user to a project and assigns exactly one role in that project.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -575,7 +571,7 @@
         }
       }
     },
-    "/projects/{projectId}/members/{userId}/role": {
+    "/projects/{project_id}/members/{user_id}/role": {
       "patch": {
         "tags": [
           "Projects"
@@ -584,7 +580,7 @@
         "description": "Changes the single assigned role of a project member.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -615,7 +611,7 @@
         }
       }
     },
-    "/projects/{projectId}/categories": {
+    "/projects/{project_id}/categories": {
       "get": {
         "tags": [
           "Categories"
@@ -624,7 +620,7 @@
         "description": "Returns categories available in a project.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -653,7 +649,7 @@
         "description": "Creates a category available for incidents in the project.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -685,7 +681,7 @@
         }
       }
     },
-    "/projects/{projectId}/roles": {
+    "/projects/{project_id}/roles": {
       "get": {
         "tags": [
           "Roles"
@@ -694,7 +690,7 @@
         "description": "Returns roles available in the given project.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -723,7 +719,7 @@
         "description": "Creates a custom role with boolean permissions in the given project.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -755,7 +751,7 @@
         }
       }
     },
-    "/projects/{projectId}/incidents": {
+    "/projects/{project_id}/incidents": {
       "get": {
         "tags": [
           "Incidents"
@@ -764,7 +760,7 @@
         "description": "Returns incidents visible to the current user in the selected project. Supports filtering and pagination.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -817,7 +813,7 @@
             "explode": true
           },
           {
-            "name": "assigneeId",
+            "name": "assignee_id",
             "in": "query",
             "required": false,
             "schema": {
@@ -847,7 +843,7 @@
         "description": "Creates a new incident in the selected project. The field name is title, not name.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -888,7 +884,7 @@
         "description": "Convenience endpoint for the 'my reported incidents' view.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "responses": {
@@ -914,7 +910,7 @@
         "description": "Convenience endpoint for the 'my assigned incidents' view.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "responses": {
@@ -931,7 +927,7 @@
         }
       }
     },
-    "/incidents/{incidentId}": {
+    "/incidents/{incident_id}": {
       "get": {
         "tags": [
           "Incidents"
@@ -940,7 +936,7 @@
         "description": "Returns main incident details without comments.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -968,7 +964,7 @@
         }
       }
     },
-    "/incidents/{incidentId}/status": {
+    "/incidents/{incident_id}/status": {
       "patch": {
         "tags": [
           "Incidents"
@@ -977,7 +973,7 @@
         "description": "Updates the incident status and should create a visible entry in incident logs.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1005,7 +1001,7 @@
         }
       }
     },
-    "/incidents/{incidentId}/assignee": {
+    "/incidents/{incident_id}/assignee": {
       "patch": {
         "tags": [
           "Incidents"
@@ -1014,7 +1010,7 @@
         "description": "Updates the primary assigned solver of the incident.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1042,7 +1038,7 @@
         }
       }
     },
-    "/incidents/{incidentId}/priority": {
+    "/incidents/{incident_id}/priority": {
       "patch": {
         "tags": [
           "Incidents"
@@ -1051,7 +1047,7 @@
         "description": "Updates incident priority level.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1079,7 +1075,7 @@
         }
       }
     },
-    "/incidents/{incidentId}/category": {
+    "/incidents/{incident_id}/category": {
       "patch": {
         "tags": [
           "Incidents"
@@ -1088,7 +1084,7 @@
         "description": "Updates the main category assigned to the incident.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1116,7 +1112,7 @@
         }
       }
     },
-    "/incidents/{incidentId}/comments": {
+    "/incidents/{incident_id}/comments": {
       "get": {
         "tags": [
           "Incidents"
@@ -1125,7 +1121,7 @@
         "description": "Returns comments visible in incident details view.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1154,7 +1150,7 @@
         "description": "Adds a new comment to the incident. Author identity must come from session.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1179,7 +1175,7 @@
         }
       }
     },
-    "/incidents/{incidentId}/logs": {
+    "/incidents/{incident_id}/logs": {
       "get": {
         "tags": [
           "Incidents"
@@ -1188,7 +1184,7 @@
         "description": "Returns logs visible to the reporting user and project participants. These logs include comments, status changes, and assignee changes only.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1210,35 +1206,6 @@
         }
       }
     },
-    "/feedback": {
-      "post": {
-        "tags": [
-          "Feedback"
-        ],
-        "summary": "Send platform feedback",
-        "description": "Optional contact/feedback endpoint, not required for core incident workflow.",
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FeedbackRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": "Feedback accepted"
-          }
-        }
-      }
-    },
     "/profiles/me": {
       "get": {
         "tags": [
@@ -1248,7 +1215,7 @@
         "description": "Returns editable profile data of the current user.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "responses": {
@@ -1272,7 +1239,7 @@
         "description": "Updates optional user profile fields such as bio or display preferences.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "requestBody": {
@@ -1301,7 +1268,7 @@
         "description": "Convenience endpoint useful for assignment dialogs and member lookup.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1328,7 +1295,7 @@
         }
       }
     },
-    "/projects/{projectId}/invites": {
+    "/projects/{project_id}/invites": {
       "post": {
         "tags": [
           "Invitations"
@@ -1337,7 +1304,7 @@
         "description": "Generates an invite token that lets a user join a specific project directly.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1378,7 +1345,7 @@
         "description": "Accepts a project invite and joins the current user to the project.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "requestBody": {
@@ -1432,7 +1399,7 @@
         }
       }
     },
-    "/projects/{projectId}/categories/{categoryId}": {
+    "/projects/{project_id}/categories/{category_id}": {
       "patch": {
         "tags": [
           "Categories"
@@ -1441,7 +1408,7 @@
         "description": "Updates category name or metadata.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1476,7 +1443,7 @@
         "description": "Deletes a category when it is not used or after a safe migration.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1494,7 +1461,7 @@
         }
       }
     },
-    "/projects/{projectId}/roles/{roleId}": {
+    "/projects/{project_id}/roles/{role_id}": {
       "get": {
         "tags": [
           "Roles"
@@ -1503,7 +1470,7 @@
         "description": "Returns details of one role with all permissions.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1535,7 +1502,7 @@
         "description": "Updates role name or boolean permissions.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1563,7 +1530,7 @@
         }
       }
     },
-    "/incidents/{incidentId}/close": {
+    "/incidents/{incident_id}/close": {
       "post": {
         "tags": [
           "Incidents"
@@ -1572,7 +1539,7 @@
         "description": "Convenience endpoint if frontend prefers a dedicated close action instead of generic status patch.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1587,7 +1554,7 @@
         }
       }
     },
-    "/incidents/{incidentId}/request-reassignment": {
+    "/incidents/{incident_id}/request-reassignment": {
       "post": {
         "tags": [
           "Incidents"
@@ -1596,7 +1563,7 @@
         "description": "Allows the current solver to request reassignment without directly removing themselves.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1611,7 +1578,7 @@
         }
       }
     },
-    "/incidents/{incidentId}/helpers": {
+    "/incidents/{incident_id}/helpers": {
       "post": {
         "tags": [
           "Incidents"
@@ -1620,7 +1587,7 @@
         "description": "Optional extension if you later want to formally model helper participants.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1645,7 +1612,7 @@
         }
       }
     },
-    "/incidents/{incidentId}/helpers/{helperId}": {
+    "/incidents/{incident_id}/helpers/{helper_id}": {
       "delete": {
         "tags": [
           "Incidents"
@@ -1654,7 +1621,7 @@
         "description": "Removes a previously added helper from the incident.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
@@ -1687,12 +1654,12 @@
         "description": "Extended reporting endpoint for user history across projects in the user's single organization and/or private projects.",
         "security": [
           {
-            "cookieAuth": []
+            "bearerAuth": []
           }
         ],
         "parameters": [
           {
-            "name": "projectId",
+            "name": "project_id",
             "in": "query",
             "required": false,
             "schema": {
@@ -1737,15 +1704,15 @@
   },
   "components": {
     "securitySchemes": {
-      "cookieAuth": {
-        "type": "apiKey",
-        "in": "cookie",
-        "name": "session"
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     },
     "parameters": {
       "ProjectId": {
-        "name": "projectId",
+        "name": "project_id",
         "in": "path",
         "required": true,
         "schema": {
@@ -1754,7 +1721,7 @@
         }
       },
       "IncidentId": {
-        "name": "incidentId",
+        "name": "incident_id",
         "in": "path",
         "required": true,
         "schema": {
@@ -1763,7 +1730,7 @@
         }
       },
       "UserId": {
-        "name": "userId",
+        "name": "user_id",
         "in": "path",
         "required": true,
         "schema": {
@@ -1772,7 +1739,7 @@
         }
       },
       "CategoryId": {
-        "name": "categoryId",
+        "name": "category_id",
         "in": "path",
         "required": true,
         "schema": {
@@ -1781,7 +1748,7 @@
         }
       },
       "RoleId": {
-        "name": "roleId",
+        "name": "role_id",
         "in": "path",
         "required": true,
         "schema": {
@@ -1790,7 +1757,7 @@
         }
       },
       "HelperId": {
-        "name": "helperId",
+        "name": "helper_id",
         "in": "path",
         "required": true,
         "schema": {
@@ -1803,11 +1770,19 @@
       "RegisterRequest": {
         "type": "object",
         "required": [
+          "first_name",
+          "last_name",
           "username",
           "email",
           "password"
         ],
         "properties": {
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
           "username": {
             "type": "string"
           },
@@ -1835,7 +1810,7 @@
             "type": "string",
             "format": "password"
           },
-          "rememberUser": {
+          "remember_user": {
             "type": "boolean",
             "default": false
           }
@@ -1844,10 +1819,10 @@
       "PasswordResetRequest": {
         "type": "object",
         "required": [
-          "emailOrUsername"
+          "email_or_username"
         ],
         "properties": {
-          "emailOrUsername": {
+          "email_or_username": {
             "type": "string"
           }
         }
@@ -1855,14 +1830,14 @@
       "PasswordResetConfirmRequest": {
         "type": "object",
         "required": [
-          "resetToken",
-          "newPassword"
+          "reset_token",
+          "new_password"
         ],
         "properties": {
-          "resetToken": {
+          "reset_token": {
             "type": "string"
           },
-          "newPassword": {
+          "new_password": {
             "type": "string",
             "format": "password"
           }
@@ -1882,7 +1857,7 @@
           "username": {
             "type": "string"
           },
-          "organizationId": {
+          "organization_id": {
             "type": "string",
             "format": "uuid",
             "nullable": true
@@ -1927,12 +1902,12 @@
       "CreateInviteRequest": {
         "type": "object",
         "properties": {
-          "expiresAt": {
+          "expires_at": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "maxUses": {
+          "max_uses": {
             "type": "integer",
             "nullable": true
           }
@@ -1947,7 +1922,7 @@
           "token": {
             "type": "string"
           },
-          "inviteUrl": {
+          "invite_url": {
             "type": "string",
             "nullable": true
           }
@@ -2011,7 +1986,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "organizationId": {
+          "organization_id": {
             "type": "string",
             "format": "uuid",
             "nullable": true
@@ -2061,24 +2036,24 @@
       "ProjectMemberResponse": {
         "type": "object",
         "required": [
-          "userId",
+          "user_id",
           "username",
-          "roleId",
-          "roleName"
+          "role_id",
+          "role_name"
         ],
         "properties": {
-          "userId": {
+          "user_id": {
             "type": "string",
             "format": "uuid"
           },
           "username": {
             "type": "string"
           },
-          "roleId": {
+          "role_id": {
             "type": "string",
             "format": "uuid"
           },
-          "roleName": {
+          "role_name": {
             "type": "string"
           }
         }
@@ -2100,15 +2075,15 @@
       "AddProjectMemberRequest": {
         "type": "object",
         "required": [
-          "userId",
-          "roleId"
+          "user_id",
+          "role_id"
         ],
         "properties": {
-          "userId": {
+          "user_id": {
             "type": "string",
             "format": "uuid"
           },
-          "roleId": {
+          "role_id": {
             "type": "string",
             "format": "uuid"
           }
@@ -2117,10 +2092,10 @@
       "AssignRoleRequest": {
         "type": "object",
         "required": [
-          "roleId"
+          "role_id"
         ],
         "properties": {
-          "roleId": {
+          "role_id": {
             "type": "string",
             "format": "uuid"
           }
@@ -2247,34 +2222,34 @@
       "RolePermissions": {
         "type": "object",
         "required": [
-          "canWriteTickets",
-          "canHelp",
-          "canAssignHelp",
-          "canChangeStatus",
-          "canMakeRoles",
-          "canChangeRoles",
-          "canAssignPeopleToProject"
+          "can_write_tickets",
+          "can_help",
+          "can_assign_help",
+          "can_change_status",
+          "can_make_roles",
+          "can_change_roles",
+          "can_assign_people_to_project"
         ],
         "properties": {
-          "canWriteTickets": {
+          "can_write_tickets": {
             "type": "boolean"
           },
-          "canHelp": {
+          "can_help": {
             "type": "boolean"
           },
-          "canAssignHelp": {
+          "can_assign_help": {
             "type": "boolean"
           },
-          "canChangeStatus": {
+          "can_change_status": {
             "type": "boolean"
           },
-          "canMakeRoles": {
+          "can_make_roles": {
             "type": "boolean"
           },
-          "canChangeRoles": {
+          "can_change_roles": {
             "type": "boolean"
           },
-          "canAssignPeopleToProject": {
+          "can_assign_people_to_project": {
             "type": "boolean"
           }
         }
@@ -2292,14 +2267,14 @@
           "description": {
             "type": "string"
           },
-          "categoryId": {
+          "category_id": {
             "type": "string",
             "format": "uuid"
           },
           "priority": {
             "$ref": "#/components/schemas/IncidentPriority"
           },
-          "primaryAssigneeId": {
+          "primary_assignee_id": {
             "type": "string",
             "format": "uuid",
             "nullable": true
@@ -2312,7 +2287,7 @@
           "id",
           "title",
           "status",
-          "reportDate",
+          "report_date",
           "priority"
         ],
         "properties": {
@@ -2323,7 +2298,7 @@
           "title": {
             "type": "string"
           },
-          "categoryId": {
+          "category_id": {
             "type": "string",
             "format": "uuid"
           },
@@ -2333,12 +2308,12 @@
           "status": {
             "$ref": "#/components/schemas/IncidentStatus"
           },
-          "primaryAssigneeId": {
+          "primary_assignee_id": {
             "type": "string",
             "format": "uuid",
             "nullable": true
           },
-          "reportDate": {
+          "report_date": {
             "type": "string",
             "format": "date-time"
           }
@@ -2377,17 +2352,17 @@
           "title",
           "status",
           "description",
-          "projectId",
-          "reporterId",
+          "project_id",
+          "reporter_id",
           "priority",
-          "reportDate"
+          "report_date"
         ],
         "properties": {
           "id": {
             "type": "string",
             "format": "uuid"
           },
-          "projectId": {
+          "project_id": {
             "type": "string",
             "format": "uuid"
           },
@@ -2397,7 +2372,7 @@
           "description": {
             "type": "string"
           },
-          "categoryId": {
+          "category_id": {
             "type": "string",
             "format": "uuid"
           },
@@ -2407,16 +2382,16 @@
           "status": {
             "$ref": "#/components/schemas/IncidentStatus"
           },
-          "reporterId": {
+          "reporter_id": {
             "type": "string",
             "format": "uuid"
           },
-          "primaryAssigneeId": {
+          "primary_assignee_id": {
             "type": "string",
             "format": "uuid",
             "nullable": true
           },
-          "reportDate": {
+          "report_date": {
             "type": "string",
             "format": "date-time"
           }
@@ -2436,7 +2411,7 @@
       "UpdateIncidentAssigneeRequest": {
         "type": "object",
         "properties": {
-          "primaryAssigneeId": {
+          "primary_assignee_id": {
             "type": "string",
             "format": "uuid",
             "nullable": true
@@ -2457,10 +2432,10 @@
       "UpdateIncidentCategoryRequest": {
         "type": "object",
         "required": [
-          "categoryId"
+          "category_id"
         ],
         "properties": {
-          "categoryId": {
+          "category_id": {
             "type": "string",
             "format": "uuid"
           }
@@ -2481,26 +2456,26 @@
         "type": "object",
         "required": [
           "id",
-          "authorId",
+          "author_id",
           "content",
-          "createdAt"
+          "created_at"
         ],
         "properties": {
           "id": {
             "type": "string",
             "format": "uuid"
           },
-          "authorId": {
+          "author_id": {
             "type": "string",
             "format": "uuid"
           },
-          "authorUsername": {
+          "author_username": {
             "type": "string"
           },
           "content": {
             "type": "string"
           },
-          "createdAt": {
+          "created_at": {
             "type": "string",
             "format": "date-time"
           }
@@ -2524,17 +2499,17 @@
         "type": "object",
         "required": [
           "id",
-          "incidentId",
-          "actorId",
+          "incident_id",
+          "actor_id",
           "type",
-          "createdAt"
+          "created_at"
         ],
         "properties": {
           "id": {
             "type": "string",
             "format": "uuid"
           },
-          "incidentId": {
+          "incident_id": {
             "type": "string",
             "format": "uuid"
           },
@@ -2552,11 +2527,11 @@
               "CLOSED"
             ]
           },
-          "createdAt": {
+          "created_at": {
             "type": "string",
             "format": "date-time"
           },
-          "actorId": {
+          "actor_id": {
             "type": "string",
             "format": "uuid"
           },
@@ -2564,11 +2539,11 @@
             "type": "string",
             "nullable": true
           },
-          "oldValue": {
+          "old_value": {
             "type": "string",
             "nullable": true
           },
-          "newValue": {
+          "new_value": {
             "type": "string",
             "nullable": true
           }
@@ -2642,26 +2617,6 @@
           "CRITICAL"
         ]
       },
-      "FeedbackRequest": {
-        "type": "object",
-        "required": [
-          "name",
-          "email",
-          "message"
-        ],
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
-      },
       "ProfileResponse": {
         "type": "object",
         "required": [
@@ -2680,7 +2635,7 @@
             "type": "string",
             "nullable": true
           },
-          "profilePictureUrl": {
+          "profile_picture_url": {
             "type": "string",
             "nullable": true
           }
@@ -2696,7 +2651,7 @@
             "type": "string",
             "nullable": true
           },
-          "profilePictureUrl": {
+          "profile_picture_url": {
             "type": "string",
             "nullable": true
           }
@@ -2736,8 +2691,8 @@
         "type": "object",
         "required": [
           "scope",
-          "targetName",
-          "isValid"
+          "target_name",
+          "is_valid"
         ],
         "properties": {
           "scope": {
@@ -2747,13 +2702,13 @@
               "PROJECT"
             ]
           },
-          "targetName": {
+          "target_name": {
             "type": "string"
           },
-          "isValid": {
+          "is_valid": {
             "type": "boolean"
           },
-          "expiresAt": {
+          "expires_at": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -2782,10 +2737,10 @@
       "AddHelperRequest": {
         "type": "object",
         "required": [
-          "userId"
+          "user_id"
         ],
         "properties": {
-          "userId": {
+          "user_id": {
             "type": "string",
             "format": "uuid"
           }

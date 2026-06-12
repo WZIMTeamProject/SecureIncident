@@ -25,7 +25,6 @@ async def get_categories(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: logika pobierania kategorii
     return CategoryListResponse(items=[], total=0, offset=0, limit=20)
 
 
@@ -36,7 +35,6 @@ async def create_category(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: logika tworzenia kategorii
     return CreatedIdResponse(id="00000000-0000-0000-0000-000000000000")
 
 
@@ -48,7 +46,6 @@ async def update_category(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: logika aktualizowania kategorii
     return
 
 
@@ -59,5 +56,4 @@ async def delete_category(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: logika usuwania kategorii
     return

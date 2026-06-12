@@ -19,7 +19,6 @@ async def create_project_invite(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: utwórz token zaproszenia do projektu
     return InviteResponse(token="dummy-invite-token", invite_url=None)
 
 
@@ -29,7 +28,6 @@ async def join_project(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # TODO: dołącz zalogowanego użytkownika do projektu na podstawie tokenu
     return
 
 
@@ -38,7 +36,6 @@ async def get_invite_preview(
     token: str,
     db: AsyncSession = Depends(get_db),
 ):
-    # TODO: pobierz podgląd zaproszenia przed akceptacją
     return InvitePreviewResponse(
         scope=InviteScope.PROJECT,
         target_name="Test Project",

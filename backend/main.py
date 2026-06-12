@@ -7,7 +7,34 @@ from core.config import settings
 BASE_DIR = Path(__file__).resolve().parent
 OPENAPI_PATH = BASE_DIR.parent / "docs" / "api" / "openapi-core.json"
 
-app = FastAPI(title="Secure Incident API")
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+from alembic.config import Config
+from alembic import command
+import os
+
+def run_migrations():
+    os.environ["DATABASE_URL"] = settings.DATABASE_URL
+    alembic_cfg = Config(str(BASE_DIR / "alembic.ini"))
+    alembic_cfg.set_main_option("script_location", str(BASE_DIR / "alembic"))
+    command.upgrade(alembic_cfg, "head")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logging.info("Running database migrations...")
+    try:
+        await asyncio.to_thread(run_migrations)
+        logging.info("Database migrations completed successfully.")
+    except Exception as e:
+        logging.error(f"Error during database migrations: {e}")
+        raise e
+    yield
+
+app = FastAPI(
+    title="Secure Incident API",
+    lifespan=lifespan
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -54,9 +81,6 @@ app.include_router(invitations.router, prefix="/api")
 
 from api.routes import profiles
 app.include_router(profiles.router, prefix="/api")
-
-from api.routes import feedback
-app.include_router(feedback.router, prefix="/api")
 
 from api.routes import users
 app.include_router(users.router, prefix="/api")

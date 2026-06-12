@@ -39,7 +39,6 @@ class Incident(Base):
     closing_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
-    # Relationships
     reporter: Mapped["User"] = relationship(
         "User", back_populates="incidents", foreign_keys=[reporter_id], lazy="selectin"
     )
