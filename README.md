@@ -6,10 +6,13 @@ Web-based incident reporting platform — React 19 frontend + FastAPI backend + 
 
 ```
 SecureIncident/
-├── Frontend/    # React 19 + Vite + Tailwind CSS
-├── backend/     # FastAPI + SQLAlchemy + Alembic
-└── docs/api/    # OpenAPI specification
+├── Frontend/        # React 19 + Vite + Tailwind CSS
+├── backend/         # FastAPI + SQLAlchemy + Alembic
+├── docs/api/        # OpenAPI specification
+├── docker-compose.yml
+└── .env             # environment variables (gitignored)
 ```
+
 # Backend — SecureIncident API
 
 FastAPI + SQLAlchemy + Alembic + PostgreSQL.
@@ -18,121 +21,81 @@ FastAPI + SQLAlchemy + Alembic + PostgreSQL.
 
 ## Prerequisites
 
-| Tool                    | Version                                                     |
-|-------------------------|-------------------------------------------------------------|
-| Python                  | 3.14+                                                       |
+| Tool                    | Version                                                      |
+|-------------------------|--------------------------------------------------------------|
+| Python                  | 3.14+                                                        |
 | uv                      | latest (`curl -LsSf https://astral.sh/uv/install.sh \| sh`) |
-| pip                     | bundled with Python (alternative to uv)                     |
-| Docker + Docker Compose | latest (for the local DB option)                            |
+| pip                     | bundled with Python (alternative to uv)                      |
+| Docker + Docker Compose | latest (for database + email sink)                           |
 
 ---
 
 ## First-Time Setup
 
-### Step 1 — Choose a Database
+### Step 1 — Start Docker services
 
-Pick **one** option below.
-
----
-
-#### Option A — Docker (recommended for local development)
-
-The `docker-compose.yml` should be in `backend/` directory. Start PostgreSQL 16:
+From the **repository root** (`SecureIncident/`), start PostgreSQL and the local email sink:
 
 ```bash
 docker compose up -d
 ```
 
-**`docker-compose.yml` contents:**
+This starts two containers:
 
-```yaml
-version: '3.8'
+| Container               | Purpose                    | Port(s)          |
+|-------------------------|----------------------------|------------------|
+| `secure_incident_db`    | PostgreSQL 16 database     | 5432             |
+| `secure_incident_mailpit` | Mailpit — local email sink | 1025 (SMTP), 8025 (web UI) |
 
-services:
-  db:
-    image: postgres:16
-    container_name: secure_incident_db
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: secure_incident
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+To verify both are running:
 
-volumes:
-  postgres_data:
+```bash
+docker compose ps
 ```
-
-Connection string for this setup:
-```
-DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/secure_incident
-```
-
----
-
-#### Option B — Neon (serverless PostgreSQL)
-
-1. Create a project at https://neon.tech
-2. Go to **Connection Details** → select **asyncpg** as the driver
-3. Copy the connection string:
-   ```
-   postgresql+asyncpg://user:password@ep-xxxx.us-east-2.aws.neon.tech/neondb?sslmode=require
-   ```
-
----
-
-#### Option C — Supabase
-
-1. Create a project at https://supabase.com
-2. Go to **Project Settings → Database → Connection string → URI**
-3. Change the scheme from `postgresql://` to `postgresql+asyncpg://`:
-   ```
-   postgresql+asyncpg://postgres:your-password@db.xxxx.supabase.co:5432/postgres
-   ```
-
-> If you get SSL errors, append `?ssl=true` to the connection string.
 
 ---
 
 ### Step 2 — Configure Environment Variables
 
-Create `core/.env` with the following content:
+Create `.env` in the **repository root** (`SecureIncident/.env`):
 
 ```env
-# Database — replace with your connection string from Step 1
+# Database
 DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/secure_incident
 
-# JWT signing key — generate one with:
+# JWT — generate a key with:
 # python -c "import secrets; print(secrets.token_hex(32))"
 SECRET_KEY=change-me-in-production
-
-# Token settings
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-# CORS — list of origins allowed to call the API
+# CORS
 ALLOWED_ORIGINS=["http://localhost:5173"]
+
+# Email (local dev — Mailpit)
+SMTP_HOST=localhost
+SMTP_PORT=1025
+SMTP_USER=
+SMTP_PASSWORD=
+SMTP_FROM=noreply@localhost
+SMTP_TLS=False
+FRONTEND_URL=http://localhost:5173
 ```
+
+> **Production:** replace the `SMTP_*` values with your real SMTP provider credentials (SendGrid, SES, Mailgun, etc.) and set `SMTP_TLS=True`.
 
 ---
 
 ### Step 3 — Install Dependencies
 
-From the **repository root** (one level up, where `pyproject.toml` lives):
+From the **repository root** (where `pyproject.toml` lives):
 
 ```bash
 # with uv (recommended)
 uv sync
 
 # or with pip
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 ```
 
 ---
@@ -151,6 +114,8 @@ Run this once on first setup and again after pulling changes that include new mi
 
 ## Running the API
 
+From the `backend/` directory:
+
 ```bash
 uvicorn main:app --reload
 ```
@@ -162,13 +127,53 @@ uvicorn main:app --reload
 
 ---
 
+## Email Service & Password Reset
+
+The password reset flow sends a reset link by email using an async background task (non-blocking — the endpoint always returns 204 regardless of email delivery).
+
+### How it works
+
+1. `POST /api/auth/request-password-reset` with `{"email_or_username": "..."}` — generates a token and emails the reset link
+2. User clicks the link: `http://localhost:5173/reset-password?token=<token>`
+3. `POST /api/auth/reset-password` with `{"reset_token": "...", "new_password": "..."}` — validates and applies the new password
+
+Tokens expire after 30 minutes. Requesting a new reset invalidates any pending token.
+
+### Testing locally with Mailpit
+
+Mailpit is a local SMTP sink — it captures all outbound email without delivering anything.
+
+**Start Mailpit** (included in `docker compose up -d`).
+
+**Send a test reset:**
+
+```bash
+curl -s -X POST http://localhost:8000/api/auth/request-password-reset \
+  -H "Content-Type: application/json" \
+  -d '{"email_or_username": "your_username_or_email"}'
+```
+
+**View captured email:** open [http://localhost:8025](http://localhost:8025) in the browser.
+
+The email contains the reset link with the raw token. Copy the `token` query parameter and use it in the confirm step:
+
+```bash
+curl -s -X POST http://localhost:8000/api/auth/reset-password \
+  -H "Content-Type: application/json" \
+  -d '{"reset_token": "<token>", "new_password": "NewPass1!"}'
+```
+
+You can also test both steps via Swagger at [http://localhost:8000/docs](http://localhost:8000/docs).
+
+---
+
 ## Daily Workflow
 
 ```bash
-# Start database (Docker option only)
+# Start database + email sink
 docker compose up -d
 
-# Start API server
+# Start API server (from backend/)
 uvicorn main:app --reload
 ```
 
@@ -177,10 +182,10 @@ uvicorn main:app --reload
 ```bash
 # Stop API: Ctrl+C
 
-# Stop database
+# Stop containers
 docker compose down
 
-# Stop database and wipe all data
+# Stop containers and wipe all data
 docker compose down -v
 ```
 
@@ -188,13 +193,21 @@ docker compose down -v
 
 ## Environment Variables Reference
 
-| Variable                      | Required   | Default                     | Description                               |
-|-------------------------------|------------|-----------------------------|-------------------------------------------|
-| `DATABASE_URL`                | Yes        | —                           | PostgreSQL asyncpg connection string      |
-| `SECRET_KEY`                  | Yes        | —                           | JWT signing key (32-byte hex recommended) |
-| `ALGORITHM`                   | No         | `HS256`                     | JWT algorithm                             |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | No         | `30`                        | Token lifetime in minutes                 |
-| `ALLOWED_ORIGINS`             | No         | `["http://localhost:5173"]` | CORS allowed origins (JSON list)          |
+| Variable                        | Required | Default                       | Description                                        |
+|---------------------------------|----------|-------------------------------|----------------------------------------------------|
+| `DATABASE_URL`                  | Yes      | —                             | PostgreSQL asyncpg connection string               |
+| `SECRET_KEY`                    | Yes      | —                             | JWT signing key (32-byte hex recommended)          |
+| `ALGORITHM`                     | No       | `HS256`                       | JWT algorithm                                      |
+| `ACCESS_TOKEN_EXPIRE_MINUTES`   | No       | `30`                          | Access token lifetime in minutes                   |
+| `PASSWORD_RESET_EXPIRE_MINUTES` | No       | `30`                          | Password reset token lifetime in minutes           |
+| `ALLOWED_ORIGINS`               | No       | `["http://localhost:5173"]`   | CORS allowed origins (JSON list)                   |
+| `SMTP_HOST`                     | No       | `mailpit`                     | SMTP server hostname (`localhost` when running locally outside Docker) |
+| `SMTP_PORT`                     | No       | `1025`                        | SMTP server port                                   |
+| `SMTP_USER`                     | No       | *(empty)*                     | SMTP username (leave empty for Mailpit)            |
+| `SMTP_PASSWORD`                 | No       | *(empty)*                     | SMTP password (leave empty for Mailpit)            |
+| `SMTP_FROM`                     | No       | `noreply@localhost`           | From address on outbound emails                    |
+| `SMTP_TLS`                      | No       | `False`                       | Enable TLS (`True` for production SMTP)            |
+| `FRONTEND_URL`                  | No       | `http://localhost:5173`       | Base URL used in the password reset email link     |
 
 # Frontend — SecureIncident
 

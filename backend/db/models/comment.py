@@ -25,7 +25,6 @@ class Comment(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
-    # Relationships
     incident: Mapped["Incident"] = relationship(
         "Incident", back_populates="comments", foreign_keys=[incident_id], lazy="selectin"
     )

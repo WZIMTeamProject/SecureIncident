@@ -25,7 +25,6 @@ class UserProject(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
-    # Relationships
     user: Mapped["User"] = relationship(
         "User", back_populates="user_projects", foreign_keys=[user_id], lazy="selectin"
     )
