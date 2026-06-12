@@ -1,6 +1,4 @@
-﻿from datetime import datetime, timedelta, timezone
-
-from fastapi import HTTPException, status
+﻿from fastapi import BackgroundTasks, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.schemas.auth.request import LoginRequest, RegisterRequest
@@ -8,6 +6,7 @@ from core import security
 from core.config import settings
 from db.models.user import User
 from db import repositories
+from services import email_service
 import datetime
 
 async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
@@ -19,15 +18,6 @@ async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
     if await repositories.user_repo.get_user_by_email(db, data.email):
         raise HTTPException(status_code=409, detail="Email już zarejestrowany")
     
-    if not any(char.isupper() for char in data.password):
-        raise HTTPException(status_code=422, detail="Hasło musi zawierać co najmniej jedną wielką literę")
-        
-    if not any(char.isdigit() for char in data.password):
-        raise HTTPException(status_code=422, detail="Hasło musi zawierać co najmniej jedną cyfrę")
-    if len(data.password.encode("utf-8")) < 8:
-       raise HTTPException(status_code=422, detail="Hasło nie może być krótsze niż 8 bajtów")
-    if len(data.password.encode("utf-8")) > 72:
-       raise HTTPException(status_code=422, detail="Hasło nie może być dłuższe niż 72 bajty")
     hashed = security.hash_password(data.password)
     return await repositories.user_repo.create_user(
         db,
@@ -53,7 +43,7 @@ async def login_user(db: AsyncSession, data: LoginRequest) -> tuple[User, str]:
     return user, token
 
 
-async def request_password_reset(db: AsyncSession, email_or_username: str) -> None:
+async def request_password_reset(db: AsyncSession, email_or_username: str, background_tasks: BackgroundTasks) -> None:
     """Wygeneruj token resetowania hasła (nie ujawniaj czy user istnieje)."""
     user = await repositories.user_repo.get_user_by_email_or_username(
         db, email_or_username.strip()
@@ -61,18 +51,19 @@ async def request_password_reset(db: AsyncSession, email_or_username: str) -> No
     if user is None:
         return  # Silent — do not reveal user existence
 
+    await repositories.user_repo.delete_pending_reset_tokens(db, user.id)
     raw_token = security.generate_token()
     token_hash = security.hash_token(raw_token)
     expires_at = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) + datetime.timedelta(
         minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES
     )
     await repositories.user_repo.create_password_reset_token(
-        db, 
-        user_id=user.id, 
-        token_hash=token_hash,  
+        db,
+        user_id=user.id,
+        token_hash=token_hash,
         expires_at=expires_at
     )
-    # EMAIL_TODO: send reset email with raw_token
+    background_tasks.add_task(email_service.send_reset_email, user.email, raw_token)
 
 
 async def reset_password(db: AsyncSession, raw_token: str, new_password: str) -> None:

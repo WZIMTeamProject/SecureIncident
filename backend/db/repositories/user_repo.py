@@ -1,10 +1,8 @@
-﻿from datetime import datetime, timezone, timedelta
+﻿from datetime import datetime, timezone
 import datetime
 from typing import Optional
 from uuid import UUID
-from core.config import settings
-
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.security import hash_password, hash_token
@@ -91,12 +89,22 @@ async def create_password_reset_token(
     record = PasswordResetToken(
         user_id=user_id,
         token=token_hash,
-        expires_at = get_now_naive() + timedelta(minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES)
+        expires_at=expires_at,
     )
     db.add(record)
     await db.commit()
     await db.refresh(record)
     return record
+
+
+async def delete_pending_reset_tokens(db: AsyncSession, user_id: UUID) -> None:
+    await db.execute(
+        delete(PasswordResetToken).where(
+            PasswordResetToken.user_id == user_id,
+            PasswordResetToken.used_at == None,
+        )
+    )
+    await db.flush()  # visible to subsequent queries in same transaction; caller commits
 
 
 async def mark_password_reset_token_used(
@@ -108,6 +116,3 @@ async def mark_password_reset_token_used(
     db.add(token)
     await db.commit()
 
-def get_now_naive():
-    """Zawsze zwraca czas UTC bez strefy czasowej (tzinfo=None)."""
-    return datetime.datetime.now(timezone.utc).replace(tzinfo=None)

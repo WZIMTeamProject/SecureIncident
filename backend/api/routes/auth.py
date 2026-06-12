@@ -1,7 +1,7 @@
 ﻿from uuid import UUID
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies.db import get_db
@@ -67,10 +67,11 @@ async def logout_user(
 @router.post("/request-password-reset", status_code=status.HTTP_204_NO_CONTENT)
 async def request_password_reset(
     data: PasswordResetRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
     """Poproś o reset hasła (zawsze 204, nawet jeśli user nie istnieje)."""
-    await auth_service.request_password_reset(db, data.email_or_username)
+    await auth_service.request_password_reset(db, data.email_or_username, background_tasks)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

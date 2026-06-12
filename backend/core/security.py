@@ -56,3 +56,17 @@ def hash_token(token: str) -> str:
 def generate_token() -> str:
     """Wygeneruj bezpieczny token URL-safe."""
     return secrets.token_urlsafe(32)
+
+
+def validate_password_strength(v: str) -> str:
+    if len(v) < 8:
+        raise ValueError("Password must be at least 8 characters")
+    if len(v.encode("utf-8")) > 72:
+        raise ValueError("Password must be at most 72 bytes")
+    if not any(c.isupper() for c in v):
+        raise ValueError("Password must contain at least one uppercase letter")
+    if not any(c.isdigit() for c in v):
+        raise ValueError("Password must contain at least one digit")
+    if not any(c in '!@#$%^&*()_+-=[]{}|;:,.<>?/~`\'"\\' for c in v):
+        raise ValueError("Password must contain at least one special character")
+    return v
