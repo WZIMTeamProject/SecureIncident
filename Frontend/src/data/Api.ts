@@ -2,7 +2,11 @@ import {AuthApi, Configuration, IncidentsApi, OrganizationApi, ProfilesApi, Proj
 
 export default class Api {
     private static configuration: Configuration = new Configuration({
-        basePath: "http://localhost:8000/api"
+        basePath: "http://localhost:8000/api",
+        accessToken: async (cookieName) => {
+            if (!cookieName) { return ""; }
+            return (await cookieStore.get(cookieName))?.value ?? "";
+        }
     });
 
     static auth: AuthApi = new AuthApi(Api.configuration);

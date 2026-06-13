@@ -8,7 +8,15 @@ import './index.css'
 import {appRootLoader, SIAppRoot} from './SIAppRoot.tsx'
 
 import {SIDashboard} from "./dashboard";
-import {loginFormAction, loginMiddleware, SIForgotPassword, SILoginPage, SIRegisterPage} from "./login";
+import {
+    loginFormAction,
+    logoutMiddleware,
+    redirectToDashboardMiddleware,
+    registerFormAction,
+    SIForgotPassword,
+    SILoginPage,
+    SIRegisterPage
+} from "./login";
 import {AuthRouterContext, authUserLoader, getAuthState} from "./data/auth.ts";
 import {SIStartPage} from "./SIStartPage.tsx";
 import {SIPageNotFound} from "./SIPageNotFound.tsx";
@@ -30,9 +38,19 @@ const router = createBrowserRouter([
             {
                 path: "/login",
                 children: [
-                    {index: true, Component: SILoginPage, middleware: [loginMiddleware], action: loginFormAction},
+                    {
+                        index: true,
+                        Component: SILoginPage,
+                        middleware: [logoutMiddleware, redirectToDashboardMiddleware],
+                        action: loginFormAction
+                    },
                     {path: "/login/forgot_password", Component: SIForgotPassword},
-                    {path: "/login/register", Component: SIRegisterPage}
+                    {
+                        path: "/login/register",
+                        Component: SIRegisterPage,
+                        middleware: [redirectToDashboardMiddleware],
+                        action: registerFormAction
+                    }
                 ]
             },
 
