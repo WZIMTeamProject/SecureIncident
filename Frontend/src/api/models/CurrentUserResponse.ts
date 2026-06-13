@@ -60,7 +60,7 @@ export function CurrentUserResponseFromJSONTyped(json: any, ignoreDiscriminator:
 
         'id': json['id'],
         'username': json['username'],
-        'organizationId': json['organizationId'] == null ? undefined : json['organizationId'],
+        'organizationId': json['organization_id'] == null ? undefined : json['organization_id'],
     };
 }
 
@@ -72,7 +72,7 @@ export function CurrentUserResponseToJSON(value?: CurrentUserResponse | null): a
 
         'id': value['id'],
         'username': value['username'],
-        'organizationId': value['organizationId'],
+        'organization_id': value['organizationId'],
     };
 }
 

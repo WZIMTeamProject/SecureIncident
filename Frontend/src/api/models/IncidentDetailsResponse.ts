@@ -111,15 +111,15 @@ export function IncidentDetailsResponseFromJSONTyped(json: any, ignoreDiscrimina
     return {
 
         'id': json['id'],
-        'projectId': json['projectId'],
+        'projectId': json['project_id'],
         'title': json['title'],
         'description': json['description'],
-        'categoryId': json['categoryId'] == null ? undefined : json['categoryId'],
+        'categoryId': json['category_id'] == null ? undefined : json['category_id'],
         'priority': IncidentPriorityFromJSON(json['priority']),
         'status': IncidentStatusFromJSON(json['status']),
-        'reporterId': json['reporterId'],
-        'primaryAssigneeId': json['primaryAssigneeId'] == null ? undefined : json['primaryAssigneeId'],
-        'reportDate': (new Date(json['reportDate'])),
+        'reporterId': json['reporter_id'],
+        'primaryAssigneeId': json['primary_assignee_id'] == null ? undefined : json['primary_assignee_id'],
+        'reportDate': (new Date(json['report_date'])),
     };
 }
 
@@ -130,15 +130,15 @@ export function IncidentDetailsResponseToJSON(value?: IncidentDetailsResponse | 
     return {
 
         'id': value['id'],
-        'projectId': value['projectId'],
+        'project_id': value['projectId'],
         'title': value['title'],
         'description': value['description'],
-        'categoryId': value['categoryId'],
+        'category_id': value['categoryId'],
         'priority': IncidentPriorityToJSON(value['priority']),
         'status': IncidentStatusToJSON(value['status']),
-        'reporterId': value['reporterId'],
-        'primaryAssigneeId': value['primaryAssigneeId'],
-        'reportDate': ((value['reportDate']).toISOString()),
+        'reporter_id': value['reporterId'],
+        'primary_assignee_id': value['primaryAssigneeId'],
+        'report_date': ((value['reportDate']).toISOString()),
     };
 }
 

@@ -52,8 +52,8 @@ export function AddProjectMemberRequestFromJSONTyped(json: any, ignoreDiscrimina
     }
     return {
 
-        'userId': json['userId'],
-        'roleId': json['roleId'],
+        'userId': json['user_id'],
+        'roleId': json['role_id'],
     };
 }
 
@@ -63,8 +63,8 @@ export function AddProjectMemberRequestToJSON(value?: AddProjectMemberRequest | 
     }
     return {
 
-        'userId': value['userId'],
-        'roleId': value['roleId'],
+        'user_id': value['userId'],
+        'role_id': value['roleId'],
     };
 }
 

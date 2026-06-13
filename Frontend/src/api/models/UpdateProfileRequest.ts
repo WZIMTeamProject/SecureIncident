@@ -58,7 +58,7 @@ export function UpdateProfileRequestFromJSONTyped(json: any, ignoreDiscriminator
 
         'username': json['username'] == null ? undefined : json['username'],
         'bio': json['bio'] == null ? undefined : json['bio'],
-        'profilePictureUrl': json['profilePictureUrl'] == null ? undefined : json['profilePictureUrl'],
+        'profilePictureUrl': json['profile_picture_url'] == null ? undefined : json['profile_picture_url'],
     };
 }
 
@@ -70,7 +70,7 @@ export function UpdateProfileRequestToJSON(value?: UpdateProfileRequest | null):
 
         'username': value['username'],
         'bio': value['bio'],
-        'profilePictureUrl': value['profilePictureUrl'],
+        'profile_picture_url': value['profilePictureUrl'],
     };
 }
 

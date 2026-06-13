@@ -73,10 +73,10 @@ export function CommentResponseFromJSONTyped(json: any, ignoreDiscriminator: boo
     return {
 
         'id': json['id'],
-        'authorId': json['authorId'],
-        'authorUsername': json['authorUsername'] == null ? undefined : json['authorUsername'],
+        'authorId': json['author_id'],
+        'authorUsername': json['author_username'] == null ? undefined : json['author_username'],
         'content': json['content'],
-        'createdAt': (new Date(json['createdAt'])),
+        'createdAt': (new Date(json['created_at'])),
     };
 }
 
@@ -87,10 +87,10 @@ export function CommentResponseToJSON(value?: CommentResponse | null): any {
     return {
 
         'id': value['id'],
-        'authorId': value['authorId'],
-        'authorUsername': value['authorUsername'],
+        'author_id': value['authorId'],
+        'author_username': value['authorUsername'],
         'content': value['content'],
-        'createdAt': ((value['createdAt']).toISOString()),
+        'created_at': ((value['createdAt']).toISOString()),
     };
 }
 

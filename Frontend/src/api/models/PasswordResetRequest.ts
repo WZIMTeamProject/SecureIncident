@@ -45,7 +45,7 @@ export function PasswordResetRequestFromJSONTyped(json: any, ignoreDiscriminator
     }
     return {
 
-        'emailOrUsername': json['emailOrUsername'],
+        'emailOrUsername': json['email_or_username'],
     };
 }
 
@@ -55,7 +55,7 @@ export function PasswordResetRequestToJSON(value?: PasswordResetRequest | null):
     }
     return {
 
-        'emailOrUsername': value['emailOrUsername'],
+        'email_or_username': value['emailOrUsername'],
     };
 }
 

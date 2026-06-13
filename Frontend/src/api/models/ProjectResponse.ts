@@ -83,7 +83,7 @@ export function ProjectResponseFromJSONTyped(json: any, ignoreDiscriminator: boo
     return {
 
         'id': json['id'],
-        'organizationId': json['organizationId'] == null ? undefined : json['organizationId'],
+        'organizationId': json['organization_id'] == null ? undefined : json['organization_id'],
         'name': json['name'],
         'description': json['description'] == null ? undefined : json['description'],
         'scope': json['scope'],
@@ -97,7 +97,7 @@ export function ProjectResponseToJSON(value?: ProjectResponse | null): any {
     return {
 
         'id': value['id'],
-        'organizationId': value['organizationId'],
+        'organization_id': value['organizationId'],
         'name': value['name'],
         'description': value['description'],
         'scope': value['scope'],
