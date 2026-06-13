@@ -77,9 +77,9 @@ export function InvitePreviewResponseFromJSONTyped(json: any, ignoreDiscriminato
     return {
 
         'scope': json['scope'],
-        'targetName': json['targetName'],
-        'isValid': json['isValid'],
-        'expiresAt': json['expiresAt'] == null ? undefined : (new Date(json['expiresAt'])),
+        'targetName': json['target_name'],
+        'isValid': json['is_valid'],
+        'expiresAt': json['expires_at'] == null ? undefined : (new Date(json['expires_at'])),
     };
 }
 
@@ -90,9 +90,9 @@ export function InvitePreviewResponseToJSON(value?: InvitePreviewResponse | null
     return {
 
         'scope': value['scope'],
-        'targetName': value['targetName'],
-        'isValid': value['isValid'],
-        'expiresAt': value['expiresAt'] == null ? undefined : ((value['expiresAt'] as any).toISOString()),
+        'target_name': value['targetName'],
+        'is_valid': value['isValid'],
+        'expires_at': value['expiresAt'] == null ? undefined : ((value['expiresAt'] as any).toISOString()),
     };
 }
 

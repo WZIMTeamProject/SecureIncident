@@ -91,11 +91,11 @@ export function IncidentSummaryFromJSONTyped(json: any, ignoreDiscriminator: boo
 
         'id': json['id'],
         'title': json['title'],
-        'categoryId': json['categoryId'] == null ? undefined : json['categoryId'],
+        'categoryId': json['category_id'] == null ? undefined : json['category_id'],
         'priority': IncidentPriorityFromJSON(json['priority']),
         'status': IncidentStatusFromJSON(json['status']),
-        'primaryAssigneeId': json['primaryAssigneeId'] == null ? undefined : json['primaryAssigneeId'],
-        'reportDate': (new Date(json['reportDate'])),
+        'primaryAssigneeId': json['primary_assignee_id'] == null ? undefined : json['primary_assignee_id'],
+        'reportDate': (new Date(json['report_date'])),
     };
 }
 
@@ -107,11 +107,11 @@ export function IncidentSummaryToJSON(value?: IncidentSummary | null): any {
 
         'id': value['id'],
         'title': value['title'],
-        'categoryId': value['categoryId'],
+        'category_id': value['categoryId'],
         'priority': IncidentPriorityToJSON(value['priority']),
         'status': IncidentStatusToJSON(value['status']),
-        'primaryAssigneeId': value['primaryAssigneeId'],
-        'reportDate': ((value['reportDate']).toISOString()),
+        'primary_assignee_id': value['primaryAssigneeId'],
+        'report_date': ((value['reportDate']).toISOString()),
     };
 }
 

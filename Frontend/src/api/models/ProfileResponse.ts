@@ -67,7 +67,7 @@ export function ProfileResponseFromJSONTyped(json: any, ignoreDiscriminator: boo
         'id': json['id'],
         'username': json['username'],
         'bio': json['bio'] == null ? undefined : json['bio'],
-        'profilePictureUrl': json['profilePictureUrl'] == null ? undefined : json['profilePictureUrl'],
+        'profilePictureUrl': json['profile_picture_url'] == null ? undefined : json['profile_picture_url'],
     };
 }
 
@@ -80,7 +80,7 @@ export function ProfileResponseToJSON(value?: ProfileResponse | null): any {
         'id': value['id'],
         'username': value['username'],
         'bio': value['bio'],
-        'profilePictureUrl': value['profilePictureUrl'],
+        'profile_picture_url': value['profilePictureUrl'],
     };
 }
 

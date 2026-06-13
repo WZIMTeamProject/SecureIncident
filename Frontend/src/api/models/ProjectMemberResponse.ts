@@ -66,10 +66,10 @@ export function ProjectMemberResponseFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
 
-        'userId': json['userId'],
+        'userId': json['user_id'],
         'username': json['username'],
-        'roleId': json['roleId'],
-        'roleName': json['roleName'],
+        'roleId': json['role_id'],
+        'roleName': json['role_name'],
     };
 }
 
@@ -79,10 +79,10 @@ export function ProjectMemberResponseToJSON(value?: ProjectMemberResponse | null
     }
     return {
 
-        'userId': value['userId'],
+        'user_id': value['userId'],
         'username': value['username'],
-        'roleId': value['roleId'],
-        'roleName': value['roleName'],
+        'role_id': value['roleId'],
+        'role_name': value['roleName'],
     };
 }
 

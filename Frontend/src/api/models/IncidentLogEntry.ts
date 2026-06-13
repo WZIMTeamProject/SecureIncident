@@ -110,13 +110,13 @@ export function IncidentLogEntryFromJSONTyped(json: any, ignoreDiscriminator: bo
     return {
 
         'id': json['id'],
-        'incidentId': json['incidentId'],
+        'incidentId': json['incident_id'],
         'type': json['type'],
-        'createdAt': (new Date(json['createdAt'])),
-        'actorId': json['actorId'],
+        'createdAt': (new Date(json['created_at'])),
+        'actorId': json['actor_id'],
         'comment': json['comment'] == null ? undefined : json['comment'],
-        'oldValue': json['oldValue'] == null ? undefined : json['oldValue'],
-        'newValue': json['newValue'] == null ? undefined : json['newValue'],
+        'oldValue': json['old_value'] == null ? undefined : json['old_value'],
+        'newValue': json['new_value'] == null ? undefined : json['new_value'],
     };
 }
 
@@ -127,13 +127,13 @@ export function IncidentLogEntryToJSON(value?: IncidentLogEntry | null): any {
     return {
 
         'id': value['id'],
-        'incidentId': value['incidentId'],
+        'incident_id': value['incidentId'],
         'type': value['type'],
-        'createdAt': ((value['createdAt']).toISOString()),
-        'actorId': value['actorId'],
+        'created_at': ((value['createdAt']).toISOString()),
+        'actor_id': value['actorId'],
         'comment': value['comment'],
-        'oldValue': value['oldValue'],
-        'newValue': value['newValue'],
+        'old_value': value['oldValue'],
+        'new_value': value['newValue'],
     };
 }
 

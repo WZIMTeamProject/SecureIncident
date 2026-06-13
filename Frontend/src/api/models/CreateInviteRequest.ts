@@ -50,8 +50,8 @@ export function CreateInviteRequestFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
 
-        'expiresAt': json['expiresAt'] == null ? undefined : (new Date(json['expiresAt'])),
-        'maxUses': json['maxUses'] == null ? undefined : json['maxUses'],
+        'expiresAt': json['expires_at'] == null ? undefined : (new Date(json['expires_at'])),
+        'maxUses': json['max_uses'] == null ? undefined : json['max_uses'],
     };
 }
 
@@ -61,8 +61,8 @@ export function CreateInviteRequestToJSON(value?: CreateInviteRequest | null): a
     }
     return {
 
-        'expiresAt': value['expiresAt'] == null ? undefined : ((value['expiresAt'] as any).toISOString()),
-        'maxUses': value['maxUses'],
+        'expires_at': value['expiresAt'] == null ? undefined : ((value['expiresAt'] as any).toISOString()),
+        'max_uses': value['maxUses'],
     };
 }
 

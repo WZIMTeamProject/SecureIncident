@@ -44,7 +44,7 @@ export function UpdateIncidentAssigneeRequestFromJSONTyped(json: any, ignoreDisc
     }
     return {
 
-        'primaryAssigneeId': json['primaryAssigneeId'] == null ? undefined : json['primaryAssigneeId'],
+        'primaryAssigneeId': json['primary_assignee_id'] == null ? undefined : json['primary_assignee_id'],
     };
 }
 
@@ -54,7 +54,7 @@ export function UpdateIncidentAssigneeRequestToJSON(value?: UpdateIncidentAssign
     }
     return {
 
-        'primaryAssigneeId': value['primaryAssigneeId'],
+        'primary_assignee_id': value['primaryAssigneeId'],
     };
 }
 

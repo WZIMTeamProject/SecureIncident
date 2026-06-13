@@ -52,8 +52,8 @@ export function PasswordResetConfirmRequestFromJSONTyped(json: any, ignoreDiscri
     }
     return {
 
-        'resetToken': json['resetToken'],
-        'newPassword': json['newPassword'],
+        'resetToken': json['reset_token'],
+        'newPassword': json['new_password'],
     };
 }
 
@@ -63,8 +63,8 @@ export function PasswordResetConfirmRequestToJSON(value?: PasswordResetConfirmRe
     }
     return {
 
-        'resetToken': value['resetToken'],
-        'newPassword': value['newPassword'],
+        'reset_token': value['resetToken'],
+        'new_password': value['newPassword'],
     };
 }
 

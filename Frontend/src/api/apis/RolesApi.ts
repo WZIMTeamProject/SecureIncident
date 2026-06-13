@@ -64,8 +64,16 @@ export class RolesApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/projects/{projectId}/roles`.replace(`{${"projectId"}}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}/roles`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -108,8 +116,16 @@ export class RolesApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/projects/{projectId}/roles`.replace(`{${"projectId"}}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}/roles`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -151,8 +167,16 @@ export class RolesApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/projects/{projectId}/roles/{roleId}`.replace(`{${"projectId"}}`, encodeURIComponent(String(requestParameters['projectId']))).replace(`{${"roleId"}}`, encodeURIComponent(String(requestParameters['roleId']))),
+            path: `/projects/{project_id}/roles/{role_id}`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))).replace(`{role_id}`, encodeURIComponent(String(requestParameters['roleId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -202,8 +226,16 @@ export class RolesApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/projects/{projectId}/roles/{roleId}`.replace(`{${"projectId"}}`, encodeURIComponent(String(requestParameters['projectId']))).replace(`{${"roleId"}}`, encodeURIComponent(String(requestParameters['roleId']))),
+            path: `/projects/{project_id}/roles/{role_id}`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))).replace(`{role_id}`, encodeURIComponent(String(requestParameters['roleId']))),
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
