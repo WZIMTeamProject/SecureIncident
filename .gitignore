@@ -182,9 +182,9 @@ cython_debug/
 .abstra/
 
 # Visual Studio Code
-#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
+#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore
 #  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
-#  and can be added to the global gitignore or merged into this file. However, if you prefer, 
+#  and can be added to the global gitignore or merged into this file. However, if you prefer,
 #  you could uncomment the following to ignore the entire vscode folder
 # .vscode/
 
@@ -216,3 +216,7 @@ __marimo__/
 /.vs/SecureIncident/FileContentIndex/0b600ddd-736e-4c94-9f50-95b1d8b26dc4.vsidx
 /.vs/SecureIncident/FileContentIndex/acee5095-2772-4c13-a203-9bda9320002a.vsidx
 *.vsidx
+
+# macOS
+.DS_Store
+**/.DS_Store
