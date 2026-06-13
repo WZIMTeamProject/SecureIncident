@@ -85,6 +85,14 @@ export class ProjectsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/projects`,
             method: 'GET',
@@ -122,6 +130,14 @@ export class ProjectsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/projects`,
             method: 'POST',
@@ -158,8 +174,16 @@ export class ProjectsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/projects/{projectId}`.replace(`{${"projectId"}}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -193,8 +217,16 @@ export class ProjectsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/projects/{projectId}/members`.replace(`{${"projectId"}}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}/members`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -237,8 +269,16 @@ export class ProjectsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/projects/{projectId}/members`.replace(`{${"projectId"}}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}/members`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -288,8 +328,16 @@ export class ProjectsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/projects/{projectId}/members/{userId}/role`.replace(`{${"projectId"}}`, encodeURIComponent(String(requestParameters['projectId']))).replace(`{${"userId"}}`, encodeURIComponent(String(requestParameters['userId']))),
+            path: `/projects/{project_id}/members/{user_id}/role`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))).replace(`{${"user_id"}}`, encodeURIComponent(String(requestParameters['userId']))),
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
@@ -332,8 +380,16 @@ export class ProjectsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/projects/{projectId}`.replace(`{${"projectId"}}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,

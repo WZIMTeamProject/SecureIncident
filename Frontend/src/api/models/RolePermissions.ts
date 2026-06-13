@@ -87,13 +87,13 @@ export function RolePermissionsFromJSONTyped(json: any, ignoreDiscriminator: boo
     }
     return {
 
-        'canWriteTickets': json['canWriteTickets'],
-        'canHelp': json['canHelp'],
-        'canAssignHelp': json['canAssignHelp'],
-        'canChangeStatus': json['canChangeStatus'],
-        'canMakeRoles': json['canMakeRoles'],
-        'canChangeRoles': json['canChangeRoles'],
-        'canAssignPeopleToProject': json['canAssignPeopleToProject'],
+        'canWriteTickets': json['can_write_tickets'],
+        'canHelp': json['can_help'],
+        'canAssignHelp': json['can_assign_help'],
+        'canChangeStatus': json['can_change_status'],
+        'canMakeRoles': json['can_make_roles'],
+        'canChangeRoles': json['can_change_roles'],
+        'canAssignPeopleToProject': json['can_assign_people_to_project'],
     };
 }
 
@@ -103,13 +103,13 @@ export function RolePermissionsToJSON(value?: RolePermissions | null): any {
     }
     return {
 
-        'canWriteTickets': value['canWriteTickets'],
-        'canHelp': value['canHelp'],
-        'canAssignHelp': value['canAssignHelp'],
-        'canChangeStatus': value['canChangeStatus'],
-        'canMakeRoles': value['canMakeRoles'],
-        'canChangeRoles': value['canChangeRoles'],
-        'canAssignPeopleToProject': value['canAssignPeopleToProject'],
+        'can_write_tickets': value['canWriteTickets'],
+        'can_help': value['canHelp'],
+        'can_assign_help': value['canAssignHelp'],
+        'can_change_status': value['canChangeStatus'],
+        'can_make_roles': value['canMakeRoles'],
+        'can_change_roles': value['canChangeRoles'],
+        'can_assign_people_to_project': value['canAssignPeopleToProject'],
     };
 }
 

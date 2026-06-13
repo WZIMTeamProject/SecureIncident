@@ -52,7 +52,7 @@ export function InviteResponseFromJSONTyped(json: any, ignoreDiscriminator: bool
     return {
 
         'token': json['token'],
-        'inviteUrl': json['inviteUrl'] == null ? undefined : json['inviteUrl'],
+        'inviteUrl': json['invite_url'] == null ? undefined : json['invite_url'],
     };
 }
 
@@ -63,7 +63,7 @@ export function InviteResponseToJSON(value?: InviteResponse | null): any {
     return {
 
         'token': value['token'],
-        'inviteUrl': value['inviteUrl'],
+        'invite_url': value['inviteUrl'],
     };
 }
 

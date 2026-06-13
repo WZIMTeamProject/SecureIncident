@@ -132,7 +132,7 @@ export class IncidentsApi extends runtime.BaseAPI {
         const queryParameters: any = {};
 
         if (requestParameters['projectId'] != null) {
-            queryParameters['projectId'] = requestParameters['projectId'];
+            queryParameters['project_id'] = requestParameters['projectId'];
         }
 
         if (requestParameters['type'] != null) {
@@ -141,6 +141,14 @@ export class IncidentsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/incidents/history`,
             method: 'GET',
@@ -185,8 +193,16 @@ export class IncidentsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/incidents/{incidentId}/assignee`.replace(`{${"incidentId"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/assignee`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
@@ -229,8 +245,16 @@ export class IncidentsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/incidents/{incidentId}/category`.replace(`{${"incidentId"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/category`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
@@ -264,8 +288,16 @@ export class IncidentsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/incidents/{incidentId}/close`.replace(`{${"incidentId"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/close`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -298,8 +330,16 @@ export class IncidentsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/incidents/{incidentId}/comments`.replace(`{${"incidentId"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/comments`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -342,8 +382,16 @@ export class IncidentsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/incidents/{incidentId}/comments`.replace(`{${"incidentId"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/comments`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -377,8 +425,16 @@ export class IncidentsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/incidents/{incidentId}`.replace(`{${"incidentId"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -419,8 +475,16 @@ export class IncidentsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/incidents/{incidentId}/helpers/{helperId}`.replace(`{${"incidentId"}}`, encodeURIComponent(String(requestParameters['incidentId']))).replace(`{${"helperId"}}`, encodeURIComponent(String(requestParameters['helperId']))),
+            path: `/incidents/{incident_id}/helpers/{helper_id}`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))).replace(`{helper_id}`, encodeURIComponent(String(requestParameters['helperId']))),
             method: 'DELETE',
             headers: headerParameters,
             query: queryParameters,
@@ -462,8 +526,16 @@ export class IncidentsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/incidents/{incidentId}/helpers`.replace(`{${"incidentId"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/helpers`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -497,8 +569,16 @@ export class IncidentsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/incidents/{incidentId}/logs`.replace(`{${"incidentId"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/logs`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -541,8 +621,16 @@ export class IncidentsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/incidents/{incidentId}/priority`.replace(`{${"incidentId"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/priority`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
@@ -576,8 +664,16 @@ export class IncidentsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/incidents/{incidentId}/request-reassignment`.replace(`{${"incidentId"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/request-reassignment`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -619,8 +715,16 @@ export class IncidentsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/incidents/{incidentId}/status`.replace(`{${"incidentId"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/status`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
@@ -647,6 +751,14 @@ export class IncidentsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/incidents/my-assigned`,
             method: 'GET',
@@ -675,6 +787,14 @@ export class IncidentsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/incidents/my-reported`,
             method: 'GET',
@@ -725,13 +845,21 @@ export class IncidentsApi extends runtime.BaseAPI {
         }
 
         if (requestParameters['assigneeId'] != null) {
-            queryParameters['assigneeId'] = requestParameters['assigneeId'];
+            queryParameters['assignee_id'] = requestParameters['assigneeId'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/projects/{projectId}/incidents`.replace(`{${"projectId"}}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}/incidents`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -774,8 +902,16 @@ export class IncidentsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
-            path: `/projects/{projectId}/incidents`.replace(`{${"projectId"}}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}/incidents`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,

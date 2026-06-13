@@ -45,7 +45,7 @@ export function UpdateIncidentCategoryRequestFromJSONTyped(json: any, ignoreDisc
     }
     return {
 
-        'categoryId': json['categoryId'],
+        'categoryId': json['category_id'],
     };
 }
 
@@ -55,7 +55,7 @@ export function UpdateIncidentCategoryRequestToJSON(value?: UpdateIncidentCatego
     }
     return {
 
-        'categoryId': value['categoryId'],
+        'category_id': value['categoryId'],
     };
 }
 

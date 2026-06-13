@@ -45,7 +45,7 @@ export function AssignRoleRequestFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
 
-        'roleId': json['roleId'],
+        'roleId': json['role_id'],
     };
 }
 
@@ -55,7 +55,7 @@ export function AssignRoleRequestToJSON(value?: AssignRoleRequest | null): any {
     }
     return {
 
-        'roleId': value['roleId'],
+        'role_id': value['roleId'],
     };
 }
 

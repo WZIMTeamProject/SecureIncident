@@ -74,9 +74,9 @@ export function CreateIncidentRequestFromJSONTyped(json: any, ignoreDiscriminato
 
         'title': json['title'],
         'description': json['description'],
-        'categoryId': json['categoryId'] == null ? undefined : json['categoryId'],
+        'categoryId': json['category_id'] == null ? undefined : json['category_id'],
         'priority': json['priority'] == null ? undefined : IncidentPriorityFromJSON(json['priority']),
-        'primaryAssigneeId': json['primaryAssigneeId'] == null ? undefined : json['primaryAssigneeId'],
+        'primaryAssigneeId': json['primary_assignee_id'] == null ? undefined : json['primary_assignee_id'],
     };
 }
 
@@ -88,9 +88,9 @@ export function CreateIncidentRequestToJSON(value?: CreateIncidentRequest | null
 
         'title': value['title'],
         'description': value['description'],
-        'categoryId': value['categoryId'],
+        'category_id': value['categoryId'],
         'priority': IncidentPriorityToJSON(value['priority']),
-        'primaryAssigneeId': value['primaryAssigneeId'],
+        'primary_assignee_id': value['primaryAssigneeId'],
     };
 }
 

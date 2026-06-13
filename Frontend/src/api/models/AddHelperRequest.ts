@@ -45,7 +45,7 @@ export function AddHelperRequestFromJSONTyped(json: any, ignoreDiscriminator: bo
     }
     return {
 
-        'userId': json['userId'],
+        'userId': json['user_id'],
     };
 }
 
@@ -55,7 +55,7 @@ export function AddHelperRequestToJSON(value?: AddHelperRequest | null): any {
     }
     return {
 
-        'userId': value['userId'],
+        'user_id': value['userId'],
     };
 }
 
