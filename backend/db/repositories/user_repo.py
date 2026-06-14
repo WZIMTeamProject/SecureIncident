@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.security import hash_password, hash_token
 from db.models.user import User
-from db.models.project import UserProject
+from db.models.user_project import UserProject
 from db.models.password_reset_token import PasswordResetToken
 
 async def get_user_by_id(db: AsyncSession, user_id: UUID) -> Optional[User]:
@@ -147,13 +147,14 @@ async def search_users_by_username(
         )
     )
 
+    scope_clauses = [User.id.in_(shared_project_users)]
+    if organization_id is not None:
+        scope_clauses.append(User.organization_id == organization_id)
+
     conditions = [
         User.username.ilike(f"%{query}%"),
         User.is_active == True,
-        or_(
-            User.organization_id == organization_id,
-            User.id.in_(shared_project_users),
-        ),
+        or_(*scope_clauses),
     ]
 
     stmt = select(User).where(*conditions).limit(limit)
