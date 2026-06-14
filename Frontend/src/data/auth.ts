@@ -346,10 +346,13 @@ export async function attemptLogin(name: string, password: string, remember_user
         const token: string | undefined = (rawJson != null) ? (rawJson['access_token'] ?? undefined) : undefined;
 
         if (token) {
+            const tokenLifetime = 1000 * 60 * 60 * 24 * 7; // 1 week
+
             await cookieStore.set({
                 name: BEARER_AUTH_COOKIE,
                 value: token,
-                // expires: ??
+                sameSite: "strict",
+                expires: Date.now() + tokenLifetime,
             });
         } else {
             await cookieStore.delete(BEARER_AUTH_COOKIE);
@@ -406,6 +409,7 @@ export async function attemptRegistration(
                 };
             case 422:
                 // Why is this undocumented in the api?
+                // This also happens when the password does not meet the requirements...
                 return {
                     success: false,
                     errorCause: "username_too_short",
