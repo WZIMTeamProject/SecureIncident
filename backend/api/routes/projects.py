@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, status, Query, Path, Response
 from typing import Optional
 from uuid import UUID
+
+from fastapi import APIRouter, Depends, status, Query, Path, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies.db import get_db
@@ -20,6 +21,7 @@ from api.schemas.project.response import (
     ProjectMemberResponse,
 )
 from db.models.user import User
+from services import project_service
 
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
@@ -31,7 +33,11 @@ async def create_project(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return CreatedIdResponse(id="00000000-0000-0000-0000-000000000000")
+    """Utwórz projekt (atomowo: projekt + rola Owner + członkostwo właściciela)."""
+    project = await project_service.create_project(
+        db, data=data, current_user=current_user
+    )
+    return CreatedIdResponse(id=project.id)
 
 
 @router.get("", response_model=ProjectListResponse)
@@ -40,7 +46,23 @@ async def list_projects(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return ProjectListResponse(items=[], total=0, offset=0, limit=20)
+    """Lista projektów, których bieżący użytkownik jest członkiem."""
+    projects = await project_service.list_projects(
+        db, current_user=current_user, scope=scope
+    )
+    items = [
+        ProjectResponse(
+            id=p.id,
+            organization_id=p.organization_id,
+            name=p.name,
+            description=p.description,
+            scope=ProjectScope(p.scope),
+        )
+        for p in projects
+    ]
+    return ProjectListResponse(
+        items=items, total=len(items), offset=0, limit=len(items)
+    )
 
 
 @router.get("/{project_id}", response_model=ProjectResponse)
@@ -49,12 +71,16 @@ async def get_project(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Szczegóły projektu (wymaga członkostwa)."""
+    project = await project_service.get_project(
+        db, project_id=project_id, current_user=current_user
+    )
     return ProjectResponse(
-        id=project_id,
-        organization_id=None,
-        name="Test Project",
-        description="Test",
-        scope=ProjectScope.PRIVATE,
+        id=project.id,
+        organization_id=project.organization_id,
+        name=project.name,
+        description=project.description,
+        scope=ProjectScope(project.scope),
     )
 
 
@@ -65,6 +91,10 @@ async def update_project(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Aktualizuj metadane projektu (tylko właściciel)."""
+    await project_service.update_project(
+        db, project_id=project_id, data=data, current_user=current_user
+    )
     return Response(status_code=204)
 
 
@@ -74,7 +104,13 @@ async def list_members(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return ProjectMemberListResponse(members=[])
+    """Lista członków projektu (wymaga członkostwa)."""
+    members = await project_service.list_members(
+        db, project_id=project_id, current_user=current_user
+    )
+    return ProjectMemberListResponse(
+        members=[ProjectMemberResponse(**m) for m in members]
+    )
 
 
 @router.post("/{project_id}/members", status_code=status.HTTP_204_NO_CONTENT)
@@ -84,6 +120,10 @@ async def add_member(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Dodaj użytkownika do projektu (tylko właściciel)."""
+    await project_service.add_member(
+        db, project_id=project_id, data=data, current_user=current_user
+    )
     return Response(status_code=204)
 
 
@@ -95,4 +135,8 @@ async def change_member_role(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Zmień rolę członka w projekcie (tylko właściciel)."""
+    await project_service.change_member_role(
+        db, project_id=project_id, user_id=user_id, data=data, current_user=current_user
+    )
     return Response(status_code=204)
