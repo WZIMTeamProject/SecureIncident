@@ -1,5 +1,7 @@
 ﻿import asyncio
+import os
 import uuid
+from pathlib import Path
 from sqlalchemy import text
 from typing import AsyncGenerator, Generator
 import pytest
@@ -8,43 +10,42 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
+from alembic.config import Config as AlembicConfig
+from alembic import command as alembic_command
 
-from main import app as fastapi_app
-from db.base import Base 
 from db.models import User, Project, Organization
 from core.security import create_access_token
 from core.config import settings
-from api.dependencies.db import get_db
 from core.security import hash_password
 
 TEST_DATABASE_URL: str = settings.DATABASE_URL
+BACKEND_DIR = Path(__file__).parent.parent
 
 @pytest.fixture(scope="session")
 def db_engine():
-    """
-    Synchroniczny fixture sesyjny. 
-    Używa asyncio.run(), aby bezpiecznie ominąć konflikty pętli zdarzeń (ScopeMismatch).
-    """
     engine = create_async_engine(TEST_DATABASE_URL, poolclass=NullPool, echo=False)
-    
-    # Przebudowanie schematu bazy danych (wywoływane TYLKO RAZ na całą sesję testową)
+
     async def setup_schema():
         async with engine.begin() as conn:
             await conn.execute(text("DROP SCHEMA public CASCADE;"))
             await conn.execute(text("CREATE SCHEMA public;"))
-            
-            # Zaimportuj Base lokalnie, aby uniknąć problemów z kolejnością ładowania
             from db.base import Base
             await conn.run_sync(Base.metadata.create_all)
-            
+
     asyncio.run(setup_schema())
-    
+
+    # Stamp alembic_version so the app's startup migration check sees an up-to-date DB
+    # and does not attempt to re-create tables that create_all already built.
+    os.environ["DATABASE_URL"] = TEST_DATABASE_URL
+    alembic_cfg = AlembicConfig(str(BACKEND_DIR / "alembic.ini"))
+    alembic_cfg.set_main_option("script_location", str(BACKEND_DIR / "alembic"))
+    alembic_command.stamp(alembic_cfg, "head")
+
     yield engine
-    
-    # Zamknięcie silnika po zakończeniu wszystkich testów
+
     async def teardown_engine():
         await engine.dispose()
-        
+
     asyncio.run(teardown_engine())
 
 @pytest.fixture(scope="function")
