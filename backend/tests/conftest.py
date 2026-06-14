@@ -17,9 +17,7 @@ from core.config import settings
 from api.dependencies.db import get_db
 from core.security import hash_password
 
-TEST_DATABASE_URL: str = settings.TEST_DATABASE_URL or (
-    str(settings.DATABASE_URL).rstrip("/") + "_test"
-)
+TEST_DATABASE_URL: str = settings.DATABASE_URL
 
 @pytest.fixture(scope="session")
 def db_engine():
