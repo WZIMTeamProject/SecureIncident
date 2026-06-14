@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.security import hash_password, hash_token
 from db.models.user import User
+from db.models.project import UserProject
 from db.models.password_reset_token import PasswordResetToken
 
 async def get_user_by_id(db: AsyncSession, user_id: UUID) -> Optional[User]:
@@ -116,3 +117,45 @@ async def mark_password_reset_token_used(
     db.add(token)
     await db.commit()
 
+
+async def update_user_profile(
+    db: AsyncSession,
+    user: User,
+    data: "UpdateProfileRequest",
+) -> None:
+    update_data = data.model_dump(exclude_none=True)
+    for field, value in update_data.items():
+        setattr(user, field, value)
+    # No commit here — caller (service) commits
+
+
+async def search_users_by_username(
+    db: AsyncSession,
+    query: str,
+    organization_id: Optional[UUID],
+    user_id: UUID,
+    limit: int = 20,
+) -> list[User]:
+    # Users in same org OR sharing at least one project with the current user
+    shared_project_users = (
+        select(UserProject.user_id)
+        .where(
+            UserProject.project_id.in_(
+                select(UserProject.project_id).where(UserProject.user_id == user_id)
+            ),
+            UserProject.user_id != user_id,
+        )
+    )
+
+    conditions = [
+        User.username.ilike(f"%{query}%"),
+        User.is_active == True,
+        or_(
+            User.organization_id == organization_id,
+            User.id.in_(shared_project_users),
+        ),
+    ]
+
+    stmt = select(User).where(*conditions).limit(limit)
+    result = await db.execute(stmt)
+    return list(result.scalars().all())

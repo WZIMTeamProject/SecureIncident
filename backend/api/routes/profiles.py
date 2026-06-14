@@ -1,52 +1,38 @@
-from fastapi import APIRouter, Depends, status
-from uuid import UUID
+from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.dependencies.db import get_db
-from api.dependencies.auth import get_current_user
-from api.schemas.profile.request import UpdateProfileRequest
-from api.schemas.profile.response import (
-    ProfileResponse,
-    UserSearchResponse,
-    UserSearchResult,
-)
 from db.models.user import User
-
+from api.dependencies.db import get_db             # Dostosuj ścieżkę importu get_db, jeśli znajduje się w innym miejscu
+from api.dependencies.auth import get_current_user  # Dostosuj ścieżkę importu zależności auth
+from api.schemas.profile.request import UpdateProfileRequest
+from api.schemas.profile.response import ProfileResponse, UserSearchResponse
+from services import profile_service   # Import z katalogu backend/services zgodnie z Twoją strukturę
 
 router = APIRouter(tags=["Profiles"])
+users_router = APIRouter(tags=["Users"])
 
 
 @router.get("/profiles/me", response_model=ProfileResponse)
 async def get_my_profile(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
-    return ProfileResponse(
-        id="00000000-0000-0000-0000-000000000000",
-        username="test_user",
-        bio=None,
-        profile_picture_url=None,
-    )
+) -> ProfileResponse:
+    return await profile_service.get_profile(current_user)
 
 
 @router.patch("/profiles/me", status_code=status.HTTP_204_NO_CONTENT)
 async def update_my_profile(
-    body: UpdateProfileRequest,
+    data: UpdateProfileRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
-    return
+) -> None:
+    await profile_service.update_profile(db, current_user, data)
 
 
-@router.get("/users/search", response_model=UserSearchResponse)
+@users_router.get("/search", response_model=UserSearchResponse)
 async def search_users(
-    query: str,
+    query: str = Query(..., min_length=1),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
-    return UserSearchResponse(users=[
-        UserSearchResult(
-            id="00000000-0000-0000-0000-000000000000",
-            username="test_user",
-        )
-    ])
+) -> UserSearchResponse:
+    return await profile_service.search_users(db, query, current_user)
