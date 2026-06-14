@@ -78,7 +78,7 @@ class TestRequestPasswordReset:
         token_record = result.scalar_one_or_none()
 
         assert token_record is not None
-        now = datetime.utcnow()  # naive — matches DB column type (TIMESTAMP WITHOUT TIME ZONE)
+        now = datetime.now(timezone.utc).replace(tzinfo=None) # naive — matches DB column type (TIMESTAMP WITHOUT TIME ZONE)
         ttl_minutes = (token_record.expires_at - now).total_seconds() / 60
         assert 25 < ttl_minutes < 35
 
@@ -90,7 +90,7 @@ class TestResetPassword:
     ):
         raw_token = security.generate_token()
         token_hash = security.hash_token(raw_token)
-        expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)
 
         token_record = PasswordResetToken(
             user_id=test_user.id,
@@ -113,7 +113,7 @@ class TestResetPassword:
 
         raw_token = security.generate_token()
         token_hash = security.hash_token(raw_token)
-        expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)
 
         token_record = PasswordResetToken(
             user_id=test_user.id,
@@ -136,7 +136,7 @@ class TestResetPassword:
     ):
         raw_token = security.generate_token()
         token_hash = security.hash_token(raw_token)
-        expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)
 
         token_record = PasswordResetToken(
             user_id=test_user.id,
@@ -159,7 +159,7 @@ class TestResetPassword:
     ):
         raw_token = security.generate_token()
         token_hash = security.hash_token(raw_token)
-        expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)
 
         token_record = PasswordResetToken(
             user_id=test_user.id,
@@ -198,7 +198,7 @@ class TestResetPassword:
     ):
         raw_token = security.generate_token()
         token_hash = security.hash_token(raw_token)
-        expires_at = datetime.now(timezone.utc) - timedelta(hours=1)
+        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=1)
 
         token_record = PasswordResetToken(
             user_id=test_user.id,
@@ -219,13 +219,13 @@ class TestResetPassword:
     ):
         raw_token = security.generate_token()
         token_hash = security.hash_token(raw_token)
-        expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)
 
         token_record = PasswordResetToken(
             user_id=test_user.id,
             token=token_hash,
             expires_at=expires_at,
-            used_at=datetime.now(timezone.utc),
+            used_at=datetime.now(timezone.utc).replace(tzinfo=None),
         )
         db.add(token_record)
         await db.commit()
@@ -241,7 +241,7 @@ class TestResetPassword:
     ):
         raw_token = security.generate_token()
         token_hash = security.hash_token(raw_token)
-        expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)
 
         token_record = PasswordResetToken(
             user_id=test_user.id,

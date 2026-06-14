@@ -127,6 +127,33 @@ uvicorn main:app --reload
 
 ---
 
+## Running Tests
+
+Tests require the database container to be running (`docker compose up -d`). The test suite uses the same `secure_incident` database as development — each test runs inside a transaction that is rolled back afterwards, so no data persists between tests.
+
+From the `backend/` directory:
+
+```bash
+# with uv (recommended)
+uv run pytest
+
+# without uv — activate the virtualenv first, then use pytest directly
+source ../.venv/bin/activate   # macOS/Linux
+# .venv\Scripts\activate       # Windows
+pytest
+```
+
+Run a specific file:
+
+```bash
+uv run pytest tests/test_profiles.py -v
+pytest tests/test_profiles.py -v          # without uv (venv active)
+```
+
+> **Without uv:** `uv run` is a shorthand for "run inside the managed virtualenv". The virtualenv lives at `.venv/` in the repository root. Activating it manually gives `pytest` the same environment — the `uv` binary itself is not required at test runtime.
+
+---
+
 ## Email Service & Password Reset
 
 The password reset flow sends a reset link by email using an async background task (non-blocking — the endpoint always returns 204 regardless of email delivery).
