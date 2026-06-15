@@ -9,6 +9,7 @@ import {appRootLoader, SIAppRoot} from './SIAppRoot.tsx'
 
 import {SIDashboard} from "./dashboard";
 import {
+    forgotPasswordAction,
     loginFormAction,
     logoutMiddleware,
     redirectToDashboardMiddleware,
@@ -44,7 +45,12 @@ const router = createBrowserRouter([
                         middleware: [logoutMiddleware, redirectToDashboardMiddleware],
                         action: loginFormAction
                     },
-                    {path: "/login/forgot_password", Component: SIForgotPassword},
+                    {
+                        path: "/login/forgot_password",
+                        Component: SIForgotPassword,
+                        middleware: [redirectToDashboardMiddleware],
+                        action: forgotPasswordAction
+                    },
                     {
                         path: "/login/register",
                         Component: SIRegisterPage,

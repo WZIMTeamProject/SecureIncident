@@ -121,7 +121,7 @@ export function SIRegisterPage() {
                                 rounded-lg px-3 py-2.5
                                 bg-[var(--color-si-input-bg)] transition-colors">
 
-                                <span className="text-[var(--color-si-input-icon)]"><IconUser/></span>
+                                <span className="text-[var(--color-si-input-icon)]"><IconLock/></span>
                                 <input
                                     id={FORM_PASSWORD}
                                     type="password"
@@ -153,7 +153,7 @@ export function SIRegisterPage() {
 
                         {/* Submit */}
                         <div className={`flex items-center justify-between`}>
-                            <span />
+                            <span/>
 
                             <input
                                 type="submit"
@@ -167,11 +167,24 @@ export function SIRegisterPage() {
                         </div>
                     </fetcher.Form>
                 </div>
-                <div>
-                    <Link to="/login">Mam już konto</Link>
-                </div>
-                <div>
-                    <Link to="/">Powrót do strony głównej</Link>
+
+                {/* Error */}
+                {fetcher.data?.error && (
+                    <p className="text-red-500 dark:text-red-400 text-sm">{fetcher.data.error}</p>
+                )}
+
+                {/* Links */}
+                <div className="flex flex-col items-center gap-2 text-sm">
+                    <div className="flex flex-col items-center gap-2 text-sm">
+                        <Link to="/login"
+                              className="underline text-[var(--color-si-link)] hover:opacity-75 transition-opacity">
+                            Mam już konto
+                        </Link>
+                        <Link to="/"
+                              className="underline text-[var(--color-si-link)] hover:opacity-75 transition-opacity">
+                            Powrót do strony głównej
+                        </Link>
+                    </div>
                 </div>
             </Background>
         </div>

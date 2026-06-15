@@ -9,6 +9,7 @@ import {
 } from "./forms.ts";
 import {attemptLogin, attemptLogout, attemptRegistration, AuthRouterContext} from "../data/auth.ts";
 import {validateName} from "./validation.ts";
+import Api from "../data/Api.ts";
 
 export interface RegisterActionResult {
     error: "invalid_data" | "repeat_password_mismatch" | "username_taken" | "username_too_short" | "unknown",
@@ -98,3 +99,21 @@ export const registerFormAction: ActionFunction = async ({request}) => {
         return {error: "invalid_data"} satisfies RegisterActionResult;
     }
 };
+
+export const forgotPasswordAction: ActionFunction = async ({request}) => {
+    const formData = await request.formData();
+
+    const email_or_username = formData.get(FORM_USERNAME)?.toString()?.trim();
+
+    if (email_or_username) {
+        await Api.auth.authRequestPasswordResetPost({
+            passwordResetRequest: {
+                emailOrUsername: email_or_username,
+            }
+        });
+
+        return { ok: true }
+    } else {
+        return { ok: false }
+    }
+}
