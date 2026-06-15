@@ -79,11 +79,3 @@ export function SIForgotPassword() {
         </div>
     )
 }
-
-// function PostSendMessage() {
-//     return <>
-//         <div><h1>Wysłano prośbę o reset hasła. Sprawdź skrzynkę email podłączoną do konta.</h1></div>
-//         <div><Link to={`/login`}>Przejdź do logowania</Link></div>
-//         <div><Link to={`/`}>Wróć na stronę główną</Link></div>
-//     </>
-// }
