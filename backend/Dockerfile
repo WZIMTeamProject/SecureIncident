@@ -1,4 +1,4 @@
-FROM python:3.14-slim AS builder
+FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
@@ -8,13 +8,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
+
 RUN pip install --upgrade pip \
     && pip install --prefix=/install --no-cache-dir -r requirements.txt
 
 
-FROM python:3.14-slim AS runtime
+FROM python:3.12-slim AS runtime
 
-RUN useradd --create-home appuser
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home appuser
 
 WORKDIR /app
 
@@ -25,7 +30,6 @@ COPY --chown=appuser:appuser . .
 USER appuser
 
 EXPOSE 8000
-
 
 CMD ["uvicorn", "main:app", \
      "--host", "0.0.0.0", \
