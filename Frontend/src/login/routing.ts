@@ -1,11 +1,11 @@
 import {type ActionFunction, type MiddlewareFunction, redirect} from "react-router";
 import {
-    FORM_EMAIL, FORM_FIRST_NAME, FORM_JUST_REGISTERED, FORM_LAST_NAME,
+    FORM_EMAIL, FORM_FIRST_NAME, FORM_AFTER, FORM_LAST_NAME,
     FORM_LOGOUT,
     FORM_PASSWORD,
     FORM_PASSWORD_REPEAT,
     FORM_REMEMBER_ME,
-    FORM_USERNAME
+    FORM_USERNAME, FORM_VALUE_AFTER_REGISTER, FORM_RESET_TOKEN, FORM_VALUE_AFTER_PASSWORD_RESET
 } from "./forms.ts";
 import {attemptLogin, attemptLogout, attemptRegistration, AuthRouterContext} from "../data/auth.ts";
 import {validateName} from "./validation.ts";
@@ -17,6 +17,10 @@ export interface RegisterActionResult {
 
 export interface LoginActionResult {
     error: "invalid_credentials" | "invalid_data",
+}
+
+export interface ResetPasswordActionResult {
+    error: "invalid_data" | "repeat_password_mismatch" | "invalid_token" | "unknown",
 }
 
 /**
@@ -64,16 +68,15 @@ export const loginFormAction: ActionFunction = async ({request}) => {
 export const registerFormAction: ActionFunction = async ({request}) => {
     const formData = await request.formData();
 
-    // I feel like these should be tested if they contain weird Unicode characters
     const firstName = formData.get(FORM_FIRST_NAME)?.toString()?.trim();
     const lastName = formData.get(FORM_LAST_NAME)?.toString()?.trim();
     const username = formData.get(FORM_USERNAME)?.toString()?.trim();
     const password = formData.get(FORM_PASSWORD)?.toString()?.trim();
-    const password_repeat = formData.get(FORM_PASSWORD_REPEAT)?.toString()?.trim();
+    const repeatPassword = formData.get(FORM_PASSWORD_REPEAT)?.toString()?.trim();
     const email = formData.get(FORM_EMAIL)?.toString()?.trim();
 
     if (username && password && email && firstName && lastName) {
-        if (password !== password_repeat) {
+        if (password !== repeatPassword) {
             return {error: "repeat_password_mismatch"} satisfies RegisterActionResult;
         }
 
@@ -84,13 +87,13 @@ export const registerFormAction: ActionFunction = async ({request}) => {
 
         const registrationResult = await attemptRegistration(firstName, lastName, username, email, password);
         if (registrationResult.success) {
-            return redirect(`/login?${FORM_JUST_REGISTERED}`);
+            return redirect(`/login?${FORM_AFTER}=${FORM_VALUE_AFTER_REGISTER}`);
         } else {
             switch (registrationResult.errorCause) {
                 case "username_or_email_taken":
                     return {error: "username_taken"} satisfies RegisterActionResult;
                 case "username_too_short":
-                    return {error: "username_too_short"} satisfies RegisterActionResult;
+                    return {error: "username_too_short"} satisfies RegisterActionResult; // Also happens on passwords that are not secure enough
                 default:
                     return {error: "unknown"} satisfies RegisterActionResult;
             }
@@ -103,17 +106,46 @@ export const registerFormAction: ActionFunction = async ({request}) => {
 export const forgotPasswordAction: ActionFunction = async ({request}) => {
     const formData = await request.formData();
 
-    const email_or_username = formData.get(FORM_USERNAME)?.toString()?.trim();
+    const emailOrUsername = formData.get(FORM_USERNAME)?.toString()?.trim();
 
-    if (email_or_username) {
+    if (emailOrUsername) {
         await Api.auth.authRequestPasswordResetPost({
             passwordResetRequest: {
-                emailOrUsername: email_or_username,
+                emailOrUsername: emailOrUsername,
             }
         });
 
         return { ok: true }
     } else {
         return { ok: false }
+    }
+}
+
+export const resetPasswordAction: ActionFunction = async ({request}) => {
+    const formData = await request.formData();
+
+    const password = formData.get(FORM_PASSWORD)?.toString()?.trim();
+    const repeatPassword = formData.get(FORM_PASSWORD_REPEAT)?.toString()?.trim();
+    const token = formData.get(FORM_RESET_TOKEN)?.toString();
+
+    if (password && token) {
+        if (password !== repeatPassword) {
+            return {error: "repeat_password_mismatch"} satisfies ResetPasswordActionResult;
+        }
+
+        try {
+            await Api.auth.authResetPasswordPost({
+                passwordResetConfirmRequest: {
+                    newPassword: password,
+                    resetToken: token
+                }
+            });
+
+            return redirect(`/login?${FORM_AFTER}=${FORM_VALUE_AFTER_PASSWORD_RESET}`);
+        } catch {
+            return {error: "invalid_token"} satisfies ResetPasswordActionResult;
+        }
+    } else {
+        return {error: "invalid_data"} satisfies ResetPasswordActionResult;
     }
 }

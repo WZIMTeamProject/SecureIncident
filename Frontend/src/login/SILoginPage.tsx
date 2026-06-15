@@ -1,12 +1,20 @@
-import { Link, useFetcher } from "react-router";
-import { FORM_PASSWORD, FORM_REMEMBER_ME, FORM_USERNAME } from "./forms.ts";
+import {Link, useFetcher, useSearchParams} from "react-router";
+import {
+    FORM_AFTER, FORM_PASSWORD, FORM_REMEMBER_ME, FORM_USERNAME,
+    FORM_VALUE_AFTER_PASSWORD_RESET, FORM_VALUE_AFTER_REGISTER
+} from "./forms.ts";
 import {Background} from "../components/Background.tsx";
 
 import {IconUser, IconLock} from "./icons.tsx";
 
 export function SILoginPage() {
     const fetcher = useFetcher();
+    const [searchParams] = useSearchParams();
+
     const busy = fetcher.state !== "idle";
+
+    const isAfterRegister = searchParams.get(FORM_AFTER) == FORM_VALUE_AFTER_REGISTER;
+    const isAfterPasswordReset = searchParams.get(FORM_AFTER) == FORM_VALUE_AFTER_PASSWORD_RESET;
 
     // TODO: Clear credentials on failed login attempts.
     // TODO: Display more helpful errors.
@@ -89,9 +97,17 @@ export function SILoginPage() {
                     </fetcher.Form>
                 </div>
 
-                {/* Error */}
+
+
+                {/* Errors and Messages */}
                 {fetcher.data?.error && (
                     <p className="text-red-500 dark:text-red-400 text-sm">{fetcher.data.error}</p>
+                )}
+                {isAfterRegister && (
+                    <p className="text-green-500 dark:text-green-400 text-sm">Zarejestrowano poprawnie. Możesz się zalogować.</p>
+                )}
+                {isAfterPasswordReset && (
+                    <p className="text-green-500 dark:text-green-400 text-sm">Hasło zmienione poprawnie. Możesz się zalogować.</p>
                 )}
 
                 {/* Links */}

@@ -13,7 +13,7 @@ import {
     loginFormAction,
     logoutMiddleware,
     redirectToDashboardMiddleware,
-    registerFormAction,
+    registerFormAction, resetPasswordAction,
     SIForgotPassword,
     SILoginPage,
     SIRegisterPage
@@ -22,6 +22,7 @@ import {AuthRouterContext, authUserLoader, getAuthState} from "./data/auth.ts";
 import {SIStartPage} from "./SIStartPage.tsx";
 import {SIPageNotFound} from "./SIPageNotFound.tsx";
 import {SIAccountPage, SINotificationPage} from "./account";
+import {SIResetPassword} from "./login/SIResetPassword.tsx";
 
 const router = createBrowserRouter([
     {
@@ -67,6 +68,13 @@ const router = createBrowserRouter([
                     {index: true, Component: SIAccountPage, loader: authUserLoader},
                     {path: "/account/notifications", Component: SINotificationPage, loader: authUserLoader}
                 ]
+            },
+
+            // Reset password page (link gets sent via email)
+            {
+                path: "/reset-password",
+                Component: SIResetPassword,
+                action: resetPasswordAction,
             },
 
             // Catch all 404 page for invalid routes
