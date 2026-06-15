@@ -133,7 +133,7 @@ export function SIRegisterPage() {
 
                         {/* Password Repeat */}
                         <div className={`flex flex-col gap-1.5`}>
-                            <label htmlFor={FORM_PASSWORD} className="text-sm font-medium text-[var(--color-si-label)]">
+                            <label htmlFor={FORM_PASSWORD_REPEAT} className="text-sm font-medium text-[var(--color-si-label)]">
                                 Powtórz swoje hasło:
                             </label>
                             <div className="flex items-center gap-3
