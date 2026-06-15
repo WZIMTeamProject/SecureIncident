@@ -1,0 +1,48 @@
+name: Frontend CI/CD
+on:
+  push:
+    branches: [main]
+    paths: [Frontend/**]
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        working-directory: Frontend
+        run: npm ci
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Frontend
+          push: true
+          build-args: VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL }}
+          tags: |
+            ghcr.io/wzimteamproject/secureincident-frontend:latest
+            ghcr.io/wzimteamproject/secureincident-frontend:${{ github.sha }}
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.EC2_HOST }}
+          username: ${{ vars.EC2_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/secureincident
+            docker compose pull frontend
+            docker compose up -d frontend
