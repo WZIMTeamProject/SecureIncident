@@ -2,25 +2,7 @@ import { Link, useFetcher } from "react-router";
 import { FORM_PASSWORD, FORM_REMEMBER_ME, FORM_USERNAME } from "./forms.ts";
 import {Background} from "../components/Background.tsx";
 
-
-// User icon (for username field)
-const IconUser = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-5 h-5 shrink-0">
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-    </svg>
-);
-
-// Lock icon (for password field)
-
-const IconLock = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-5 h-5 shrink-0">
-        <rect x="5" y="11" width="14" height="10" rx="2" />
-        <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-        <circle cx="12" cy="16" r="1.5" fill="currentColor" stroke="none" />
-    </svg>
-);
-
+import {IconUser, IconLock} from "./icons.tsx";
 
 export function SILoginPage() {
     const fetcher = useFetcher();
