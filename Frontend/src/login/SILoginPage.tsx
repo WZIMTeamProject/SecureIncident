@@ -29,8 +29,6 @@ export function SILoginPage() {
     // TODO: Clear credentials on failed login attempts.
 
     return (
-        <div className="min-h-screen flex flex-col bg-[var(--color-si-page-bg)] transition-colors duration-300">
-
             <Background>
                 {/* Table */}
                 <div className="w-full max-w-md 
@@ -87,7 +85,7 @@ export function SILoginPage() {
                                     id={FORM_REMEMBER_ME}
                                     type="checkbox"
                                     name={FORM_REMEMBER_ME}
-                                    className="w-4 h-4 accent-[var(--color-si-btn)] cursor-pointer"
+                                    className="w-4 h-4 bg-[var(--color-si-input-bg)] accent-[var(--color-si-btn)] cursor-pointer"
                                 />
                                 Zapamiętaj mnie
                             </label>
@@ -124,8 +122,6 @@ export function SILoginPage() {
                     </Link>
                 </div>
             </Background> 
-
-        </div>
         
     );
 }
