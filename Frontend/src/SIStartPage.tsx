@@ -1,3 +1,6 @@
+import {Background} from "../src/components/Background.tsx";
+
+
 export function SIStartPage() {
-    return <>Start Page</>
+    return <Background><>Start Page</></Background>
 }

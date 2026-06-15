@@ -1,10 +1,11 @@
 import {Form, Link} from "react-router";
 import {FORM_EMAIL, FORM_PASSWORD, FORM_USERNAME} from "./forms.ts";
+import {Background} from "../components/Background.tsx";
 
 export function SIRegisterPage() {
     // TODO: Account creation page functionality, should also probably redirect if logged in?
 
-    return <div>
+    return <Background>
         <div className={`w-lg p-2 bg-purple-400 text-black`}>
             <Form>
                 <div className={`m-2 flex flex-col`}>
@@ -35,5 +36,5 @@ export function SIRegisterPage() {
         <div>
             <Link to="/">Powrót do strony głównej</Link>
         </div>
-    </div>
+    </Background>
 }
