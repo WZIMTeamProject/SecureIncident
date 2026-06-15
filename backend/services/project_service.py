@@ -16,7 +16,7 @@ from db.models.user import User
 from db import repositories
 
 
-# ADR-001: rola właściciela ma wszystkie uprawnienia. Seedowana atomowo z projektem.
+# ADR-001: Owner role has all permissions. Seeded atomically with project.
 _OWNER_PERMISSIONS = {
     "can_write_tickets": True,
     "can_help": True,
@@ -34,23 +34,23 @@ async def create_project(
     data: CreateProjectRequest,
     current_user: User,
 ) -> Project:
-    """Utwórz projekt z atomowym seedowaniem roli "Owner" i członkostwa właściciela.
+    """Create project with atomic seeding of 'Owner' role and owner membership.
 
-    Reguła nadrzędna (architecture.md): użytkownik należy do JEDNEJ organizacji
-    ALBO używa tylko projektów prywatnych — nie obu naraz. Z tego wynika:
+    Overarching rule (architecture.md): a user belongs to ONE organization
+    OR uses only private projects — not both. This implies:
 
-    - scope=ORGANIZATION  → user MUSI należeć do organizacji; właścicielem projektu
-      zostaje właściciel organizacji (ADR-002), nawet jeśli tworzy go delegat.
-    - scope=PRIVATE       → user NIE MOŻE należeć do organizacji; właścicielem
-      zostaje twórca.
+    - scope=ORGANIZATION  → user MUST belong to organization; project owner
+      becomes organization owner (ADR-002), even if created by delegate.
+    - scope=PRIVATE       → user MUST NOT belong to organization; project owner
+      becomes creator.
 
-    Wszystko (Project + Role "Owner" + UserProject) powstaje w jednej transakcji.
+    Everything (Project + Role 'Owner' + UserProject) is created in one transaction.
     """
     if data.scope == ProjectScope.ORGANIZATION:
         if current_user.organization_id is None:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Tylko członek organizacji może tworzyć projekty organizacyjne",
+                detail="Only organization members can create organization projects",
             )
         organization = await repositories.organization_repo.get_organization_by_id(
             db, current_user.organization_id
@@ -58,7 +58,7 @@ async def create_project(
         if organization is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Organizacja nie znaleziona",
+                detail="Organization not found",
             )
         owner_id = organization.org_owner_id          # ADR-002
         organization_id: Optional[UUID] = organization.id
@@ -66,12 +66,12 @@ async def create_project(
         if current_user.organization_id is not None:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Członek organizacji nie może tworzyć projektów prywatnych",
+                detail="Organization members cannot create private projects",
             )
         owner_id = current_user.id
         organization_id = None
 
-    # --- jedna transakcja: projekt -> rola Owner -> członkostwo właściciela ---
+    # --- one transaction: project -> Owner role -> owner membership ---
     project = await repositories.project_repo.create_project(
         db,
         name=data.name.strip(),
@@ -106,7 +106,7 @@ async def list_projects(
     current_user: User,
     scope: Optional[ProjectScope] = None,
 ) -> Sequence[Project]:
-    """Lista projektów, których bieżący użytkownik jest członkiem."""
+    """List projects where current user is a member."""
     return await repositories.project_repo.list_projects_for_user(
         db,
         user_id=current_user.id,
@@ -120,7 +120,7 @@ async def get_project(
     project_id: UUID,
     current_user: User,
 ) -> Project:
-    """Pobierz projekt — tylko jeśli użytkownik jest jego członkiem."""
+    """Get project — only if user is a member."""
     project = await repositories.project_repo.get_project_by_id(db, project_id)
     if project is None:
         raise HTTPException(status_code=404, detail="Projekt nie znaleziony")
@@ -140,7 +140,7 @@ async def update_project(
     data: UpdateProjectRequest,
     current_user: User,
 ) -> None:
-    """Zaktualizuj metadane projektu (tylko właściciel)."""
+    """Update project metadata (owner only)."""
     project = await _get_owned_project(db, project_id, current_user)
 
     if data.name is not None:
@@ -252,15 +252,15 @@ async def change_member_role(
 async def _get_owned_project(
     db: AsyncSession, project_id: UUID, current_user: User
 ) -> Project:
-    """Helper: pobierz projekt i sprawdź, że bieżący user jest jego właścicielem.
+    """Helper: get project and verify current user is its owner.
 
-    MVP: autoryzacja przez porównanie owner FK (bez pełnego RBAC).
+    MVP: authorization through owner FK comparison (without full RBAC).
     """
     project = await repositories.project_repo.get_project_by_id(db, project_id)
     if project is None:
-        raise HTTPException(status_code=404, detail="Projekt nie znaleziony")
+        raise HTTPException(status_code=404, detail="Project not found")
     if project.project_owner_id != current_user.id:
         raise HTTPException(
-            status_code=403, detail="Tylko właściciel projektu może wykonać tę operację"
+            status_code=403, detail="Only project owner can perform this operation"
         )
     return project

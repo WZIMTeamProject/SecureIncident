@@ -1,6 +1,6 @@
-﻿import datetime
+import datetime
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status, Security
+from fastapi import APIRouter, BackgroundTasks, Depends, Response, status, Security
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,14 +23,14 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 @router.post("/register", response_model=CreatedIdResponse, status_code=status.HTTP_201_CREATED)
 async def register_user(data: RegisterRequest, db: AsyncSession = Depends(get_db)):
-    """Zarejestruj nowego użytkownika."""
+    """Register a new user."""
     user = await auth_service.register_user(db, data)
     return CreatedIdResponse(id=user.id)
 
 
 @router.post("/login", response_model=LoginResponse)
 async def login_user(data: LoginRequest, db: AsyncSession = Depends(get_db)):
-    """Zaloguj użytkownika i zwróć JWT token."""
+    """Authenticate user and return JWT token."""
     user, token = await auth_service.login_user(db, data)
     return LoginResponse(
         access_token=token,
@@ -47,7 +47,7 @@ async def get_me(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> CurrentUserResponse:
-    """Pobierz dane aktualnie zalogowanego użytkownika."""
+    """Retrieve current authenticated user profile."""
     return CurrentUserResponse(
         id=current_user.id,
         username=current_user.username,
@@ -86,7 +86,7 @@ async def request_password_reset(
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
-    """Poproś o reset hasła (zawsze 204, nawet jeśli user nie istnieje)."""
+    """Request password reset (always returns 204, even if user does not exist)."""
     await auth_service.request_password_reset(db, data.email_or_username, background_tasks)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -96,6 +96,6 @@ async def reset_password(
     data: PasswordResetConfirmRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    """Zresetuj hasło za pomocą tokenu."""
+    """Reset password using a valid reset token."""
     await auth_service.reset_password(db, data.reset_token, data.new_password)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

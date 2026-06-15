@@ -36,7 +36,7 @@ async def get_current_organization(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Pobierz organizację bieżącego użytkownika (404, jeśli nie należy do żadnej)."""
+    """Get current user's organization (404 if not a member of any)."""
     organization = await organization_service.get_current_organization(
         db, current_user=current_user
     )
@@ -53,7 +53,7 @@ async def create_invite(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Utwórz zaproszenie do organizacji (tylko właściciel organizacji)."""
+    """Create organization invitation (organization owner only)."""
     invite, raw_token = await organization_service.create_invite(
         db, data=data, current_user=current_user
     )

@@ -12,13 +12,13 @@ from db.models.user_project import UserProject
 
 
 async def get_project_by_id(db: AsyncSession, project_id: UUID) -> Optional[Project]:
-    """Pobierz projekt po ID."""
+    """Get project by ID."""
     result = await db.execute(select(Project).where(Project.id == project_id))
     return result.scalar_one_or_none()
 
 
 async def get_role_by_id(db: AsyncSession, role_id: UUID) -> Optional[Role]:
-    """Pobierz rolę po ID."""
+    """Get role by ID."""
     result = await db.execute(select(Role).where(Role.id == role_id))
     return result.scalar_one_or_none()
 
@@ -32,7 +32,7 @@ async def create_project(
     owner_id: UUID,
     organization_id: Optional[UUID],
 ) -> Project:
-    """Utwórz projekt (flush tylko — commit w serwisie)."""
+    """Create project (flush only — commit in service)."""
     project = Project(
         name=name,
         description=description,
@@ -52,9 +52,9 @@ async def create_role(
     name: str,
     permissions: dict,
 ) -> Role:
-    """Utwórz rolę w projekcie (flush tylko — commit w serwisie).
+    """Create role in project (flush only — commit in service).
 
-    `permissions` to dict z 7 flagami can_* (np. z RolePermissions.model_dump()).
+    `permissions` is a dict with 7 can_* flags (e.g., from RolePermissions.model_dump()).
     """
     role = Role(project_id=project_id, name=name, **permissions)
     db.add(role)
@@ -65,7 +65,7 @@ async def create_role(
 async def get_user_project(
     db: AsyncSession, user_id: UUID, project_id: UUID
 ) -> Optional[UserProject]:
-    """Pobierz członkostwo użytkownika w projekcie (lub None)."""
+    """Get user project membership (or None)."""
     result = await db.execute(
         select(UserProject).where(
             UserProject.user_id == user_id,
@@ -82,7 +82,7 @@ async def create_user_project(
     project_id: UUID,
     role_id: UUID,
 ) -> UserProject:
-    """Utwórz członkostwo użytkownika w projekcie (flush tylko — commit w serwisie)."""
+    """Create user project membership (flush only — commit in service)."""
     membership = UserProject(
         user_id=user_id,
         project_id=project_id,
