@@ -8,11 +8,21 @@ import './index.css'
 import {appRootLoader, SIAppRoot} from './SIAppRoot.tsx'
 
 import {SIDashboard} from "./dashboard";
-import {loginFormAction, loginMiddleware, SIForgotPassword, SILoginPage, SIRegisterPage} from "./login";
+import {
+    forgotPasswordAction,
+    loginFormAction,
+    logoutMiddleware,
+    redirectToDashboardMiddleware,
+    registerFormAction, resetPasswordAction,
+    SIForgotPassword,
+    SILoginPage,
+    SIRegisterPage
+} from "./login";
 import {AuthRouterContext, authUserLoader, getAuthState} from "./data/auth.ts";
 import {SIStartPage} from "./SIStartPage.tsx";
 import {SIPageNotFound} from "./SIPageNotFound.tsx";
 import {SIAccountPage, SINotificationPage} from "./account";
+import {SIResetPassword} from "./login/SIResetPassword.tsx";
 
 const router = createBrowserRouter([
     {
@@ -30,9 +40,24 @@ const router = createBrowserRouter([
             {
                 path: "/login",
                 children: [
-                    {index: true, Component: SILoginPage, middleware: [loginMiddleware], action: loginFormAction},
-                    {path: "/login/forgot_password", Component: SIForgotPassword},
-                    {path: "/login/register", Component: SIRegisterPage}
+                    {
+                        index: true,
+                        Component: SILoginPage,
+                        middleware: [logoutMiddleware, redirectToDashboardMiddleware],
+                        action: loginFormAction
+                    },
+                    {
+                        path: "/login/forgot_password",
+                        Component: SIForgotPassword,
+                        middleware: [redirectToDashboardMiddleware],
+                        action: forgotPasswordAction
+                    },
+                    {
+                        path: "/login/register",
+                        Component: SIRegisterPage,
+                        middleware: [redirectToDashboardMiddleware],
+                        action: registerFormAction
+                    }
                 ]
             },
 
@@ -43,6 +68,13 @@ const router = createBrowserRouter([
                     {index: true, Component: SIAccountPage, loader: authUserLoader},
                     {path: "/account/notifications", Component: SINotificationPage, loader: authUserLoader}
                 ]
+            },
+
+            // Reset password page (link gets sent via email)
+            {
+                path: "/reset-password",
+                Component: SIResetPassword,
+                action: resetPasswordAction,
             },
 
             // Catch all 404 page for invalid routes

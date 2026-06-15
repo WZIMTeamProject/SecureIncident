@@ -7,6 +7,7 @@ import {
 } from "react-router";
 import Api from "./Api.ts";
 import {
+    BEARER_AUTH_COOKIE,
     CURRENT_USER_ID_COOKIE,
     CURRENT_USER_IS_DEBUG_COOKIE,
     CURRENT_USER_NAME_COOKIE,
@@ -25,6 +26,7 @@ import {
     type ProjectScope
 } from "./project.ts";
 import type {UserProfile} from "./profile.ts";
+import {ResponseError} from "../api";
 
 export const AuthRouterContext = createContext<AuthState | null>(null);
 export const AuthUserContext = React.createContext<AuthState | null>(null);
@@ -191,6 +193,12 @@ export class AuthState {
     }
 }
 
+export interface RegistrationResult {
+    success: boolean;
+    id?: string;
+    errorCause?: "username_or_email_taken" | "username_too_short" | "unknown";
+}
+
 /**
  * Gets the authentication state from the browser cookies.
  *
@@ -250,6 +258,7 @@ export async function getAuthState(forceValidate: boolean = true): Promise<AuthS
 
             return createdAuth;
         } else {
+            await cookieStore.delete(BEARER_AUTH_COOKIE); // Remove the remaining login cookie, cause it means it's invalid
             return null;
         }
     }
@@ -323,13 +332,32 @@ export async function attemptLogin(name: string, password: string, remember_user
         }
     }
 
-    const loggedUser = await Api.auth.authLoginPost({
+    const loggedUser = await Api.auth.authLoginPostRaw({
         loginRequest: {
             username: name,
             password: password,
             rememberUser: remember_user,
         }
     }).catch(() => null);
+
+    if (loggedUser != null) {
+        // FIXME: the type of the request in docs is invalid, we have to do some manual work
+        const rawJson: any = await loggedUser.raw.json();
+        const token: string | undefined = (rawJson != null) ? (rawJson['access_token'] ?? undefined) : undefined;
+
+        if (token) {
+            const tokenLifetime = 1000 * 60 * 60 * 24 * 7; // 1 week
+
+            await cookieStore.set({
+                name: BEARER_AUTH_COOKIE,
+                value: token,
+                sameSite: "strict",
+                expires: Date.now() + tokenLifetime,
+            });
+        } else {
+            await cookieStore.delete(BEARER_AUTH_COOKIE);
+        }
+    }
 
     return loggedUser != null;
 }
@@ -340,8 +368,57 @@ export async function attemptLogin(name: string, password: string, remember_user
 export async function attemptLogout() {
     // Always delete everything on logout, even if something fails, no login data should remain
     await Api.auth.authLogoutPost().catch(() => null);
+    await cookieStore.delete(BEARER_AUTH_COOKIE).catch(() => null);
     await cookieStore.delete(CURRENT_USER_ID_COOKIE).catch(() => null);
     await cookieStore.delete(CURRENT_USER_NAME_COOKIE).catch(() => null);
     await cookieStore.delete(CURRENT_USER_IS_DEBUG_COOKIE).catch(() => null);
     await cookieStore.delete(CURRENT_USER_ORGANIZATION_COOKIE).catch(() => null);
+}
+
+export async function attemptRegistration(
+    firstName: string,
+    lastName: string,
+    username: string,
+    email: string,
+    password: string
+): Promise<RegistrationResult> {
+    try {
+        const response = await Api.auth.authRegisterPost({
+            registerRequest: {
+                firstName: firstName,
+                lastName: lastName,
+                username: username,
+                email: email,
+                password: password,
+            }
+        });
+
+        return { success: true, id: response.id }
+    } catch (ex) {
+        let status = 0;
+
+        if (ex instanceof ResponseError) {
+            status = ex.response.status;
+        }
+
+        switch (status) {
+            case 409:
+                return {
+                    success: false,
+                    errorCause: "username_or_email_taken",
+                };
+            case 422:
+                // Why is this undocumented in the api?
+                // This also happens when the password does not meet the requirements...
+                return {
+                    success: false,
+                    errorCause: "username_too_short",
+                };
+            default:
+                return {
+                    success: false,
+                    errorCause: "unknown",
+                };
+        }
+    }
 }
