@@ -73,7 +73,7 @@ async def create_organization_invite(
         role_id=None,
         created_by_id=created_by_id,
         token=token_hash,
-        expires_at=expires_at,
+        expires_at=expires_at.replace(tzinfo=None) if expires_at is not None else None,
         max_uses=max_uses,
         use_count=0,
     )
