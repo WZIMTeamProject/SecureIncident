@@ -1,6 +1,6 @@
 import {Link, type LoaderFunction, Outlet, type RouterContextProvider, useLoaderData} from "react-router";
 import {AuthRouterContext, AuthState, AuthUserContext} from "./data/auth.ts";
-import { useState } from "react"; 
+
 
 //TODO: LOGO!!!!!
 
@@ -59,45 +59,16 @@ const NavIconLink = ({ to, label, children }: { to: string; label: string; child
 
 export function SIAppRoot() {
     const authState = useLoaderData<AuthState | null>();
-    const [dark, setDark] = useState(false); 
-
-
-    const toggleDark = () => {
-        setDark(d => !d);
-        document.documentElement.classList.toggle("dark");
-    };
-
 
     return (
         <AuthUserContext value={authState}>
-            <header className="bg-[var(--color-si-header)] flex items-center px-4 py-3">
-
-                {/* TODO: LOGO!!!! */}
-                <div className="flex flex-col leading-tight mr-4">
-                    <span className="text-base font-bold text-white">HELLO I'M THE LOGO</span>
-                    <span className="text-base font-bold text-white">PLACEHOLDER</span>
-                </div>
-
-                {/* Two options for toolbar */}
-                {authState ? <LoggedUserToolbar /> : <AnonymousUserToolbar />}
-
-                <div className="flex-1" />
-
-                {/* Mode switch */}
-                <button
-                    onClick={toggleDark}
-                    title={dark ? "Tryb jasny" : "Tryb ciemny"}
-                    className="p-2 rounded-lg text-white hover:bg-white/15 transition-colors"
-                >
-                    {dark ? <IconSun /> : <IconMoon />}
-                </button>
-
-            </header>
-
-            <Outlet />
+            <div className={`flex gap-2 h-25 p-2 bg-[var(--color-si-header)]`}>
+                {authState ? <LoggedUserToolbar/> : <AnonymousUserToolbar/>}
+            </div>
+            <div className={`flex justify-center`}>
+                <Outlet/>
+            </div>
         </AuthUserContext>
- 
-
     )
 }
 
@@ -110,7 +81,7 @@ export const appRootLoader: LoaderFunction = async ({context}) => {
 function AnonymousUserToolbar() {
     return (
         <nav className="flex items-center gap-7 ml-2">
-            <NavLink to="/">Strona główna</NavLink>
+            <NavLink to="/">Strona Główna</NavLink>
             <span className="text-white/50">|</span>
             <NavLink to="/login">Logowanie</NavLink>
             <span className="text-white/50">|</span>
@@ -122,7 +93,7 @@ function AnonymousUserToolbar() {
 function LoggedUserToolbar() {
     return (
         <nav className="flex items-center">
-            <NavIconLink to="/" label="Strona główna"><IconHome /></NavIconLink>
+            <NavIconLink to="/" label="Strona Główna"><IconHome /></NavIconLink>
             <NavIconLink to="/account" label="Moje Konto"><IconUser /></NavIconLink>
             {/* TODO home icon, but only for users that have unlocked the dashboard (therefore completed their registration or simply logged in) */}
         </nav>
