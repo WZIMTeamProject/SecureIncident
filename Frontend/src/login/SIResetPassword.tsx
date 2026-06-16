@@ -1,7 +1,7 @@
 import {Background} from "../components/Background.tsx";
 import {useFetcher, useSearchParams} from "react-router";
 import {FORM_PASSWORD, FORM_PASSWORD_REPEAT, FORM_RESET_TOKEN} from "./forms.ts";
-import {IconLock} from "./icons.tsx";
+import {IconLock} from "../components/icons.tsx";
 
 export function SIResetPassword() {
     const fetcher = useFetcher();

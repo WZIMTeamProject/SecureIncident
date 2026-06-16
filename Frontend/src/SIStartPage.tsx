@@ -1,4 +1,4 @@
-import {Background} from "../src/components/Background.tsx";
+import {Background} from "./components/Background.tsx";
 
 
 export function SIStartPage() {
