@@ -31,10 +31,12 @@ async def create_project_invite(
             status_code=403, detail="Tylko właściciel projektu może tworzyć zaproszenia"
         )
 
-    # 3. Sprawdź czy rola istnieje
+    # 3. Sprawdź czy rola istnieje i należy do tego projektu
     role = await repositories.invite_repo.get_role_by_id(db, data.role_id)
     if role is None:
         raise HTTPException(status_code=404, detail="Rola nie znaleziona")
+    if role.project_id != project_id:
+        raise HTTPException(status_code=400, detail="Ta rola nie należy do tego projektu")
 
     # 4. Wygeneruj token
     raw_token = security.generate_token()
@@ -84,14 +86,26 @@ async def join_project_by_invite(
     """Dołącz do projektu za pomocą zaproszenia."""
     token_hash = security.hash_token(raw_token)
 
-    # Atomowe zwiększenie use_count — tylko jeśli zaproszenie jest ważne
+    # Read-only pre-check: validate scope and org membership BEFORE consuming a use slot.
+    # This prevents a cross-org user from draining limited-use invites with repeated 403s.
+    pre_check = await repositories.invite_repo.get_invite_by_hash(db, token_hash)
+    if pre_check is None:
+        raise HTTPException(status_code=400, detail="Nieprawidłowe lub wygasłe zaproszenie")
+
+    if pre_check.scope != "PROJECT":
+        raise HTTPException(status_code=400, detail="To zaproszenie nie jest do projektu")
+
+    if pre_check.project is not None and pre_check.project.organization_id is not None:
+        if current_user.organization_id != pre_check.project.organization_id:
+            raise HTTPException(
+                status_code=403,
+                detail="You must be a member of this organization to join its projects."
+            )
+
+    # Atomic increment — only after scope and auth checks pass
     invite = await repositories.invite_repo.get_and_increment_invite(db, token_hash)
     if invite is None:
         raise HTTPException(status_code=400, detail="Nieprawidłowe lub wygasłe zaproszenie")
-
-    # Sprawdź czy to zaproszenie do projektu
-    if invite.scope != "PROJECT":
-        raise HTTPException(status_code=400, detail="To zaproszenie nie jest do projektu")
 
     # Sprawdź czy użytkownik jest już członkiem
     existing = await repositories.invite_repo.get_user_project(
@@ -114,7 +128,7 @@ async def join_project_by_invite(
 def _is_invite_valid(invite: OrganizationInvite) -> bool:
     """Helper: sprawdź czy zaproszenie jest ważne (nie wygasłe, nie wyczerpane)."""
     if invite.expires_at is not None:
-        if datetime.now(timezone.utc) > invite.expires_at:
+        if datetime.now(timezone.utc).replace(tzinfo=None) > invite.expires_at:
             return False
     if invite.max_uses is not None:
         if invite.use_count >= invite.max_uses:

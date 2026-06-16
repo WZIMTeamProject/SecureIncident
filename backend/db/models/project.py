@@ -47,3 +47,6 @@ class Project(Base):
     categories: Mapped[List["Category"]] = relationship(
         "Category", back_populates="project", cascade="all, delete-orphan", lazy="selectin"
     )
+    invites: Mapped[List["OrganizationInvite"]] = relationship(
+        "OrganizationInvite", back_populates="project", lazy="selectin"
+    )
