@@ -71,12 +71,6 @@ async def create_project(
         owner_id = current_user.id
         organization_id = None
 
-    if not data.name or not data.name.strip():
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Nazwa projektu jest wymagana",
-        )
-
     # --- jedna transakcja: projekt -> rola Owner -> członkostwo właściciela ---
     project = await repositories.project_repo.create_project(
         db,

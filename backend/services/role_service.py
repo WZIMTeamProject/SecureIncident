@@ -51,12 +51,6 @@ async def create_role(
     """Utwórz rolę w projekcie (tylko właściciel projektu)."""
     await _require_owner(db, project_id, current_user)
 
-    if not data.name or not data.name.strip():
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Nazwa roli jest wymagana",
-        )
-
     role = await repositories.project_repo.create_role(
         db,
         project_id=project_id,

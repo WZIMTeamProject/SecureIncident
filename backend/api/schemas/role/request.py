@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 
@@ -13,7 +13,7 @@ class RolePermissions(BaseModel):
 
 
 class CreateRoleRequest(BaseModel):
-    name: str
+    name: str = Field(min_length=1)
     permissions: RolePermissions
 
 

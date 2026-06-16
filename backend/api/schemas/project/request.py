@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from uuid import UUID
 from enum import Enum
@@ -10,7 +10,7 @@ class ProjectScope(str, Enum):
 
 
 class CreateProjectRequest(BaseModel):
-    name: str
+    name: str = Field(min_length=1)
     description: Optional[str] = None
     scope: ProjectScope
 
