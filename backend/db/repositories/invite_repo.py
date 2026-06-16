@@ -83,37 +83,6 @@ async def create_organization_invite(
     return invite
 
 
-async def create_organization_invite(
-    db: AsyncSession,
-    *,
-    organization_id: UUID,
-    created_by_id: UUID,
-    token_hash: str,
-    expires_at: Optional[datetime],
-    max_uses: Optional[int],
-) -> OrganizationInvite:
-    """Utwórz zaproszenie do organizacji (scope=ORGANIZATION, bez roli).
-
-    Organizacja nie ma ról (role są per-projekt), więc role_id=None.
-    Pojedynczy zapis — commit tutaj, analogicznie do create_project_invite.
-    """
-    invite = OrganizationInvite(
-        scope="ORGANIZATION",
-        organization_id=organization_id,
-        project_id=None,
-        role_id=None,
-        created_by_id=created_by_id,
-        token=token_hash,
-        expires_at=expires_at,
-        max_uses=max_uses,
-        use_count=0,
-    )
-    db.add(invite)
-    await db.commit()
-    await db.refresh(invite)
-    return invite
-
-
 async def get_invite_by_hash(db: AsyncSession, token_hash: str) -> Optional[OrganizationInvite]:
     """Pobierz zaproszenie po hashu tokenu (eager-load project + organization)."""
     result = await db.execute(
