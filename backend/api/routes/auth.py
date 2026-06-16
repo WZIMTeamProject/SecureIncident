@@ -1,11 +1,13 @@
 ﻿from uuid import UUID
 import logging
+import datetime
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status, Security
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies.db import get_db
-from api.dependencies.auth import get_current_user
+from api.dependencies.auth import get_current_user, bearer_scheme
 from api.schemas.common.base import CreatedIdResponse
 from api.schemas.auth.request import (
     RegisterRequest,
@@ -15,7 +17,9 @@ from api.schemas.auth.request import (
 )
 from api.schemas.auth.response import CurrentUserResponse, LoginResponse
 from db.models.user import User
+from db import repositories
 from services import auth_service
+from core.security import decode_token
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 logger = logging.getLogger(__name__)
@@ -56,12 +60,35 @@ async def get_me(
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout_user(
+    token_credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Wyloguj użytkownika (stateless — MVP)."""
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    """Wyloguj użytkownika poprzez dodanie unikalnego JTI tokenu do czarnej listy."""
+    if token_credentials:
+        try:
+            token = token_credentials.credentials
+            payload = decode_token(token)
+            jti = payload.get("jti")
+            exp_timestamp = payload.get("exp")
 
+            if jti and exp_timestamp:
+                expires_at = datetime.datetime.fromtimestamp(exp_timestamp, tz=datetime.timezone.utc).replace(tzinfo=None)
+                
+                # Sprzątanie starych tokenów
+                await repositories.revoked_token_repo.cleanup_expired_revoked_tokens(db)
+                
+                # Zapisanie bieżącego JTI jako unieważniony
+                await repositories.revoked_token_repo.add_revoked_token(
+                    db,
+                    jti=jti,
+                    user_id=current_user.id,
+                    expires_at=expires_at
+                )
+        except Exception as e:
+            logger.error(f"Error during token revocation: {str(e)}")
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post("/request-password-reset", status_code=status.HTTP_204_NO_CONTENT)

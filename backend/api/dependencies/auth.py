@@ -11,14 +11,14 @@ from core.security import decode_token
 from db.models.user import User
 from db import repositories
 
-
-_bearer_scheme = HTTPBearer(auto_error=False)
+# Zmiana: Usunięto podkreślenie z przodu, aby wyeksportować schemat do routingu logoutu
+bearer_scheme = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
     credentials: Annotated[
         HTTPAuthorizationCredentials | None,
-        Security(_bearer_scheme),
+        Security(bearer_scheme),  # Zmiana: użycie wyeksportowanej zmiennej
     ],
     db: AsyncSession = Depends(get_db),
 ) -> User:
@@ -44,6 +44,15 @@ async def get_current_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Zmiana: Pobieramy jti i sprawdzamy, czy token znajduje się na czarnej liście
+    jti: str | None = payload.get("jti")
+    if jti and await repositories.revoked_token_repo.is_token_revoked(db, jti):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
