@@ -1,6 +1,7 @@
 import {Link, type LoaderFunction, Outlet, type RouterContextProvider, useLoaderData} from "react-router";
 import {AuthRouterContext, AuthState, AuthUserContext} from "./data/auth.ts";
 import {useState} from "react";
+import {IconClose, IconMenu} from "./components/icons.tsx";
 
 // TODO: LOGO!!!!!
 
@@ -58,6 +59,7 @@ const NavIconLink = ({to, label, children}: { to: string; label: string; childre
 export function SIAppRoot() {
     const authState = useLoaderData<AuthState | null>();
     const [dark, setDark] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
 
 
     const toggleDark = () => {
@@ -68,27 +70,43 @@ export function SIAppRoot() {
 
     return (
         <AuthUserContext value={authState}>
-            <header className="bg-[var(--color-si-header)] flex items-center px-4 py-3">
+            <header className="bg-[var(--color-si-header)]">
+                <div className="flex items-center px-4 py-3">
 
-                {/* TODO: LOGO!!!! */}
-                <div className="flex flex-col leading-tight mr-4">
-                    <span className="text-base font-bold text-white">HELLO I'M THE LOGO</span>
-                    <span className="text-base font-bold text-white">PLACEHOLDER</span>
+                    {/* TODO: LOGO!!!! */}
+                    <div className="flex flex-col leading-tight mr-4">
+                        <span className="text-base font-bold text-white">HELLO I'M THE LOGO</span>
+                        <span className="text-base font-bold text-white">PLACEHOLDER</span>
+                    </div>
+
+                    {/* Desktop toolbar — collapses into the mobile menu below md */}
+                    {authState ? <LoggedUserToolbar/> : <AnonymousUserToolbar/>}
+
+                    <div className="flex-1"/>
+
+                    {/* Mode switch */}
+                    <button
+                        onClick={toggleDark}
+                        title={dark ? "Tryb jasny" : "Tryb ciemny"}
+                        className="p-2 rounded-lg text-white hover:bg-white/15 transition-colors"
+                    >
+                        {dark ? <IconSun/> : <IconMoon/>}
+                    </button>
+
+                    {/* Hamburger — only below md */}
+                    <button
+                        onClick={() => setMenuOpen(open => !open)}
+                        aria-label={menuOpen ? "Zamknij menu" : "Otwórz menu"}
+                        aria-expanded={menuOpen}
+                        aria-controls="mobile-menu"
+                        className="md:hidden flex items-center justify-center min-h-11 min-w-11 ml-1 rounded-lg text-white hover:bg-white/15 transition-colors"
+                    >
+                        {menuOpen ? <IconClose/> : <IconMenu/>}
+                    </button>
+
                 </div>
 
-                {/* Two options for toolbar */}
-                {authState ? <LoggedUserToolbar/> : <AnonymousUserToolbar/>}
-
-                <div className="flex-1"/>
-
-                {/* Mode switch */}
-                <button
-                    onClick={toggleDark}
-                    title={dark ? "Tryb jasny" : "Tryb ciemny"}
-                    className="p-2 rounded-lg text-white hover:bg-white/15 transition-colors"
-                >
-                    {dark ? <IconSun/> : <IconMoon/>}
-                </button>
+                {menuOpen && <MobileNav authState={authState} onNavigate={() => setMenuOpen(false)}/>}
 
             </header>
 
@@ -107,7 +125,7 @@ export const appRootLoader: LoaderFunction = async ({context}) => {
 
 function AnonymousUserToolbar() {
     return (
-        <nav className="flex items-center gap-7 ml-2">
+        <nav className="hidden md:flex items-center gap-7 ml-2">
             <NavLink to="/">Strona główna</NavLink>
             <span className="text-white/50">|</span>
             <NavLink to="/login">Logowanie</NavLink>
@@ -119,10 +137,31 @@ function AnonymousUserToolbar() {
 
 function LoggedUserToolbar() {
     return (
-        <nav className="flex items-center">
+        <nav className="hidden md:flex items-center">
             <NavIconLink to="/" label="Strona główna"><IconHome/></NavIconLink>
             <NavIconLink to="/account" label="Moje Konto"><IconUser/></NavIconLink>
             {/* TODO home icon, but only for users that have unlocked the dashboard (therefore completed their registration or simply logged in) */}
+        </nav>
+    );
+}
+
+function MobileNav({authState, onNavigate}: { authState: AuthState | null; onNavigate: () => void }) {
+    const linkClass = "flex items-center justify-center gap-3 px-4 py-3 text-white text-base font-medium hover:bg-white/15 transition-colors";
+    return (
+        <nav id="mobile-menu" aria-label="Nawigacja mobilna"
+             className="md:hidden flex flex-col border-t border-white/15 pb-2">
+            {authState ? (
+                <>
+                    <Link to="/" onClick={onNavigate} className={linkClass}><IconHome/>Strona główna</Link>
+                    <Link to="/account" onClick={onNavigate} className={linkClass}><IconUser/>Moje Konto</Link>
+                </>
+            ) : (
+                <>
+                    <Link to="/" onClick={onNavigate} className={linkClass}>Strona główna</Link>
+                    <Link to="/login" onClick={onNavigate} className={linkClass}>Logowanie</Link>
+                    <Link to="/login/register" onClick={onNavigate} className={linkClass}>Rejestracja</Link>
+                </>
+            )}
         </nav>
     );
 }
