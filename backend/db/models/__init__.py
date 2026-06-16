@@ -9,6 +9,7 @@ from db.models.incident_log import IncidentLog
 from db.models.category import Category
 from db.models.organization_invite import OrganizationInvite
 from db.models.password_reset_token import PasswordResetToken
+from db.models.revoked_token import RevokedToken
 
 __all__ = [
     "User",
@@ -22,4 +23,5 @@ __all__ = [
     "Category",
     "OrganizationInvite",
     "PasswordResetToken",
+    "RevokedToken",
 ]

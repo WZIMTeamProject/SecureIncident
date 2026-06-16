@@ -1,5 +1,6 @@
 ﻿import hashlib
 import secrets
+import uuid  # Dodane do generowania JTI
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -37,6 +38,7 @@ def create_access_token(user_id: str, remember_user: bool = False) -> str:
         "sub": str(user_id),
         "exp": expire,
         "iat": datetime.now(timezone.utc),
+        "jti": str(uuid.uuid4()),  # Zmiana: Dodane unikalne ID tokenu
     }
 
     encoded_jwt = jwt.encode(payload, settings.SECRET_KEY, algorithm=ALGORITHM)
@@ -45,7 +47,13 @@ def create_access_token(user_id: str, remember_user: bool = False) -> str:
 
 def decode_token(token: str) -> dict:
     """Dekoduj JWT i zwróć pełny payload (dict). Zgłasza wyjątek na nieudane dekodowanie."""
-    return jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
+    # Zmiana: Wymuszamy obecność exp, sub oraz jti w tokenie
+    return jwt.decode(
+        token, 
+        settings.SECRET_KEY, 
+        algorithms=[ALGORITHM],
+        options={"require": ["exp", "sub", "jti"]}
+    )
 
 
 def hash_token(token: str) -> str:
