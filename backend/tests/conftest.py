@@ -13,8 +13,10 @@ from sqlalchemy.pool import NullPool
 from alembic.config import Config as AlembicConfig
 from alembic import command as alembic_command
 
-from db.models import User, Project, Organization
-from core.security import create_access_token
+from datetime import datetime, timedelta, timezone
+from db.models import User, Project, Organization, Role
+from db.models.organization_invite import OrganizationInvite
+from core.security import create_access_token, generate_token, hash_token
 from core.config import settings
 from core.security import hash_password
 
@@ -161,12 +163,83 @@ def auth_headers(test_user: User) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
 
 @pytest.fixture(scope="function")
-async def test_project(db: AsyncSession, test_org: Organization) -> Project:
+async def test_project(db: AsyncSession, test_org: Organization, test_user: User) -> Project:
     """Pre-created Project row."""
     project = Project(
         name="Alpha Project",
-        organization_id=test_org.id
+        organization_id=test_org.id,
+        project_owner_id=test_user.id,
+        scope="ORGANIZATION",
     )
     db.add(project)
     await db.flush()
     return project
+
+
+@pytest.fixture(scope="function")
+async def test_role(db: AsyncSession, test_project: Project) -> Role:
+    """Pre-created Role row for test_project."""
+    role = Role(
+        project_id=test_project.id,
+        name="Member",
+    )
+    db.add(role)
+    await db.flush()
+    return role
+
+
+@pytest.fixture(scope="function")
+async def test_invite(db: AsyncSession, test_project: Project, test_user: User, test_role: Role):
+    """Valid project invite fixture. Returns (invite, raw_token)."""
+    raw_token = generate_token()
+    token_hash = hash_token(raw_token)
+    invite = OrganizationInvite(
+        scope="PROJECT",
+        project_id=test_project.id,
+        role_id=test_role.id,
+        created_by_id=test_user.id,
+        token=token_hash,
+        organization_id=None,
+    )
+    db.add(invite)
+    await db.flush()
+    return invite, raw_token
+
+
+@pytest.fixture(scope="function")
+async def expired_invite(db: AsyncSession, test_project: Project, test_user: User, test_role: Role):
+    """Expired project invite (expires_at in the past). Returns (invite, raw_token)."""
+    raw_token = generate_token()
+    token_hash = hash_token(raw_token)
+    invite = OrganizationInvite(
+        scope="PROJECT",
+        project_id=test_project.id,
+        role_id=test_role.id,
+        created_by_id=test_user.id,
+        token=token_hash,
+        organization_id=None,
+        expires_at=datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=1),
+    )
+    db.add(invite)
+    await db.flush()
+    return invite, raw_token
+
+
+@pytest.fixture(scope="function")
+async def exhausted_invite(db: AsyncSession, test_project: Project, test_user: User, test_role: Role):
+    """Exhausted project invite (max_uses=1, use_count=1). Returns (invite, raw_token)."""
+    raw_token = generate_token()
+    token_hash = hash_token(raw_token)
+    invite = OrganizationInvite(
+        scope="PROJECT",
+        project_id=test_project.id,
+        role_id=test_role.id,
+        created_by_id=test_user.id,
+        token=token_hash,
+        organization_id=None,
+        max_uses=1,
+        use_count=1,
+    )
+    db.add(invite)
+    await db.flush()
+    return invite, raw_token
