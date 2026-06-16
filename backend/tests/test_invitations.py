@@ -17,7 +17,7 @@ class TestCreateInvite:
         self, client: AsyncClient, test_user: User, test_project, test_role, auth_headers: dict
     ):
         response = await client.post(
-            f"/api/invitations/projects/{test_project.id}/invites",
+            f"/api/projects/{test_project.id}/invites",
             headers=auth_headers,
             json={"role_id": str(test_role.id)},
         )
@@ -27,7 +27,7 @@ class TestCreateInvite:
         self, client: AsyncClient, test_user: User, test_project, test_role, auth_headers: dict
     ):
         response = await client.post(
-            f"/api/invitations/projects/{test_project.id}/invites",
+            f"/api/projects/{test_project.id}/invites",
             headers=auth_headers,
             json={"role_id": str(test_role.id)},
         )
@@ -39,7 +39,7 @@ class TestCreateInvite:
         self, client: AsyncClient, test_user: User, test_project, test_role, auth_headers: dict, db: AsyncSession
     ):
         response = await client.post(
-            f"/api/invitations/projects/{test_project.id}/invites",
+            f"/api/projects/{test_project.id}/invites",
             headers=auth_headers,
             json={"role_id": str(test_role.id)},
         )
@@ -58,7 +58,7 @@ class TestCreateInvite:
         self, client: AsyncClient, test_project, test_role
     ):
         response = await client.post(
-            f"/api/invitations/projects/{test_project.id}/invites",
+            f"/api/projects/{test_project.id}/invites",
             json={"role_id": str(test_role.id)},
         )
         assert response.status_code == 401
@@ -80,7 +80,7 @@ class TestCreateInvite:
 
         token = security.create_access_token(str(other_user.id))
         response = await client.post(
-            f"/api/invitations/projects/{test_project.id}/invites",
+            f"/api/projects/{test_project.id}/invites",
             headers={"Authorization": f"Bearer {token}"},
             json={"role_id": str(test_role.id)},
         )
@@ -91,7 +91,7 @@ class TestCreateInvite:
     ):
         fake_project_id = uuid4()
         response = await client.post(
-            f"/api/invitations/projects/{fake_project_id}/invites",
+            f"/api/projects/{fake_project_id}/invites",
             headers=auth_headers,
             json={"role_id": str(test_role.id)},
         )
@@ -102,7 +102,7 @@ class TestCreateInvite:
     ):
         fake_role_id = uuid4()
         response = await client.post(
-            f"/api/invitations/projects/{test_project.id}/invites",
+            f"/api/projects/{test_project.id}/invites",
             headers=auth_headers,
             json={"role_id": str(fake_role_id)},
         )
@@ -113,7 +113,7 @@ class TestCreateInvite:
     ):
         expires_at = datetime.now(timezone.utc) + timedelta(days=7)
         response = await client.post(
-            f"/api/invitations/projects/{test_project.id}/invites",
+            f"/api/projects/{test_project.id}/invites",
             headers=auth_headers,
             json={"role_id": str(test_role.id), "expires_at": expires_at.isoformat()},
         )
@@ -128,7 +128,7 @@ class TestCreateInvite:
         self, client: AsyncClient, test_user: User, test_project, test_role, auth_headers: dict, db: AsyncSession
     ):
         response = await client.post(
-            f"/api/invitations/projects/{test_project.id}/invites",
+            f"/api/projects/{test_project.id}/invites",
             headers=auth_headers,
             json={"role_id": str(test_role.id), "max_uses": 3},
         )
@@ -146,14 +146,14 @@ class TestGetInvitePreview:
         self, client: AsyncClient, test_invite
     ):
         invite, raw_token = test_invite
-        response = await client.get(f"/api/invitations/invites/{raw_token}")
+        response = await client.get(f"/api/invites/{raw_token}")
         assert response.status_code == 200
 
     async def test_get_invite_preview_is_valid_true_for_active_invite(
         self, client: AsyncClient, test_invite
     ):
         invite, raw_token = test_invite
-        response = await client.get(f"/api/invitations/invites/{raw_token}")
+        response = await client.get(f"/api/invites/{raw_token}")
         data = response.json()
         assert data["is_valid"] is True
 
@@ -161,7 +161,7 @@ class TestGetInvitePreview:
         self, client: AsyncClient, expired_invite
     ):
         invite, raw_token = expired_invite
-        response = await client.get(f"/api/invitations/invites/{raw_token}")
+        response = await client.get(f"/api/invites/{raw_token}")
         data = response.json()
         assert data["is_valid"] is False
 
@@ -169,7 +169,7 @@ class TestGetInvitePreview:
         self, client: AsyncClient, exhausted_invite
     ):
         invite, raw_token = exhausted_invite
-        response = await client.get(f"/api/invitations/invites/{raw_token}")
+        response = await client.get(f"/api/invites/{raw_token}")
         data = response.json()
         assert data["is_valid"] is False
 
@@ -177,7 +177,7 @@ class TestGetInvitePreview:
         self, client: AsyncClient, test_invite, test_project
     ):
         invite, raw_token = test_invite
-        response = await client.get(f"/api/invitations/invites/{raw_token}")
+        response = await client.get(f"/api/invites/{raw_token}")
         data = response.json()
         assert data["target_name"] == test_project.name
 
@@ -185,14 +185,14 @@ class TestGetInvitePreview:
         self, client: AsyncClient
     ):
         fake_token = security.generate_token()
-        response = await client.get(f"/api/invitations/invites/{fake_token}")
+        response = await client.get(f"/api/invites/{fake_token}")
         assert response.status_code == 404
 
     async def test_get_invite_preview_does_not_require_authentication(
         self, client: AsyncClient, test_invite
     ):
         invite, raw_token = test_invite
-        response = await client.get(f"/api/invitations/invites/{raw_token}")
+        response = await client.get(f"/api/invites/{raw_token}")
         assert response.status_code in [200, 404]
 
 
@@ -203,7 +203,7 @@ class TestJoinProjectByInvite:
     ):
         invite, raw_token = test_invite
         response = await client.post(
-            "/api/invitations/projects/join",
+            "/api/projects/join",
             headers=auth_headers,
             json={"token": raw_token},
         )
@@ -214,7 +214,7 @@ class TestJoinProjectByInvite:
     ):
         invite, raw_token = test_invite
         await client.post(
-            "/api/invitations/projects/join",
+            "/api/projects/join",
             headers=auth_headers,
             json={"token": raw_token},
         )
@@ -234,7 +234,7 @@ class TestJoinProjectByInvite:
     ):
         invite, raw_token = test_invite
         await client.post(
-            "/api/invitations/projects/join",
+            "/api/projects/join",
             headers=auth_headers,
             json={"token": raw_token},
         )
@@ -247,7 +247,7 @@ class TestJoinProjectByInvite:
     ):
         fake_token = security.generate_token()
         response = await client.post(
-            "/api/invitations/projects/join",
+            "/api/projects/join",
             headers=auth_headers,
             json={"token": fake_token},
         )
@@ -258,7 +258,7 @@ class TestJoinProjectByInvite:
     ):
         invite, raw_token = expired_invite
         response = await client.post(
-            "/api/invitations/projects/join",
+            "/api/projects/join",
             headers=auth_headers,
             json={"token": raw_token},
         )
@@ -269,7 +269,7 @@ class TestJoinProjectByInvite:
     ):
         invite, raw_token = exhausted_invite
         response = await client.post(
-            "/api/invitations/projects/join",
+            "/api/projects/join",
             headers=auth_headers,
             json={"token": raw_token},
         )
@@ -304,7 +304,7 @@ class TestJoinProjectByInvite:
         await db.commit()
 
         response = await client.post(
-            "/api/invitations/projects/join",
+            "/api/projects/join",
             headers=auth_headers,
             json={"token": raw_token},
         )
@@ -315,7 +315,7 @@ class TestJoinProjectByInvite:
     ):
         invite, raw_token = test_invite
         response = await client.post(
-            "/api/invitations/projects/join",
+            "/api/projects/join",
             json={"token": raw_token},
         )
         assert response.status_code == 401

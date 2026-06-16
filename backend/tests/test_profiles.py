@@ -73,7 +73,7 @@ async def test_update_my_profile_username_conflict(client, db, auth_headers):
 async def test_search_users_empty_query(client, auth_headers):
     """Test walidacji - puste zapytanie powinno zwrócić błąd 422."""
     response = await client.get("/api/users/search?query=", headers=auth_headers)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 @pytest.mark.asyncio
 async def test_search_users_authenticated(client, auth_headers):
