@@ -52,6 +52,8 @@ async def create_project_invite(
         expires_at=data.expires_at,
         max_uses=data.max_uses,
     )
+    await db.commit()
+    await db.refresh(invite)
 
     return invite, raw_token
 

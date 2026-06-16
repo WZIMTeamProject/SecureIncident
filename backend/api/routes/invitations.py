@@ -78,4 +78,5 @@ async def revoke_invite(
         raise HTTPException(status_code=403, detail="Not authorized to revoke this invite")
 
     await repositories.invite_repo.delete_invite_by_hash(db, token_hash)
+    await db.commit()
     return Response(status_code=204)
