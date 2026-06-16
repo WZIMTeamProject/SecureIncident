@@ -1,7 +1,7 @@
 import {Link, useFetcher} from "react-router";
 import {FORM_USERNAME} from "./forms.ts";
 import {Background} from "../components/Background.tsx";
-import {IconUser} from "./icons.tsx";
+import {IconUser} from "../components/icons.tsx";
 
 export function SIForgotPassword() {
     const fetcher = useFetcher();
