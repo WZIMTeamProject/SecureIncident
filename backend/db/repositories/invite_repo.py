@@ -2,7 +2,7 @@
 from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import select, update, or_
+from sqlalchemy import select, update, or_, delete
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -42,7 +42,7 @@ async def create_project_invite(
         created_by_id=created_by_id,
         token=token_hash,
         role_id=role_id,
-        expires_at=expires_at,
+        expires_at=expires_at.replace(tzinfo=None) if expires_at is not None else None,
         max_uses=max_uses,
         use_count=0,
     )
@@ -149,3 +149,12 @@ async def create_user_project(
     db.add(membership)
     await db.flush()  # flush do DB ale nie commituj — commit w serwisie
     return membership
+
+
+async def delete_invite_by_hash(db: AsyncSession, token_hash: str) -> bool:
+    """Hard-delete invite by token hash. Returns True if deleted, False if not found."""
+    result = await db.execute(
+        delete(OrganizationInvite).where(OrganizationInvite.token == token_hash)
+    )
+    await db.commit()
+    return result.rowcount > 0
