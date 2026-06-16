@@ -33,3 +33,4 @@ async def cleanup_expired_revoked_tokens(db: AsyncSession) -> None:
     await db.execute(
         delete(RevokedToken).where(RevokedToken.expires_at < now_naive)
     )
+    await db.commit()

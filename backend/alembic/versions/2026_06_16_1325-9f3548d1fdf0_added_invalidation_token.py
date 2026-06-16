@@ -31,9 +31,7 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('jti'),
     )
-    op.create_index('ix_revoked_tokens_jti', 'revoked_tokens', ['jti'], unique=False)
 
 
 def downgrade() -> None:
-    op.drop_index('ix_revoked_tokens_jti', table_name='revoked_tokens')
     op.drop_table('revoked_tokens')

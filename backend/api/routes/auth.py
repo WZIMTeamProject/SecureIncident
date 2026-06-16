@@ -1,6 +1,4 @@
-﻿from uuid import UUID
-import logging
-import datetime
+﻿import datetime
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status, Security
 from fastapi.security import HTTPAuthorizationCredentials
@@ -22,7 +20,6 @@ from services import auth_service
 from core.security import decode_token
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
-logger = logging.getLogger(__name__)
 
 @router.post("/register", response_model=CreatedIdResponse, status_code=status.HTTP_201_CREATED)
 async def register_user(data: RegisterRequest, db: AsyncSession = Depends(get_db)):
@@ -65,28 +62,20 @@ async def logout_user(
     current_user: User = Depends(get_current_user),
 ):
     """Wyloguj użytkownika poprzez dodanie unikalnego JTI tokenu do czarnej listy."""
-    if token_credentials:
-        try:
-            token = token_credentials.credentials
-            payload = decode_token(token)
-            jti = payload.get("jti")
-            exp_timestamp = payload.get("exp")
+    token = token_credentials.credentials
+    payload = decode_token(token)
+    jti = payload.get("jti")
+    exp_timestamp = payload.get("exp")
+    expires_at = datetime.datetime.fromtimestamp(exp_timestamp, tz=datetime.timezone.utc).replace(tzinfo=None)
 
-            if jti and exp_timestamp:
-                expires_at = datetime.datetime.fromtimestamp(exp_timestamp, tz=datetime.timezone.utc).replace(tzinfo=None)
-                
-                # Sprzątanie starych tokenów
-                await repositories.revoked_token_repo.cleanup_expired_revoked_tokens(db)
-                
-                # Zapisanie bieżącego JTI jako unieważniony
-                await repositories.revoked_token_repo.add_revoked_token(
-                    db,
-                    jti=jti,
-                    user_id=current_user.id,
-                    expires_at=expires_at
-                )
-        except Exception as e:
-            logger.error(f"Error during token revocation: {str(e)}")
+    await repositories.revoked_token_repo.cleanup_expired_revoked_tokens(db)
+
+    await repositories.revoked_token_repo.add_revoked_token(
+        db,
+        jti=jti,
+        user_id=current_user.id,
+        expires_at=expires_at
+    )
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

@@ -1,7 +1,13 @@
-﻿import pytest
-from httpx import AsyncClient
+﻿from unittest.mock import AsyncMock, patch
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.exc import SQLAlchemyError
 
 from db.models.user import User
+from db.models.revoked_token import RevokedToken
+
+
+def test_revoked_token_model_has_no_updated_at():
+    assert not hasattr(RevokedToken, "updated_at")
 
 
 class TestLogout:
@@ -46,7 +52,31 @@ class TestLogout:
         """Sprawdza, czy unieważniony token blokuje dostęp do chronionych zasobów globalnie."""
         # Wylogowanie
         await client.post("/api/auth/logout", headers=auth_headers)
-        
+
         # Próba wejścia na chroniony endpoint podweryfikowana błędem autoryzacji
         response = await client.get("/api/auth/me", headers=auth_headers)
         assert response.status_code == 401
+
+    async def test_logout_returns_500_when_db_raises(
+        self, db, test_user: User, auth_headers: dict
+    ):
+        """DB failure during token revocation must surface as 500, not be silently swallowed."""
+        from main import app as fastapi_app
+        from api.dependencies.db import get_db
+
+        fastapi_app.dependency_overrides[get_db] = lambda: db
+
+        try:
+            async with AsyncClient(
+                transport=ASGITransport(app=fastapi_app, raise_app_exceptions=False),
+                base_url="http://test",
+            ) as error_client:
+                with patch(
+                    "db.repositories.revoked_token_repo.add_revoked_token",
+                    new_callable=AsyncMock,
+                    side_effect=SQLAlchemyError("DB error"),
+                ):
+                    response = await error_client.post("/api/auth/logout", headers=auth_headers)
+            assert response.status_code == 500
+        finally:
+            fastapi_app.dependency_overrides.pop(get_db, None)
