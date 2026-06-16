@@ -88,7 +88,7 @@ async def get_and_increment_invite(
     db: AsyncSession, token_hash: str
 ) -> Optional[OrganizationInvite]:
     """Atomically get invitation and increment use_count (in single transaction)."""
-    now = datetime.now()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     result = await db.execute(
         update(OrganizationInvite)
         .where(
