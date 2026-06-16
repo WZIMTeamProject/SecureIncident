@@ -29,12 +29,6 @@ async def create_organization(
             detail="Użytkownik należy już do organizacji",
         )
 
-    if not data.name or not data.name.strip():
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Nazwa organizacji jest wymagana",
-        )
-
     organization = await repositories.organization_repo.create_organization(
         db,
         name=data.name.strip(),
@@ -117,6 +111,8 @@ async def create_invite(
         expires_at=data.expires_at,
         max_uses=data.max_uses,
     )
+    await db.commit()
+    await db.refresh(invite)
 
     return invite, raw_token
 
