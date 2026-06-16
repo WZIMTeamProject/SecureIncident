@@ -10,7 +10,7 @@ from db.models.organization import Organization
 async def get_organization_by_id(
     db: AsyncSession, organization_id: UUID
 ) -> Optional[Organization]:
-    """Pobierz organizację po ID."""
+    """Get organization by ID."""
     result = await db.execute(
         select(Organization).where(Organization.id == organization_id)
     )
@@ -24,12 +24,12 @@ async def create_organization(
     description: Optional[str],
     owner_id: UUID,
 ) -> Organization:
-    """Utwórz organizację (flush tylko — commit w serwisie, bo flow jest wielokrokowy)."""
+    """Create organization (flush only — commit in service, multi-step flow)."""
     organization = Organization(
         name=name,
         description=description,
         org_owner_id=owner_id,
     )
     db.add(organization)
-    await db.flush()  # nadaje id, ale nie commituje — serwis commituje całą transakcję
+    await db.flush()  # assign ID but do not commit — service commits entire transaction
     return organization

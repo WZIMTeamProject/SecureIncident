@@ -17,7 +17,7 @@ async def list_roles(
     project_id: UUID,
     current_user: User,
 ) -> Sequence[Role]:
-    """Lista ról projektu (wymaga członkostwa w projekcie)."""
+    """List project roles (requires project membership)."""
     await _require_member(db, project_id, current_user)
     return await repositories.project_repo.list_roles_for_project(db, project_id)
 
@@ -29,7 +29,7 @@ async def get_role(
     role_id: UUID,
     current_user: User,
 ) -> Role:
-    """Szczegóły roli (wymaga członkostwa w projekcie)."""
+    """Role details (requires project membership)."""
     await _require_member(db, project_id, current_user)
 
     role = await repositories.project_repo.get_role_by_id(db, role_id)
@@ -48,7 +48,7 @@ async def create_role(
     data: CreateRoleRequest,
     current_user: User,
 ) -> Role:
-    """Utwórz rolę w projekcie (tylko właściciel projektu)."""
+    """Create role in project (project owner only)."""
     await _require_owner(db, project_id, current_user)
 
     role = await repositories.project_repo.create_role(
@@ -70,7 +70,7 @@ async def update_role(
     data: UpdateRoleRequest,
     current_user: User,
 ) -> None:
-    """Zaktualizuj nazwę i/lub uprawnienia roli (tylko właściciel projektu)."""
+    """Update role name and/or permissions (project owner only)."""
     await _require_owner(db, project_id, current_user)
 
     role = await repositories.project_repo.get_role_by_id(db, role_id)
@@ -89,7 +89,7 @@ async def update_role(
     await db.commit()
 
 
-# --- helpers autoryzacji (MVP: owner-check / member-check) ---
+# --- authorization helpers (MVP: owner-check / member-check) ---
 
 async def _get_project(db: AsyncSession, project_id: UUID) -> Project:
     project = await repositories.project_repo.get_project_by_id(db, project_id)

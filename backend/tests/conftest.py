@@ -3,12 +3,10 @@ import os
 import uuid
 from pathlib import Path
 from sqlalchemy import text
-from typing import AsyncGenerator, Generator
+from typing import AsyncGenerator
 import pytest
-from fastapi import FastAPI, security
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 from alembic.config import Config as AlembicConfig
 from alembic import command as alembic_command
@@ -53,8 +51,8 @@ def db_engine():
 @pytest.fixture(scope="function")
 async def db(db_engine) -> AsyncGenerator[AsyncSession, None]:
     """
-    Asynchroniczny fixture bazy danych dla każdego testu (scope='function').
-    Idealnie współpracuje z domyślną pętlą pytest-asyncio.
+    Asynchronous database fixture for each test (scope='function').
+    Works seamlessly with pytest-asyncio default event loop.
     """
     async with db_engine.connect() as connection:
         transaction = await connection.begin()
@@ -62,17 +60,17 @@ async def db(db_engine) -> AsyncGenerator[AsyncSession, None]:
         async_session = AsyncSession(
             bind=connection,
             expire_on_commit=False,
-            join_transaction_mode="create_savepoint"  # Przechwytuje i izoluje wewnętrzne commity aplikacji
+            join_transaction_mode="create_savepoint"  # Captures and isolates internal application commits
         )
         
         yield async_session
         
         await async_session.close()
-        await transaction.rollback()  # Czysty rollback po każdym teście
+        await transaction.rollback()  # Clean rollback after each test
 
 @pytest.fixture(scope="function")
 async def client(db: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
-    """Klient HTTPX AsyncClient do testowania endpointów FastAPI."""
+    """HTTPX AsyncClient for testing FastAPI endpoints."""
     from main import app as fastapi_app
     from api.dependencies.db import get_db 
     
@@ -122,7 +120,7 @@ async def test_org(db: AsyncSession) -> Organization:
 
 @pytest.fixture(scope="function")
 async def test_user(db: AsyncSession, test_org: Organization) -> User:
-    """Tworzy zwykłego użytkownika przypisanego do organizacji z fixture'a test_org."""
+    """Create regular user assigned to organization from test_org fixture."""
     
     user = User(
         username="testuser",
@@ -131,7 +129,7 @@ async def test_user(db: AsyncSession, test_org: Organization) -> User:
         last_name="Kowalski",
         password=hash_password("TestPassword123!"),
         is_active=True,
-        organization_id=test_org.id  # <--- Tutaj test_org nie będzie już None!
+        organization_id=test_org.id  # <--- Here test_org will not be None!
     )
     db.add(user)
     await db.flush()
@@ -140,7 +138,7 @@ async def test_user(db: AsyncSession, test_org: Organization) -> User:
 
 @pytest.fixture(scope="function")
 async def inactive_user(db: AsyncSession, test_org: Organization) -> User:
-    """Fixture tworzący nieaktywnego użytkownika dla testów autoryzacji."""
+    """Fixture creating inactive user for authorization tests."""
     user = User(
         username="inactive_user",
         email="inactive@example.com",

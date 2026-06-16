@@ -18,10 +18,10 @@ async def create_organization(
     data: CreateOrganizationRequest,
     current_user: User,
 ) -> Organization:
-    """Utwórz organizację i ustaw twórcę jako właściciela + członka.
+    """Create organization and set creator as owner + member.
 
-    Reguła domenowa: użytkownik może należeć tylko do JEDNEJ organizacji.
-    Jeśli już do jakiejś należy, nie może utworzyć kolejnej.
+    Domain rule: a user can belong to only ONE organization.
+    If already member of one, cannot create another.
     """
     if current_user.organization_id is not None:
         raise HTTPException(
@@ -36,7 +36,7 @@ async def create_organization(
         owner_id=current_user.id,
     )
 
-    # Twórca staje się członkiem swojej organizacji (ta sama sesja — mutacja jest śledzona).
+    # Creator becomes member of their organization (same session — mutation is tracked).
     current_user.organization_id = organization.id
     db.add(current_user)
 
@@ -50,7 +50,7 @@ async def get_current_organization(
     *,
     current_user: User,
 ) -> Organization:
-    """Zwróć organizację bieżącego użytkownika (404, jeśli nie należy do żadnej)."""
+    """Return current user's organization (404 if not a member of any)."""
     if current_user.organization_id is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -74,10 +74,10 @@ async def create_invite(
     data: CreateInviteRequest,
     current_user: User,
 ) -> tuple[OrganizationInvite, str]:
-    """Utwórz zaproszenie do organizacji (tylko właściciel organizacji).
+    """Create organization invitation (organization owner only).
 
-    Zwraca (invite, raw_token). W bazie zapisywany jest TYLKO hasz tokenu —
-    surowy token jest jedynie zwracany dzwoniącemu i nie da się go odzyskać później.
+    Returns (invite, raw_token). Only token hash is stored in database —
+    raw token is only returned to caller and cannot be recovered later.
     """
     if current_user.organization_id is None:
         raise HTTPException(
@@ -97,7 +97,7 @@ async def create_invite(
     if organization.org_owner_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Tylko właściciel organizacji może tworzyć zaproszenia",
+            detail="Only organization owner can create invitations",
         )
 
     raw_token = security.generate_token()
@@ -123,20 +123,20 @@ async def join_organization(
     current_user: User,
     raw_token: str,
 ) -> None:
-    """Dołącz do organizacji za pomocą tokenu zaproszenia.
+    """Join organization using invitation token.
 
-    Reguła domenowa: użytkownik może należeć tylko do jednej organizacji —
-    jeśli już do jakiejś należy, zwracamy 409 (przed konsumpcją zaproszenia).
+    Domain rule: user can belong to only one organization —
+    if already member of one, return 409 (before consuming invitation).
     """
     if current_user.organization_id is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Użytkownik należy już do organizacji",
+            detail="User already belongs to an organization",
         )
 
     token_hash = security.hash_token(raw_token)
 
-    # Atomowe zwiększenie use_count — tylko jeśli zaproszenie jest ważne.
+    # Atomic use_count increment — only if invitation is valid.
     invite = await repositories.invite_repo.get_and_increment_invite(db, token_hash)
     if invite is None:
         raise HTTPException(

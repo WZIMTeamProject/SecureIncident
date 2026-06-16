@@ -19,30 +19,30 @@ async def create_project_invite(
     created_by: User,
     data: CreateInviteRequest,
 ) -> tuple[OrganizationInvite, str]:
-    """Utwórz zaproszenie do projektu."""
-    # 1. Sprawdź czy projekt istnieje
+    """Create project invitation."""
+    # 1. Check if project exists
     project = await repositories.invite_repo.get_project_by_id(db, project_id)
     if project is None:
-        raise HTTPException(status_code=404, detail="Projekt nie znaleziony")
+        raise HTTPException(status_code=404, detail="Project not found")
 
-    # 2. Sprawdź czy bieżący użytkownik jest właścicielem projektu
+    # 2. Check if current user is project owner
     if project.project_owner_id != created_by.id:
         raise HTTPException(
-            status_code=403, detail="Tylko właściciel projektu może tworzyć zaproszenia"
+            status_code=403, detail="Only project owner can create invitations"
         )
 
-    # 3. Sprawdź czy rola istnieje i należy do tego projektu
+    # 3. Check if role exists and belongs to this project
     role = await repositories.invite_repo.get_role_by_id(db, data.role_id)
     if role is None:
-        raise HTTPException(status_code=404, detail="Rola nie znaleziona")
+        raise HTTPException(status_code=404, detail="Role not found")
     if role.project_id != project_id:
-        raise HTTPException(status_code=400, detail="Ta rola nie należy do tego projektu")
+        raise HTTPException(status_code=400, detail="This role does not exist in this project")
 
-    # 4. Wygeneruj token
+    # 4. Generate token
     raw_token = security.generate_token()
     token_hash = security.hash_token(raw_token)
 
-    # 5. Zapisz zaproszenie
+    # 5. Save invitation
     invite = await repositories.invite_repo.create_project_invite(
         db,
         project_id=project_id,
@@ -59,12 +59,12 @@ async def create_project_invite(
 
 
 async def get_invite_preview(db: AsyncSession, raw_token: str) -> InvitePreviewResponse:
-    """Pobierz podgląd zaproszenia (publiczny, bez uwierzytelnienia)."""
+    """Get invitation preview (public, no authentication required)."""
     token_hash = security.hash_token(raw_token)
     invite = await repositories.invite_repo.get_invite_by_hash(db, token_hash)
 
     if invite is None:
-        raise HTTPException(status_code=404, detail="Zaproszenie nie znalezione")
+        raise HTTPException(status_code=404, detail="Invitation not found")
 
     is_valid = _is_invite_valid(invite)
     target_name = (
@@ -85,7 +85,7 @@ async def join_project_by_invite(
     current_user: User,
     raw_token: str,
 ) -> None:
-    """Dołącz do projektu za pomocą zaproszenia."""
+    """Join project using invitation."""
     token_hash = security.hash_token(raw_token)
 
     # Read-only pre-check: validate scope and org membership BEFORE consuming a use slot.
@@ -107,16 +107,16 @@ async def join_project_by_invite(
     # Atomic increment — only after scope and auth checks pass
     invite = await repositories.invite_repo.get_and_increment_invite(db, token_hash)
     if invite is None:
-        raise HTTPException(status_code=400, detail="Nieprawidłowe lub wygasłe zaproszenie")
+        raise HTTPException(status_code=400, detail="Invalid or expired invitation")
 
-    # Sprawdź czy użytkownik jest już członkiem
+    # Check if user is already member
     existing = await repositories.invite_repo.get_user_project(
         db, current_user.id, invite.project_id
     )
     if existing is not None:
-        raise HTTPException(status_code=409, detail="Już jesteś członkiem tego projektu")
+        raise HTTPException(status_code=409, detail="You are already a member of this project")
 
-    # Utwórz członkostwo
+    # Create membership
     await repositories.invite_repo.create_user_project(
         db,
         user_id=current_user.id,
@@ -128,7 +128,7 @@ async def join_project_by_invite(
 
 
 def _is_invite_valid(invite: OrganizationInvite) -> bool:
-    """Helper: sprawdź czy zaproszenie jest ważne (nie wygasłe, nie wyczerpane)."""
+    """Helper: check if invitation is valid (not expired, not exhausted)."""
     if invite.expires_at is not None:
         if datetime.now(timezone.utc).replace(tzinfo=None) > invite.expires_at:
             return False

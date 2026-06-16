@@ -25,7 +25,7 @@ async def create_project_invite(
     expires_at: Optional[datetime],
     max_uses: Optional[int],
 ) -> OrganizationInvite:
-    """Utwórz zaproszenie do projektu (zapisz hasz tokenu)."""
+    """Create project invitation (save token hash)."""
     invite = OrganizationInvite(
         scope="PROJECT",
         project_id=project_id,
@@ -51,9 +51,9 @@ async def create_organization_invite(
     expires_at: Optional[datetime],
     max_uses: Optional[int],
 ) -> OrganizationInvite:
-    """Utwórz zaproszenie do organizacji (scope=ORGANIZATION, bez roli).
+    """Create organization invitation (scope=ORGANIZATION, no role).
 
-    Organizacja nie ma ról (role są per-projekt), więc role_id=None.
+    Organization has no roles (roles are per-project), so role_id=None.
     """
     invite = OrganizationInvite(
         scope="ORGANIZATION",
@@ -72,7 +72,7 @@ async def create_organization_invite(
 
 
 async def get_invite_by_hash(db: AsyncSession, token_hash: str) -> Optional[OrganizationInvite]:
-    """Pobierz zaproszenie po hashu tokenu (eager-load project + organization)."""
+    """Get invitation by token hash (eager-load project + organization)."""
     result = await db.execute(
         select(OrganizationInvite)
         .options(
@@ -87,7 +87,7 @@ async def get_invite_by_hash(db: AsyncSession, token_hash: str) -> Optional[Orga
 async def get_and_increment_invite(
     db: AsyncSession, token_hash: str
 ) -> Optional[OrganizationInvite]:
-    """Atomowo pobierz zaproszenie i zwiększ use_count (w jednej transakcji)."""
+    """Atomically get invitation and increment use_count (in single transaction)."""
     now = datetime.now(timezone.utc).replace(tzinfo=None)
     result = await db.execute(
         update(OrganizationInvite)
