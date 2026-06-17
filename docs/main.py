@@ -76,16 +76,16 @@ subprocess.run(
 )
 
 subprocess.run(
-    ["pandoc", "documentation.md", 
+    ["pandoc", "documentation.md",
      "guides/README.md", *[str(f) for f in Path("guides").rglob("*.md") if f != "README.md"],
      "qa.md", "bandit.txt", "pip-audit.txt", "vulture.txt",
-     "backend.md", *[str(f) for f in Path("build/backend").rglob("*.md")], 
-     "tests.md", "build/tests.md", 
-     "frontend.md", *[str(f) for f in Path("build/Frontend").rglob("*.md")], 
-     "--from", "markdown-blank_before_header-space_in_atx_header+lists_without_preceding_blankline", 
-     "--template", "templates/template.tex", 
+     "backend.md", *[str(f) for f in Path("build/backend").rglob("*.md")],
+     "tests.md", "build/tests.md",
+     "frontend.md", *[str(f) for f in Path("build/Frontend").rglob("*.md")],
+     "--from", "markdown-blank_before_header-space_in_atx_header+lists_without_preceding_blankline",
+     "--template", "templates/template.tex",
      "-V", f"author={open("authors", "r").read()}",
-     "--toc", 
+     "--toc",
      "-o", "dokumentacja.pdf"],
     check=True
 )
