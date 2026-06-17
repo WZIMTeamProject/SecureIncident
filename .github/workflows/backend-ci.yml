@@ -68,4 +68,4 @@ jobs:
             docker compose pull backend
             docker compose up -d backend
             sleep 25
-            curl -f http://localhost:8000/health
+            docker exec secureincident-backend-1 curl -f http://localhost:8000/health
