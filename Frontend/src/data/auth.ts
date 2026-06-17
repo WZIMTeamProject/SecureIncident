@@ -332,7 +332,7 @@ export async function attemptLogin(name: string, password: string, remember_user
         }
     }
 
-    const loggedUser = await Api.auth.authLoginPostRaw({
+    const loggedUser = await Api.auth.authLoginPost({
         loginRequest: {
             username: name,
             password: password,
@@ -341,22 +341,15 @@ export async function attemptLogin(name: string, password: string, remember_user
     }).catch(() => null);
 
     if (loggedUser != null) {
-        // FIXME: the type of the request in docs is invalid, we have to do some manual work
-        const rawJson = await loggedUser.raw.json();
-        const token: string | undefined = (rawJson != null) ? (rawJson['access_token'] ?? undefined) : undefined;
+        const token: string = loggedUser.accessToken;
+        const tokenLifetime: number = 1000 * 60 * 60 * 24 * 7; // 1 week
 
-        if (token) {
-            const tokenLifetime = 1000 * 60 * 60 * 24 * 7; // 1 week
-
-            await cookieStore.set({
-                name: BEARER_AUTH_COOKIE,
-                value: token,
-                sameSite: "strict",
-                expires: Date.now() + tokenLifetime,
-            });
-        } else {
-            await cookieStore.delete(BEARER_AUTH_COOKIE);
-        }
+        await cookieStore.set({
+            name: BEARER_AUTH_COOKIE,
+            value: token,
+            sameSite: "strict",
+            expires: Date.now() + tokenLifetime,
+        });
     }
 
     return loggedUser != null;
