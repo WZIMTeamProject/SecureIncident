@@ -83,4 +83,5 @@ async def revoke_invite(
 
     await repositories.invite_repo.delete_invite_by_hash(db, token_hash)
     await db.commit()
+    logger.info("Invite revoked user_id=%s", current_user.id)
     return Response(status_code=204)

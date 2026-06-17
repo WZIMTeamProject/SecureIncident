@@ -50,6 +50,7 @@ async def create_organization(
 
     await db.commit()
     await db.refresh(organization)
+    logger.info("Organization created org_id=%s user_id=%s", organization.id, current_user.id)
     return organization
 
 
@@ -142,7 +143,12 @@ async def create_invite(
     )
     await db.commit()
     await db.refresh(invite)
-
+    logger.info(
+        "Organization invite created invite_id=%s org_id=%s user_id=%s",
+        invite.id,
+        organization.id,
+        current_user.id,
+    )
     return invite, raw_token
 
 
@@ -192,3 +198,8 @@ async def join_organization(
     current_user.organization_id = invite.organization_id
     db.add(current_user)
     await db.commit()
+    logger.info(
+        "User joined organization org_id=%s user_id=%s",
+        invite.organization_id,
+        current_user.id,
+    )
