@@ -1,4 +1,4 @@
-export const DISALLOWED_CHARS: RegExp = /[^\p{L}\- ]| {2,}|-{2,}|^[\- ]|[\- ]$/iu;
+export const DISALLOWED_CHARS: RegExp = /[^\p{Ll}\d\- ]| {2,}|-{2,}|^[- ]|[- ]$/iu;
 
 /**
  * Validates whether the given string can be used in a username, first name etc.

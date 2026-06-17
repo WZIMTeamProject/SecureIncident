@@ -342,7 +342,7 @@ export async function attemptLogin(name: string, password: string, remember_user
 
     if (loggedUser != null) {
         // FIXME: the type of the request in docs is invalid, we have to do some manual work
-        const rawJson: any = await loggedUser.raw.json();
+        const rawJson = await loggedUser.raw.json();
         const token: string | undefined = (rawJson != null) ? (rawJson['access_token'] ?? undefined) : undefined;
 
         if (token) {
