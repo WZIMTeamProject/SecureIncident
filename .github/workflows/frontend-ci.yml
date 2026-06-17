@@ -47,5 +47,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/secureincident
-            docker compose pull frontend
-            docker compose up -d frontend
+            docker compose pull --no-deps frontend
+            docker compose up -d --no-deps frontend
