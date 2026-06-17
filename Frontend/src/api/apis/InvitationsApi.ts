@@ -14,13 +14,18 @@
 
 
 import * as runtime from '../runtime';
-import type {CreateInviteRequest, InvitePreviewResponse, InviteResponse, JoinByInviteRequest,} from '../models';
+import type {
+    CreateProjectInviteRequest,
+    InvitePreviewResponse,
+    InviteResponse,
+    JoinByInviteRequest,
+} from '../models/index';
 import {
-    CreateInviteRequestToJSON,
+    CreateProjectInviteRequestToJSON,
     InvitePreviewResponseFromJSON,
     InviteResponseFromJSON,
     JoinByInviteRequestToJSON,
-} from '../models';
+} from '../models/index';
 
 export interface InvitesTokenGetRequest {
     token: string;
@@ -32,7 +37,11 @@ export interface ProjectsJoinPostRequest {
 
 export interface ProjectsProjectIdInvitesPostRequest {
     projectId: string;
-    createInviteRequest: CreateInviteRequest;
+    createProjectInviteRequest: CreateProjectInviteRequest;
+}
+
+export interface RevokeInviteRequest {
+    token: string;
 }
 
 /**
@@ -57,7 +66,7 @@ export class InvitationsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/invites/{token}`.replace(`{token}`, encodeURIComponent(String(requestParameters['token']))),
+            path: `/invites/{token}`.replace(`{${"token"}}`, encodeURIComponent(String(requestParameters['token']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -132,10 +141,10 @@ export class InvitationsApi extends runtime.BaseAPI {
             );
         }
 
-        if (requestParameters['createInviteRequest'] == null) {
+        if (requestParameters['createProjectInviteRequest'] == null) {
             throw new runtime.RequiredError(
-                'createInviteRequest',
-                'Required parameter "createInviteRequest" was null or undefined when calling projectsProjectIdInvitesPost().'
+                'createProjectInviteRequest',
+                'Required parameter "createProjectInviteRequest" was null or undefined when calling projectsProjectIdInvitesPost().'
             );
         }
 
@@ -154,11 +163,11 @@ export class InvitationsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/projects/{project_id}/invites`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}/invites`.replace(`{${"project_id"}}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: CreateInviteRequestToJSON(requestParameters['createInviteRequest']),
+            body: CreateProjectInviteRequestToJSON(requestParameters['createProjectInviteRequest']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => InviteResponseFromJSON(jsonValue));
@@ -171,6 +180,46 @@ export class InvitationsApi extends runtime.BaseAPI {
     async projectsProjectIdInvitesPost(requestParameters: ProjectsProjectIdInvitesPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InviteResponse> {
         const response = await this.projectsProjectIdInvitesPostRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     * Revoke invite
+     */
+    async revokeInviteRaw(requestParameters: RevokeInviteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['token'] == null) {
+            throw new runtime.RequiredError(
+                'token',
+                'Required parameter "token" was null or undefined when calling revokeInvite().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/invites/{token}`.replace(`{${"token"}}`, encodeURIComponent(String(requestParameters['token']))),
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Revoke invite
+     */
+    async revokeInvite(requestParameters: RevokeInviteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.revokeInviteRaw(requestParameters, initOverrides);
     }
 
 }

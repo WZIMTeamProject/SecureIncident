@@ -18,18 +18,20 @@ import type {
     CreatedIdResponse,
     CurrentUserResponse,
     LoginRequest,
+    LoginResponse,
     PasswordResetConfirmRequest,
     PasswordResetRequest,
     RegisterRequest,
-} from '../models';
+} from '../models/index';
 import {
     CreatedIdResponseFromJSON,
     CurrentUserResponseFromJSON,
     LoginRequestToJSON,
+    LoginResponseFromJSON,
     PasswordResetConfirmRequestToJSON,
     PasswordResetRequestToJSON,
     RegisterRequestToJSON,
-} from '../models';
+} from '../models/index';
 
 export interface AuthLoginPostRequest {
     loginRequest: LoginRequest;
@@ -56,7 +58,7 @@ export class AuthApi extends runtime.BaseAPI {
      * Authenticates the user and establishes a session, for example by setting an HTTP-only cookie.
      * Log in user and create a session
      */
-    async authLoginPostRaw(requestParameters: AuthLoginPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CurrentUserResponse>> {
+    async authLoginPostRaw(requestParameters: AuthLoginPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<LoginResponse>> {
         if (requestParameters['loginRequest'] == null) {
             throw new runtime.RequiredError(
                 'loginRequest',
@@ -78,14 +80,14 @@ export class AuthApi extends runtime.BaseAPI {
             body: LoginRequestToJSON(requestParameters['loginRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => CurrentUserResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => LoginResponseFromJSON(jsonValue));
     }
 
     /**
      * Authenticates the user and establishes a session, for example by setting an HTTP-only cookie.
      * Log in user and create a session
      */
-    async authLoginPost(requestParameters: AuthLoginPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CurrentUserResponse> {
+    async authLoginPost(requestParameters: AuthLoginPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<LoginResponse> {
         const response = await this.authLoginPostRaw(requestParameters, initOverrides);
         return await response.value();
     }

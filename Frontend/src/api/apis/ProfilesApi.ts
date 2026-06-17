@@ -14,15 +14,11 @@
 
 
 import * as runtime from '../runtime';
-import type {ProfileResponse, UpdateProfileRequest, UserSearchResponse,} from '../models';
-import {ProfileResponseFromJSON, UpdateProfileRequestToJSON, UserSearchResponseFromJSON,} from '../models';
+import type {ProfileResponse, UpdateProfileRequest,} from '../models/index';
+import {ProfileResponseFromJSON, UpdateProfileRequestToJSON,} from '../models/index';
 
 export interface ProfilesMePatchRequest {
     updateProfileRequest: UpdateProfileRequest;
-}
-
-export interface UsersSearchGetRequest {
-    query: string;
 }
 
 /**
@@ -109,53 +105,6 @@ export class ProfilesApi extends runtime.BaseAPI {
      */
     async profilesMePatch(requestParameters: ProfilesMePatchRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.profilesMePatchRaw(requestParameters, initOverrides);
-    }
-
-    /**
-     * Convenience endpoint useful for assignment dialogs and member lookup.
-     * Search users by username or partial text
-     */
-    async usersSearchGetRaw(requestParameters: UsersSearchGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserSearchResponse>> {
-        if (requestParameters['query'] == null) {
-            throw new runtime.RequiredError(
-                'query',
-                'Required parameter "query" was null or undefined when calling usersSearchGet().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters['query'] != null) {
-            queryParameters['query'] = requestParameters['query'];
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/users/search`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => UserSearchResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Convenience endpoint useful for assignment dialogs and member lookup.
-     * Search users by username or partial text
-     */
-    async usersSearchGet(requestParameters: UsersSearchGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserSearchResponse> {
-        const response = await this.usersSearchGetRaw(requestParameters, initOverrides);
-        return await response.value();
     }
 
 }
