@@ -14,14 +14,20 @@
 
 
 import * as runtime from '../runtime';
-import type {CreatedIdResponse, CreateRoleRequest, RoleListResponse, RoleResponse, UpdateRoleRequest,} from '../models';
+import type {
+    CreatedIdResponse,
+    CreateRoleRequest,
+    RoleListResponse,
+    RoleResponse,
+    UpdateRoleRequest,
+} from '../models/index';
 import {
     CreatedIdResponseFromJSON,
     CreateRoleRequestToJSON,
     RoleListResponseFromJSON,
     RoleResponseFromJSON,
     UpdateRoleRequestToJSON,
-} from '../models';
+} from '../models/index';
 
 export interface ProjectsProjectIdRolesGetRequest {
     projectId: string;
@@ -73,7 +79,7 @@ export class RolesApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/projects/{project_id}/roles`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}/roles`.replace(`{${"project_id"}}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -125,7 +131,7 @@ export class RolesApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/projects/{project_id}/roles`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}/roles`.replace(`{${"project_id"}}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -176,7 +182,7 @@ export class RolesApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/projects/{project_id}/roles/{role_id}`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))).replace(`{role_id}`, encodeURIComponent(String(requestParameters['roleId']))),
+            path: `/projects/{project_id}/roles/{role_id}`.replace(`{${"project_id"}}`, encodeURIComponent(String(requestParameters['projectId']))).replace(`{${"role_id"}}`, encodeURIComponent(String(requestParameters['roleId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -235,7 +241,7 @@ export class RolesApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/projects/{project_id}/roles/{role_id}`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))).replace(`{role_id}`, encodeURIComponent(String(requestParameters['roleId']))),
+            path: `/projects/{project_id}/roles/{role_id}`.replace(`{${"project_id"}}`, encodeURIComponent(String(requestParameters['projectId']))).replace(`{${"role_id"}}`, encodeURIComponent(String(requestParameters['roleId']))),
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,

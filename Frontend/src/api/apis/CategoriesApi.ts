@@ -14,13 +14,18 @@
 
 
 import * as runtime from '../runtime';
-import type {CategoryListResponse, CreateCategoryRequest, CreatedIdResponse, UpdateCategoryRequest,} from '../models';
+import type {
+    CategoryListResponse,
+    CreateCategoryRequest,
+    CreatedIdResponse,
+    UpdateCategoryRequest,
+} from '../models/index';
 import {
     CategoryListResponseFromJSON,
     CreateCategoryRequestToJSON,
     CreatedIdResponseFromJSON,
     UpdateCategoryRequestToJSON,
-} from '../models';
+} from '../models/index';
 
 export interface ProjectsProjectIdCategoriesCategoryIdDeleteRequest {
     projectId: string;
@@ -79,7 +84,7 @@ export class CategoriesApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/projects/{project_id}/categories/{category_id}`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))).replace(`{${"category_id"}}`, encodeURIComponent(String(requestParameters['categoryId']))),
+            path: `/projects/{project_id}/categories/{category_id}`.replace(`{${"project_id"}}`, encodeURIComponent(String(requestParameters['projectId']))).replace(`{${"category_id"}}`, encodeURIComponent(String(requestParameters['categoryId']))),
             method: 'DELETE',
             headers: headerParameters,
             query: queryParameters,
@@ -137,7 +142,7 @@ export class CategoriesApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/projects/{project_id}/categories/{category_id}`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))).replace(`{${"category_id"}}`, encodeURIComponent(String(requestParameters['categoryId']))),
+            path: `/projects/{project_id}/categories/{category_id}`.replace(`{${"project_id"}}`, encodeURIComponent(String(requestParameters['projectId']))).replace(`{${"category_id"}}`, encodeURIComponent(String(requestParameters['categoryId']))),
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
@@ -180,7 +185,7 @@ export class CategoriesApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/projects/{project_id}/categories`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}/categories`.replace(`{${"project_id"}}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,

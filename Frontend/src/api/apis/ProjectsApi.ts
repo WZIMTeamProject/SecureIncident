@@ -23,7 +23,7 @@ import type {
     ProjectMemberListResponse,
     ProjectResponse,
     UpdateProjectRequest,
-} from '../models';
+} from '../models/index';
 import {
     AddProjectMemberRequestToJSON,
     AssignRoleRequestToJSON,
@@ -33,7 +33,7 @@ import {
     ProjectMemberListResponseFromJSON,
     ProjectResponseFromJSON,
     UpdateProjectRequestToJSON,
-} from '../models';
+} from '../models/index';
 
 export interface ProjectsGetRequest {
     scope?: ProjectsGetScopeEnum;
@@ -183,7 +183,7 @@ export class ProjectsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/projects/{project_id}`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}`.replace(`{${"project_id"}}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -226,7 +226,7 @@ export class ProjectsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/projects/{project_id}/members`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}/members`.replace(`{${"project_id"}}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -278,7 +278,7 @@ export class ProjectsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/projects/{project_id}/members`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}/members`.replace(`{${"project_id"}}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -337,7 +337,7 @@ export class ProjectsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/projects/{project_id}/members/{user_id}/role`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))).replace(`{${"user_id"}}`, encodeURIComponent(String(requestParameters['userId']))),
+            path: `/projects/{project_id}/members/{user_id}/role`.replace(`{${"project_id"}}`, encodeURIComponent(String(requestParameters['projectId']))).replace(`{${"user_id"}}`, encodeURIComponent(String(requestParameters['userId']))),
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
@@ -389,7 +389,7 @@ export class ProjectsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/projects/{project_id}`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}`.replace(`{${"project_id"}}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,

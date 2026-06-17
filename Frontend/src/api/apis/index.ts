@@ -8,3 +8,4 @@ export * from './OrganizationApi';
 export * from './ProfilesApi';
 export * from './ProjectsApi';
 export * from './RolesApi';
+export * from './UsersApi';

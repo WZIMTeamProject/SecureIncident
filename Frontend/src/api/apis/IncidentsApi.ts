@@ -29,7 +29,7 @@ import type {
     UpdateIncidentCategoryRequest,
     UpdateIncidentPriorityRequest,
     UpdateIncidentStatusRequest,
-} from '../models';
+} from '../models/index';
 import {
     AddCommentRequestToJSON,
     AddHelperRequestToJSON,
@@ -43,7 +43,7 @@ import {
     UpdateIncidentCategoryRequestToJSON,
     UpdateIncidentPriorityRequestToJSON,
     UpdateIncidentStatusRequestToJSON,
-} from '../models';
+} from '../models/index';
 
 export interface IncidentsHistoryGetRequest {
     projectId?: string;
@@ -202,7 +202,7 @@ export class IncidentsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/incidents/{incident_id}/assignee`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/assignee`.replace(`{${"incident_id"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
@@ -254,7 +254,7 @@ export class IncidentsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/incidents/{incident_id}/category`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/category`.replace(`{${"incident_id"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
@@ -297,7 +297,7 @@ export class IncidentsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/incidents/{incident_id}/close`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/close`.replace(`{${"incident_id"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -339,7 +339,7 @@ export class IncidentsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/incidents/{incident_id}/comments`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/comments`.replace(`{${"incident_id"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -361,7 +361,7 @@ export class IncidentsApi extends runtime.BaseAPI {
      * Adds a new comment to the incident. Author identity must come from session.
      * Add incident comment
      */
-    async incidentsIncidentIdCommentsPostRaw(requestParameters: IncidentsIncidentIdCommentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async incidentsIncidentIdCommentsPostRaw(requestParameters: IncidentsIncidentIdCommentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreatedIdResponse>> {
         if (requestParameters['incidentId'] == null) {
             throw new runtime.RequiredError(
                 'incidentId',
@@ -391,22 +391,23 @@ export class IncidentsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/incidents/{incident_id}/comments`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/comments`.replace(`{${"incident_id"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: AddCommentRequestToJSON(requestParameters['addCommentRequest']),
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => CreatedIdResponseFromJSON(jsonValue));
     }
 
     /**
      * Adds a new comment to the incident. Author identity must come from session.
      * Add incident comment
      */
-    async incidentsIncidentIdCommentsPost(requestParameters: IncidentsIncidentIdCommentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.incidentsIncidentIdCommentsPostRaw(requestParameters, initOverrides);
+    async incidentsIncidentIdCommentsPost(requestParameters: IncidentsIncidentIdCommentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CreatedIdResponse> {
+        const response = await this.incidentsIncidentIdCommentsPostRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
@@ -434,7 +435,7 @@ export class IncidentsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/incidents/{incident_id}`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}`.replace(`{${"incident_id"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -484,7 +485,7 @@ export class IncidentsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/incidents/{incident_id}/helpers/{helper_id}`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))).replace(`{helper_id}`, encodeURIComponent(String(requestParameters['helperId']))),
+            path: `/incidents/{incident_id}/helpers/{helper_id}`.replace(`{${"incident_id"}}`, encodeURIComponent(String(requestParameters['incidentId']))).replace(`{${"helper_id"}}`, encodeURIComponent(String(requestParameters['helperId']))),
             method: 'DELETE',
             headers: headerParameters,
             query: queryParameters,
@@ -535,7 +536,7 @@ export class IncidentsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/incidents/{incident_id}/helpers`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/helpers`.replace(`{${"incident_id"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -578,7 +579,7 @@ export class IncidentsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/incidents/{incident_id}/logs`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/logs`.replace(`{${"incident_id"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -630,7 +631,7 @@ export class IncidentsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/incidents/{incident_id}/priority`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/priority`.replace(`{${"incident_id"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
@@ -673,7 +674,7 @@ export class IncidentsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/incidents/{incident_id}/request-reassignment`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/request-reassignment`.replace(`{${"incident_id"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -724,7 +725,7 @@ export class IncidentsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/incidents/{incident_id}/status`.replace(`{incident_id}`, encodeURIComponent(String(requestParameters['incidentId']))),
+            path: `/incidents/{incident_id}/status`.replace(`{${"incident_id"}}`, encodeURIComponent(String(requestParameters['incidentId']))),
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
@@ -859,7 +860,7 @@ export class IncidentsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/projects/{project_id}/incidents`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}/incidents`.replace(`{${"project_id"}}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -911,7 +912,7 @@ export class IncidentsApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/projects/{project_id}/incidents`.replace(`{project_id}`, encodeURIComponent(String(requestParameters['projectId']))),
+            path: `/projects/{project_id}/incidents`.replace(`{${"project_id"}}`, encodeURIComponent(String(requestParameters['projectId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,

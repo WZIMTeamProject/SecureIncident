@@ -21,7 +21,7 @@ import type {
     InviteResponse,
     JoinByInviteRequest,
     OrganizationResponse,
-} from '../models';
+} from '../models/index';
 import {
     CreatedIdResponseFromJSON,
     CreateInviteRequestToJSON,
@@ -29,7 +29,7 @@ import {
     InviteResponseFromJSON,
     JoinByInviteRequestToJSON,
     OrganizationResponseFromJSON,
-} from '../models';
+} from '../models/index';
 
 export interface OrganizationInvitesPostRequest {
     createInviteRequest: CreateInviteRequest;
