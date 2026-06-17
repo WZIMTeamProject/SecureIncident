@@ -28,3 +28,24 @@ export function IconMail() {
         <path d="M2 7l10 7 10-7"/>
     </svg>;
 }
+
+/**
+ * Hamburger icon (opens the mobile navigation menu).
+ */
+export function IconMenu() {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="w-5 h-5 shrink-0">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>;
+}
+
+/**
+ * Close icon (closes the mobile navigation menu).
+ */
+export function IconClose() {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="w-5 h-5 shrink-0">
+        <line x1="6" y1="6" x2="18" y2="18"/>
+        <line x1="6" y1="18" x2="18" y2="6"/>
+    </svg>;
+}
