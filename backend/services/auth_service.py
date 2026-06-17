@@ -22,7 +22,7 @@ async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
         raise HTTPException(status_code=409, detail="Email already registered")
     
     hashed = security.hash_password(data.password)
-    return await repositories.user_repo.create_user(
+    user = await repositories.user_repo.create_user(
         db,
         first_name=data.first_name,
         last_name=data.last_name,
@@ -30,6 +30,8 @@ async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
         email=str(data.email),
         password=hashed,
     )
+    logger.info("User registered user_id=%s", user.id)
+    return user
 
 
 async def login_user(db: AsyncSession, data: LoginRequest) -> tuple[User, str]:
@@ -45,6 +47,7 @@ async def login_user(db: AsyncSession, data: LoginRequest) -> tuple[User, str]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is inactive")
 
     token = security.create_access_token(str(user.id), remember_user=data.remember_user)
+    logger.info("User logged in user_id=%s", user.id)
     return user, token
 
 
@@ -69,6 +72,7 @@ async def request_password_reset(db: AsyncSession, email_or_username: str, backg
         expires_at=expires_at
     )
     background_tasks.add_task(email_service.send_reset_email, user.email, raw_token)
+    logger.info("Password reset email queued user_id=%s", user.id)
 
 
 async def reset_password(db: AsyncSession, raw_token: str, new_password: str) -> None:
@@ -83,3 +87,4 @@ async def reset_password(db: AsyncSession, raw_token: str, new_password: str) ->
     await repositories.user_repo.update_user_password(db, token_record.user_id, hashed)
     await repositories.user_repo.mark_password_reset_token_used(db, token_record)
     await db.commit()
+    logger.info("Password reset completed user_id=%s", token_record.user_id)

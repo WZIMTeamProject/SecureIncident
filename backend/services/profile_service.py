@@ -43,6 +43,7 @@ async def update_profile(
     await user_repo.update_user_profile(db, current_user, data)
     await db.commit()
     await db.refresh(current_user)
+    logger.info("Profile updated user_id=%s", current_user.id)
 
 
 async def search_users(

@@ -77,7 +77,12 @@ async def create_project_invite(
     )
     await db.commit()
     await db.refresh(invite)
-
+    logger.info(
+        "Project invite created invite_id=%s project_id=%s user_id=%s",
+        invite.id,
+        project_id,
+        created_by.id,
+    )
     return invite, raw_token
 
 
@@ -170,6 +175,11 @@ async def join_project_by_invite(
     )
 
     await db.commit()
+    logger.info(
+        "User joined project via invite user_id=%s project_id=%s",
+        current_user.id,
+        invite.project_id,
+    )
 
 
 def _is_invite_valid(invite: OrganizationInvite) -> bool:

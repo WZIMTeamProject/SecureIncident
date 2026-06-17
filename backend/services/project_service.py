@@ -112,6 +112,7 @@ async def create_project(
 
     await db.commit()
     await db.refresh(project)
+    logger.info("Project created project_id=%s user_id=%s", project.id, current_user.id)
     return project
 
 
@@ -175,6 +176,7 @@ async def update_project(
 
     db.add(project)
     await db.commit()
+    logger.info("Project updated project_id=%s user_id=%s", project_id, current_user.id)
 
 
 async def list_members(
@@ -266,6 +268,11 @@ async def add_member(
         role_id=data.role_id,
     )
     await db.commit()
+    logger.info(
+        "Member added to project target_user_id=%s project_id=%s",
+        data.user_id,
+        project_id,
+    )
 
 
 async def change_member_role(
@@ -307,6 +314,12 @@ async def change_member_role(
         db, membership=membership, role_id=data.role_id
     )
     await db.commit()
+    logger.info(
+        "Member role changed target_user_id=%s project_id=%s role_id=%s",
+        user_id,
+        project_id,
+        data.role_id,
+    )
 
 
 async def _get_owned_project(

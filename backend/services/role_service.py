@@ -68,6 +68,12 @@ async def create_role(
     )
     await db.commit()
     await db.refresh(role)
+    logger.info(
+        "Role created role_id=%s project_id=%s user_id=%s",
+        role.id,
+        project_id,
+        current_user.id,
+    )
     return role
 
 
@@ -102,6 +108,12 @@ async def update_role(
         db, role=role, name=name, permissions=permissions
     )
     await db.commit()
+    logger.info(
+        "Role updated role_id=%s project_id=%s user_id=%s",
+        role_id,
+        project_id,
+        current_user.id,
+    )
 
 
 # --- authorization helpers (MVP: owner-check / member-check) ---
