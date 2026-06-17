@@ -127,3 +127,68 @@ class TestRegister:
             },
         )
         assert response.status_code == 422
+
+    async def test_register_returns_422_when_first_name_is_empty(self, client: AsyncClient):
+        response = await client.post(
+            "/api/auth/register",
+            json={
+                "first_name": "",
+                "last_name": "Doe",
+                "username": "johndoe",
+                "email": "john@example.com",
+                "password": "SecurePass123!",
+            },
+        )
+        assert response.status_code == 422
+
+    async def test_register_returns_422_when_last_name_is_empty(self, client: AsyncClient):
+        response = await client.post(
+            "/api/auth/register",
+            json={
+                "first_name": "John",
+                "last_name": "",
+                "username": "johndoe",
+                "email": "john@example.com",
+                "password": "SecurePass123!",
+            },
+        )
+        assert response.status_code == 422
+
+    async def test_register_returns_422_when_first_name_exceeds_50_chars(self, client: AsyncClient):
+        response = await client.post(
+            "/api/auth/register",
+            json={
+                "first_name": "A" * 51,
+                "last_name": "Doe",
+                "username": "johndoe",
+                "email": "john@example.com",
+                "password": "SecurePass123!",
+            },
+        )
+        assert response.status_code == 422
+
+    async def test_register_returns_422_when_last_name_exceeds_50_chars(self, client: AsyncClient):
+        response = await client.post(
+            "/api/auth/register",
+            json={
+                "first_name": "John",
+                "last_name": "A" * 51,
+                "username": "johndoe",
+                "email": "john@example.com",
+                "password": "SecurePass123!",
+            },
+        )
+        assert response.status_code == 422
+
+    async def test_register_returns_422_when_username_exceeds_50_chars(self, client: AsyncClient):
+        response = await client.post(
+            "/api/auth/register",
+            json={
+                "first_name": "John",
+                "last_name": "Doe",
+                "username": "a" * 51,
+                "email": "john@example.com",
+                "password": "SecurePass123!",
+            },
+        )
+        assert response.status_code == 422

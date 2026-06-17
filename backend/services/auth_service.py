@@ -11,8 +11,6 @@ import datetime
 
 async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
     """Register a new user."""
-    if len(data.username) < 3:
-        raise HTTPException(status_code=422, detail="Username must be at least 3 characters long")
     if await repositories.user_repo.get_user_by_username(db, data.username):
         raise HTTPException(status_code=409, detail="Username already registered")
     if await repositories.user_repo.get_user_by_email(db, data.email):

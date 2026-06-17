@@ -134,3 +134,25 @@ class TestLogin:
         now = datetime.now(timezone.utc)
         ttl_minutes = (exp - now).total_seconds() / 60
         assert 10000 < ttl_minutes < 10100
+
+    async def test_login_returns_422_when_username_exceeds_50_chars(self, client: AsyncClient):
+        response = await client.post(
+            "/api/auth/login",
+            json={
+                "username": "a" * 51,
+                "password": "TestPassword123!",
+                "remember_user": False,
+            },
+        )
+        assert response.status_code == 422
+
+    async def test_login_returns_422_when_password_exceeds_72_chars(self, client: AsyncClient):
+        response = await client.post(
+            "/api/auth/login",
+            json={
+                "username": "johndoe",
+                "password": "A" * 73,
+                "remember_user": False,
+            },
+        )
+        assert response.status_code == 422

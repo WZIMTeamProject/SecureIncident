@@ -1,13 +1,14 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator
-
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from core.security import validate_password_strength
 
 
 class RegisterRequest(BaseModel):
-    first_name: str
-    last_name: str
-    username: str
-    email: EmailStr
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    first_name: str = Field(min_length=1, max_length=50)
+    last_name: str = Field(min_length=1, max_length=50)
+    username: str = Field(min_length=3, max_length=50)
+    email: EmailStr = Field(max_length=100)
     password: str = Field(min_length=8, max_length=72)
 
     @field_validator("password")
@@ -17,17 +18,23 @@ class RegisterRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    username: str
-    password: str
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    username: str = Field(min_length=3, max_length=50)
+    password: str = Field(min_length=1, max_length=72)
     remember_user: bool = False
 
 
 class PasswordResetRequest(BaseModel):
-    email_or_username: str
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    email_or_username: str = Field(min_length=1, max_length=100)
 
 
 class PasswordResetConfirmRequest(BaseModel):
-    reset_token: str
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    reset_token: str = Field(min_length=1, max_length=255)
     new_password: str = Field(min_length=8, max_length=72)
 
     @field_validator("new_password")
