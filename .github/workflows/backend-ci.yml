@@ -1,0 +1,71 @@
+name: Backend CI/CD
+on:
+  push:
+    branches: [main]
+    paths: [backend/**]
+
+jobs:
+  test-build-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run tests
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+          pytest
+        env:
+          DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/test
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ghcr.io/wzimteamproject/secureincident-backend:latest
+            ghcr.io/wzimteamproject/secureincident-backend:${{ github.sha }}
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.EC2_HOST }}
+          username: ${{ vars.EC2_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/secureincident
+            ~/secureincident/fetch-secrets.sh
+            docker compose pull backend
+            docker compose up -d backend
+            sleep 25
+            docker exec secureincident-backend-1 curl -f http://localhost:8000/health

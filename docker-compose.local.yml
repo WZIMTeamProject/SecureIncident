@@ -1,0 +1,58 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: secure_incident
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d secure_incident"]
+      interval: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://user:password@db:5432/secure_incident
+      SECRET_KEY: test-secret
+      ALLOWED_ORIGINS: '["http://localhost"]'
+      SMTP_HOST: localhost
+      SMTP_PORT: 1025
+      SMTP_TLS: "False"
+      FRONTEND_URL: http://localhost
+    expose:
+      - "8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost/api
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend/nginx.local.conf:/etc/nginx/conf.d/app.conf:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: secure_incident_mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+volumes:
+  postgres_data:
