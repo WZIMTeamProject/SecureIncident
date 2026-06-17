@@ -2,7 +2,7 @@ import {AuthApi, Configuration, IncidentsApi, OrganizationApi, ProfilesApi, Proj
 
 export default class Api {
     private static configuration: Configuration = new Configuration({
-        basePath: "http://localhost:8000/api",
+        basePath: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api",
 
         // Unfortunately, the backend currently only reads the token from the Authorization header in HTTP requests.
         // This makes it vulnerable to XSS, since I have to make the token readable through JS to be able to
