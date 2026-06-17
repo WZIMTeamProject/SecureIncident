@@ -10,7 +10,9 @@ from api.schemas.organization.request import (
 )
 from api.schemas.organization.response import OrganizationResponse, InviteResponse
 from api.schemas.common.base import CreatedIdResponse
+from core.config import settings
 from db.models.user import User
+from services import organization_service
 
 
 router = APIRouter(prefix="/organization", tags=["Organization"])
@@ -20,8 +22,13 @@ router = APIRouter(prefix="/organization", tags=["Organization"])
 async def create_organization(
     data: CreateOrganizationRequest,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return CreatedIdResponse(id="00000000-0000-0000-0000-000000000000")
+    """Create an organization (creator becomes owner and member)."""
+    organization = await organization_service.create_organization(
+        db, data=data, current_user=current_user
+    )
+    return CreatedIdResponse(id=organization.id)
 
 
 @router.get("", response_model=OrganizationResponse)
@@ -29,10 +36,14 @@ async def get_current_organization(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Get current user's organization (404 if not a member of any)."""
+    organization = await organization_service.get_current_organization(
+        db, current_user=current_user
+    )
     return OrganizationResponse(
-        id="00000000-0000-0000-0000-000000000000",
-        name="Test Organization",
-        description="Test description",
+        id=organization.id,
+        name=organization.name,
+        description=organization.description,
     )
 
 
@@ -42,7 +53,12 @@ async def create_invite(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return InviteResponse(token="mock-invite-token", invite_url=None)
+    """Create organization invitation (organization owner only)."""
+    invite, raw_token = await organization_service.create_invite(
+        db, data=data, current_user=current_user
+    )
+    invite_url = f"{settings.FRONTEND_URL}/join?token={raw_token}"
+    return InviteResponse(token=raw_token, invite_url=invite_url)
 
 
 @router.post("/join", status_code=status.HTTP_204_NO_CONTENT)
@@ -51,4 +67,8 @@ async def join_organization(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return Response(status_code=204)
+    """Join an organization using an invitation token."""
+    await organization_service.join_organization(
+        db, current_user=current_user, raw_token=data.token
+    )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -2,12 +2,12 @@ import pytest
 from fastapi import status
 
 # ---------------------------------------------------------------------
-# TESTY GET /profiles/me
+# TESTS GET /profiles/me
 # ---------------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_get_my_profile_authenticated(client, test_user, auth_headers):
-    """Test pobierania własnego profilu przez zalogowanego użytkownika."""
+    """Test fetching own profile by an authenticated user."""
     response = await client.get("/api/profiles/me", headers=auth_headers)
     assert response.status_code == status.HTTP_200_OK
     
@@ -19,36 +19,36 @@ async def test_get_my_profile_authenticated(client, test_user, auth_headers):
 
 @pytest.mark.asyncio
 async def test_get_my_profile_unauthenticated(client):
-    """Test pobierania profilu bez tokenu uwierzytelniającego."""
+    """Test fetching profile without an authentication token."""
     response = await client.get("/api/profiles/me")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 # ---------------------------------------------------------------------
-# TESTY PATCH /profiles/me
+# TESTS PATCH /profiles/me
 # ---------------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_update_my_profile_bio(client, db, test_user, auth_headers):
-    """Test poprawnej aktualizacji pola bio."""
+    """Test correct update of the bio field."""
     payload = {"bio": "Nowe bio testowe"}
     response = await client.patch("/api/profiles/me", json=payload, headers=auth_headers)
     assert response.status_code == status.HTTP_204_NO_CONTENT
-    
-    # Odświeżamy obiekt z bazy i sprawdzamy zmianę
+
+    # Refresh the object from the database and verify the change
     await db.refresh(test_user)
     assert test_user.bio == "Nowe bio testowe"
 
 @pytest.mark.asyncio
 async def test_update_my_profile_empty_body(client, auth_headers):
-    """Test wysłania pustego body - nie powinno nic zmienić ani rzucić błędem."""
+    """Test sending an empty body — should not change anything or raise an error."""
     response = await client.patch("/api/profiles/me", json={}, headers=auth_headers)
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
 @pytest.mark.asyncio
 async def test_update_my_profile_username_conflict(client, db, auth_headers):
-    """Test próby zmiany username na taki, który jest już zajęty."""
-    # Tworzymy w bazie drugiego użytkownika bezpośrednio, aby zasymulować konflikt
+    """Test attempting to change username to one that is already taken."""
+    # Create a second user directly in the database to simulate the conflict
     from db.models.user import User
     drugi_user = User(
         first_name="Jan",
@@ -66,18 +66,18 @@ async def test_update_my_profile_username_conflict(client, db, auth_headers):
 
 
 # ---------------------------------------------------------------------
-# TESTY GET /api/users/search
+# TESTS GET /api/users/search
 # ---------------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_search_users_empty_query(client, auth_headers):
-    """Test walidacji - puste zapytanie powinno zwrócić błąd 422."""
+    """Test validation — empty query should return a 422 error."""
     response = await client.get("/api/users/search?query=", headers=auth_headers)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 @pytest.mark.asyncio
 async def test_search_users_authenticated(client, auth_headers):
-    """Test poprawnego wyszukiwania dla zalogowanego użytkownika."""
+    """Test correct search for an authenticated user."""
     response = await client.get("/api/users/search?query=test", headers=auth_headers)
     assert response.status_code == status.HTTP_200_OK
 
@@ -87,7 +87,7 @@ async def test_search_users_authenticated(client, auth_headers):
 
 @pytest.mark.asyncio
 async def test_update_my_profile_username_unique(client, db, test_user, auth_headers):
-    """Test zmiany username na unikalną wartość — powinno zwrócić 204."""
+    """Test changing username to a unique value — should return 204."""
     response = await client.patch("/api/profiles/me", json={"username": "nowy_unikalny"}, headers=auth_headers)
     assert response.status_code == status.HTTP_204_NO_CONTENT
     await db.refresh(test_user)
@@ -95,13 +95,13 @@ async def test_update_my_profile_username_unique(client, db, test_user, auth_hea
 
 @pytest.mark.asyncio
 async def test_update_my_profile_unauthenticated(client):
-    """Test aktualizacji profilu bez tokenu — powinno zwrócić 401."""
+    """Test updating profile without a token — should return 401."""
     response = await client.patch("/api/profiles/me", json={"bio": "test"})
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 @pytest.mark.asyncio
 async def test_search_users_match_in_same_org(client, db, test_org, auth_headers):
-    """Test wyszukiwania — użytkownik z tej samej org powinien pojawić się w wynikach."""
+    """Test search — a user from the same org should appear in the results."""
     from db.models.user import User
     same_org_user = User(
         first_name="Anna",
@@ -122,14 +122,14 @@ async def test_search_users_match_in_same_org(client, db, test_org, auth_headers
 
 @pytest.mark.asyncio
 async def test_search_users_no_match(client, auth_headers):
-    """Test wyszukiwania bez pasujących wyników — powinno zwrócić pustą listę."""
+    """Test search with no matching results — should return an empty list."""
     response = await client.get("/api/users/search?query=zzznomatch999", headers=auth_headers)
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["users"] == []
 
 @pytest.mark.asyncio
 async def test_search_users_cross_org_isolation(client, db, auth_headers):
-    """Test izolacji — użytkownik bez wspólnej org i projektów nie powinien być widoczny."""
+    """Test isolation — a user with no shared org or projects should not be visible."""
     from db.models.user import User
     other_user = User(
         first_name="Obcy",
@@ -150,13 +150,13 @@ async def test_search_users_cross_org_isolation(client, db, auth_headers):
 
 @pytest.mark.asyncio
 async def test_search_users_unauthenticated(client):
-    """Test wyszukiwania bez tokenu — powinno zwrócić 401."""
+    """Test search without a token — should return 401."""
     response = await client.get("/api/users/search?query=test")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 @pytest.mark.asyncio
 async def test_search_users_null_org_isolation(client, db):
-    """Test edge case: dwóch użytkowników bez organizacji nie powinno się wzajemnie widzieć."""
+    """Test edge case: two users with no organization should not be able to see each other."""
     from db.models.user import User
     from core.security import create_access_token
 

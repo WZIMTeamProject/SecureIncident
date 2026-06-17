@@ -1328,7 +1328,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateInviteRequest"
+                "$ref": "#/components/schemas/CreateProjectInviteRequest"
               }
             }
           }
@@ -1407,6 +1407,21 @@
           "404": {
             "description": "Invite not found"
           }
+        }
+      },
+      "delete": {
+        "tags": ["Invitations"],
+        "summary": "Revoke invite",
+        "operationId": "revoke_invite",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "token", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "204": { "description": "Invite revoked" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Not authorized to revoke this invite" },
+          "404": { "description": "Invite not found" }
         }
       }
     },
@@ -1937,6 +1952,15 @@
             "type": "integer",
             "nullable": true
           }
+        }
+      },
+      "CreateProjectInviteRequest": {
+        "type": "object",
+        "required": ["role_id"],
+        "properties": {
+          "role_id": { "type": "string", "format": "uuid" },
+          "expires_at": { "type": "string", "format": "date-time", "nullable": true },
+          "max_uses": { "type": "integer", "minimum": 1, "nullable": true }
         }
       },
       "InviteResponse": {

@@ -10,13 +10,11 @@ from services import email_service
 import datetime
 
 async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
-    """Zarejestruj nowego użytkownika."""
-    if len(data.username) < 3:
-        raise HTTPException(status_code=422, detail="Nazwa użytkownika jest za krótka")
+    """Register a new user."""
     if await repositories.user_repo.get_user_by_username(db, data.username):
-        raise HTTPException(status_code=409, detail="Nazwa użytkownika już zarejestrowana")
+        raise HTTPException(status_code=409, detail="Username already registered")
     if await repositories.user_repo.get_user_by_email(db, data.email):
-        raise HTTPException(status_code=409, detail="Email już zarejestrowany")
+        raise HTTPException(status_code=409, detail="Email already registered")
     
     hashed = security.hash_password(data.password)
     return await repositories.user_repo.create_user(
@@ -30,21 +28,21 @@ async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
 
 
 async def login_user(db: AsyncSession, data: LoginRequest) -> tuple[User, str]:
-    """Uwierzytelnij i zwróć (user, token)."""
+    """Authenticate and return (user, token)."""
     user = await repositories.user_repo.get_user_by_username(db, data.username)
     if user is None or not security.verify_password(data.password, user.password):
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Nieprawidłowe dane uwierzytelniające"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication credentials"
         )
     if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Konto jest nieaktywne")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is inactive")
 
     token = security.create_access_token(str(user.id), remember_user=data.remember_user)
     return user, token
 
 
 async def request_password_reset(db: AsyncSession, email_or_username: str, background_tasks: BackgroundTasks) -> None:
-    """Wygeneruj token resetowania hasła (nie ujawniaj czy user istnieje)."""
+    """Generate password reset token (do not reveal whether user exists)."""
     user = await repositories.user_repo.get_user_by_email_or_username(
         db, email_or_username.strip()
     )
@@ -67,11 +65,11 @@ async def request_password_reset(db: AsyncSession, email_or_username: str, backg
 
 
 async def reset_password(db: AsyncSession, raw_token: str, new_password: str) -> None:
-    """Zresetuj hasło korzystając z tokenu."""
+    """Reset password using a valid reset token."""
     token_hash = security.hash_token(raw_token)
     token_record = await repositories.user_repo.get_valid_password_reset_token(db, token_hash)
     if token_record is None:
-        raise HTTPException(status_code=400, detail="Nieprawidłowy lub wygasły token resetowania hasła")
+        raise HTTPException(status_code=400, detail="Invalid or expired password reset token")
 
     hashed = security.hash_password(new_password)
     await repositories.user_repo.update_user_password(db, token_record.user_id, hashed)

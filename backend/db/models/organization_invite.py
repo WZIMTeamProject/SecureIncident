@@ -1,5 +1,6 @@
 import uuid
 import datetime
+from typing import Optional
 from sqlalchemy import String, Integer, DateTime, ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
@@ -25,6 +26,9 @@ class OrganizationInvite(Base):
 
     organization: Mapped["Organization"] = relationship("Organization", back_populates="organization_invites", lazy="selectin")
     created_by: Mapped["User"] = relationship("User", back_populates="created_invites", foreign_keys=[created_by_id], lazy="selectin")
+    project: Mapped[Optional["Project"]] = relationship(
+        "Project", foreign_keys=[project_id], back_populates="invites", lazy="selectin"
+    )
 
     __table_args__ = (
         Index("ix_organization_invites_organization_id", "organization_id"),

@@ -1,6 +1,6 @@
 ﻿import hashlib
 import secrets
-import uuid  # Dodane do generowania JTI
+import uuid
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -14,11 +14,11 @@ ALGORITHM = settings.ALGORITHM
 
 
 def hash_password(password: str) -> str:
-    """Hash hasła za pomocą bcrypt."""
+    """Hash password using bcrypt."""
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Weryfikuj hasło w stosunku do hasha."""
+    """Verify password against hash."""
     return bcrypt.checkpw(
         plain_password.encode("utf-8"),
         hashed_password.encode("utf-8"),
@@ -26,7 +26,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def create_access_token(user_id: str, remember_user: bool = False) -> str:
-    """Utwórz JWT token."""
+    """Create JWT token."""
     if remember_user:
         expire_minutes = settings.REMEMBER_ME_EXPIRE_MINUTES
     else:
@@ -38,7 +38,7 @@ def create_access_token(user_id: str, remember_user: bool = False) -> str:
         "sub": str(user_id),
         "exp": expire,
         "iat": datetime.now(timezone.utc),
-        "jti": str(uuid.uuid4()),  # Zmiana: Dodane unikalne ID tokenu
+        "jti": str(uuid.uuid4()),
     }
 
     encoded_jwt = jwt.encode(payload, settings.SECRET_KEY, algorithm=ALGORITHM)
@@ -46,23 +46,22 @@ def create_access_token(user_id: str, remember_user: bool = False) -> str:
 
 
 def decode_token(token: str) -> dict:
-    """Dekoduj JWT i zwróć pełny payload (dict). Zgłasza wyjątek na nieudane dekodowanie."""
-    # Zmiana: Wymuszamy obecność exp, sub oraz jti w tokenie
+    """Decode JWT and return full payload (dict). Raises exception on decode failure."""
     return jwt.decode(
-        token, 
-        settings.SECRET_KEY, 
+        token,
+        settings.SECRET_KEY,
         algorithms=[ALGORITHM],
         options={"require": ["exp", "sub", "jti"]}
     )
 
 
 def hash_token(token: str) -> str:
-    """Hash surowego tokenu SHA-256."""
+    """Hash raw token with SHA-256."""
     return hashlib.sha256(token.encode()).hexdigest()
 
 
 def generate_token() -> str:
-    """Wygeneruj bezpieczny token URL-safe."""
+    """Generate secure URL-safe token."""
     return secrets.token_urlsafe(32)
 
 
