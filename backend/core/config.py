@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     SMTP_FROM: str = "noreply@localhost"
     SMTP_TLS: bool = False
     FRONTEND_URL: str = "http://localhost:5173"
+    LOG_FORMAT: str = "text"
 
     model_config = SettingsConfigDict(env_file=Path(__file__).parent.parent.parent / ".env"
 )

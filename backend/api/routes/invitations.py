@@ -1,3 +1,4 @@
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -14,6 +15,7 @@ from core.config import settings
 from db import repositories
 from core import security
 
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Invitations"])
 
@@ -63,6 +65,7 @@ async def revoke_invite(
     token_hash = security.hash_token(token)
     invite = await repositories.invite_repo.get_invite_by_hash(db, token_hash)
     if invite is None:
+        logger.warning("Invite revoke failed: not found user_id=%s", current_user.id)
         raise HTTPException(status_code=404, detail="Invite not found")
 
     is_creator = invite.created_by_id == current_user.id
@@ -75,6 +78,7 @@ async def revoke_invite(
         and invite.organization.org_owner_id == current_user.id
     )
     if not (is_creator or is_project_owner or is_org_owner):
+        logger.warning("Invite revoke denied: permission denied user_id=%s", current_user.id)
         raise HTTPException(status_code=403, detail="Not authorized to revoke this invite")
 
     await repositories.invite_repo.delete_invite_by_hash(db, token_hash)
