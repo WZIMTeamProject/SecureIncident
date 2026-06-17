@@ -36,7 +36,7 @@ async def get_role(
     if role is None or role.project_id != project_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Rola nie znaleziona w tym projekcie",
+            detail="Role not found in this project",
         )
     return role
 
@@ -77,7 +77,7 @@ async def update_role(
     if role is None or role.project_id != project_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Rola nie znaleziona w tym projekcie",
+            detail="Role not found in this project",
         )
 
     name = data.name.strip() if data.name is not None else None
@@ -95,7 +95,7 @@ async def _get_project(db: AsyncSession, project_id: UUID) -> Project:
     project = await repositories.project_repo.get_project_by_id(db, project_id)
     if project is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Projekt nie znaleziony"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
         )
     return project
 
@@ -109,7 +109,7 @@ async def _require_member(
     )
     if membership is None:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Brak dostępu do projektu"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
         )
     return project
 
@@ -121,6 +121,6 @@ async def _require_owner(
     if project.project_owner_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Tylko właściciel projektu może zarządzać rolami",
+            detail="Only the project owner can manage roles",
         )
     return project

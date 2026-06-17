@@ -99,7 +99,7 @@ async def list_projects_for_user(
     user_id: UUID,
     scope: Optional[str] = None,
 ) -> Sequence[Project]:
-    """Lista projektów, których użytkownik jest członkiem (opcjonalny filtr scope)."""
+    """List projects the user is a member of (optional scope filter)."""
     stmt = (
         select(Project)
         .join(UserProject, UserProject.project_id == Project.id)
@@ -114,7 +114,7 @@ async def list_projects_for_user(
 async def list_members(
     db: AsyncSession, project_id: UUID
 ) -> Sequence[tuple[User, Role]]:
-    """Lista (User, Role) dla wszystkich członków projektu."""
+    """List (User, Role) pairs for all project members."""
     result = await db.execute(
         select(User, Role)
         .join(UserProject, UserProject.user_id == User.id)
@@ -130,7 +130,7 @@ async def update_user_project_role(
     membership: UserProject,
     role_id: UUID,
 ) -> None:
-    """Zmień rolę istniejącego członkostwa (flush tylko — commit w serwisie)."""
+    """Update an existing membership's role (flush only — caller commits)."""
     membership.role_id = role_id
     db.add(membership)
     await db.flush()
@@ -139,7 +139,7 @@ async def update_user_project_role(
 async def list_roles_for_project(
     db: AsyncSession, project_id: UUID
 ) -> Sequence[Role]:
-    """Lista wszystkich ról zdefiniowanych w projekcie."""
+    """List all roles defined in the project."""
     result = await db.execute(
         select(Role).where(Role.project_id == project_id)
     )
@@ -153,7 +153,7 @@ async def update_role(
     name: Optional[str] = None,
     permissions: Optional[dict] = None,
 ) -> None:
-    """Zaktualizuj nazwę i/lub uprawnienia roli (flush tylko — commit w serwisie)."""
+    """Update a role's name and/or permissions (flush only — caller commits)."""
     if name is not None:
         role.name = name
     if permissions is not None:

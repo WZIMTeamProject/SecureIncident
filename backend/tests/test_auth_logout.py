@@ -25,35 +25,35 @@ class TestLogout:
     async def test_logout_invalidates_token(
         self, client: AsyncClient, test_user: User, auth_headers: dict
     ):
-        """Sprawdza, czy token staje się bezużyteczny po wylogowaniu."""
-        # 1. Wylogowujemy się
+        """Verifies that the token becomes unusable after logout."""
+        # 1. Log out
         logout_response = await client.post("/api/auth/logout", headers=auth_headers)
         assert logout_response.status_code == 204
 
-        # 2. Próbujemy użyć tego samego tokenu do pobrania danych o sobie
+        # 2. Attempt to use the same token to fetch own user data
         me_response = await client.get("/api/auth/me", headers=auth_headers)
         assert me_response.status_code == 401
 
     async def test_logout_is_idempotent(
         self, client: AsyncClient, test_user: User, auth_headers: dict
     ):
-        """Sprawdza, czy ponowne użycie tego samego tokenu do wylogowania zwraca 401."""
-        # Pierwsze wylogowanie - sukces
+        """Verifies that reusing the same token for logout returns 401."""
+        # First logout - success
         first_logout = await client.post("/api/auth/logout", headers=auth_headers)
         assert first_logout.status_code == 204
 
-        # Drugie wylogowanie tym samym tokenem - powinno być odrzucone (401), bo token jest już na czarnej liście
+        # Second logout with the same token - must be rejected (401) because the token is already blacklisted
         second_logout = await client.post("/api/auth/logout", headers=auth_headers)
         assert second_logout.status_code == 401
 
     async def test_logout_blocks_protected_endpoints(
         self, client: AsyncClient, test_user: User, auth_headers: dict
     ):
-        """Sprawdza, czy unieważniony token blokuje dostęp do chronionych zasobów globalnie."""
-        # Wylogowanie
+        """Verifies that a revoked token blocks access to protected resources globally."""
+        # Logout
         await client.post("/api/auth/logout", headers=auth_headers)
 
-        # Próba wejścia na chroniony endpoint podweryfikowana błędem autoryzacji
+        # Attempt to access a protected endpoint — must be rejected with an auth error
         response = await client.get("/api/auth/me", headers=auth_headers)
         assert response.status_code == 401
 

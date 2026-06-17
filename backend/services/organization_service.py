@@ -26,7 +26,7 @@ async def create_organization(
     if current_user.organization_id is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Użytkownik należy już do organizacji",
+            detail="User already belongs to an organization",
         )
 
     organization = await repositories.organization_repo.create_organization(
@@ -54,7 +54,7 @@ async def get_current_organization(
     if current_user.organization_id is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Użytkownik nie należy do żadnej organizacji",
+            detail="User does not belong to any organization",
         )
 
     organization = await repositories.organization_repo.get_organization_by_id(
@@ -63,7 +63,7 @@ async def get_current_organization(
     if organization is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Organizacja nie znaleziona",
+            detail="Organization not found",
         )
     return organization
 
@@ -82,7 +82,7 @@ async def create_invite(
     if current_user.organization_id is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Użytkownik nie należy do żadnej organizacji",
+            detail="User does not belong to any organization",
         )
 
     organization = await repositories.organization_repo.get_organization_by_id(
@@ -91,7 +91,7 @@ async def create_invite(
     if organization is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Organizacja nie znaleziona",
+            detail="Organization not found",
         )
 
     if organization.org_owner_id != current_user.id:
@@ -141,13 +141,13 @@ async def join_organization(
     if invite is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Nieprawidłowe lub wygasłe zaproszenie",
+            detail="Invalid or expired invitation",
         )
 
     if invite.scope != "ORGANIZATION" or invite.organization_id is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="To zaproszenie nie jest do organizacji",
+            detail="This invitation is not for an organization",
         )
 
     current_user.organization_id = invite.organization_id

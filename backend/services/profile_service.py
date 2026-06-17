@@ -11,7 +11,7 @@ from db.repositories import user_repo
 
 
 async def get_profile(current_user: User) -> ProfileResponse:
-    """Zwraca profil zalogowanego użytkownika."""
+    """Return the authenticated user's profile."""
     return ProfileResponse(
         id=current_user.id,
         username=current_user.username,
@@ -25,7 +25,7 @@ async def update_profile(
     current_user: User,
     data: UpdateProfileRequest,
 ) -> None:
-    """Aktualizuje profil użytkownika z walidacją unikalności username."""
+    """Update user profile with username uniqueness validation."""
     if data.username and data.username != current_user.username:
         existing = await user_repo.get_user_by_username(db, data.username)
         if existing:
@@ -43,7 +43,7 @@ async def search_users(
     query: str,
     current_user: User,
 ) -> UserSearchResponse:
-    """Wyszukuje użytkowników w tej samej organizacji lub projektach."""
+    """Search for users in the same organization or projects."""
     users = await user_repo.search_users_by_username(
         db=db,
         query=query,

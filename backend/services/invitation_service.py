@@ -92,16 +92,16 @@ async def join_project_by_invite(
     # This prevents a cross-org user from draining limited-use invites with repeated 403s.
     pre_check = await repositories.invite_repo.get_invite_by_hash(db, token_hash)
     if pre_check is None:
-        raise HTTPException(status_code=400, detail="Nieprawidłowe lub wygasłe zaproszenie")
+        raise HTTPException(status_code=400, detail="Invalid or expired invitation")
 
     if pre_check.scope != "PROJECT":
-        raise HTTPException(status_code=400, detail="To zaproszenie nie jest do projektu")
+        raise HTTPException(status_code=400, detail="This invitation is not for a project")
 
     if pre_check.project is not None and pre_check.project.organization_id is not None:
         if current_user.organization_id != pre_check.project.organization_id:
             raise HTTPException(
                 status_code=403,
-                detail="You must be a member of this organization to join its projects."
+                detail="You must be a member of this organization to join its projects"
             )
 
     # Atomic increment — only after scope and auth checks pass

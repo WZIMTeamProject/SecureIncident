@@ -83,39 +83,39 @@ async def client(db: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
 
 @pytest.fixture(scope="function")
 async def test_org(db: AsyncSession) -> Organization:
-    """Tworzy testową organizację, poprawnie rozwiązując problem kluczy obcych."""
-    
-    # 1. Tworzymy tymczasowego użytkownika, który będzie właścicielem.
-    # Ponieważ organization_id jest nullable=True, baza pozwoli go zapisać.
+    """Creates a test organization, correctly resolving the foreign key ordering problem."""
+
+    # 1. Create a temporary user who will be the owner.
+    # Because organization_id is nullable=True, the database will allow saving it.
     owner = User(
-        username=f"owner_{uuid.uuid4().hex[:6]}",  # Unikalny username, by uniknąć 409
+        username=f"owner_{uuid.uuid4().hex[:6]}",  # Unique username to avoid 409
         email=f"owner_{uuid.uuid4().hex[:6]}@example.com",
         first_name="Org",
         last_name="Owner",
         password=hash_password("TestPassword123!"),
         is_active=True,
-        organization_id=None  # Na razie bez organizacji
+        organization_id=None  # No organization yet
     )
     db.add(owner)
-    await db.flush()  # Generujemy id dla ownera w bazie danych
+    await db.flush()  # Generate the owner's id in the database
 
-    # 2. Teraz możemy bezpiecznie stworzyć organizację,
-    # bo mamy już poprawne, istniejące id właściciela (org_owner_id).
+    # 2. Now we can safely create the organization,
+    # because we already have a valid, existing owner id (org_owner_id).
     org = Organization(
         name="Test Acme Corp",
-        description="Testowa organizacja na potrzeby pytest",
-        join_code=f"JOIN_{uuid.uuid4().hex[:6]}",  # Unikalny kod dołączenia
-        org_owner_id=owner.id  # Przypisujemy stworzonego przed chwilą użytkownika
+        description="Test organization for pytest",
+        join_code=f"JOIN_{uuid.uuid4().hex[:6]}",  # Unique join code
+        org_owner_id=owner.id  # Assign the user we just created
     )
     db.add(org)
-    await db.flush()  # Generujemy id dla organizacji
+    await db.flush()  # Generate the organization's id
 
-    # 3. Krok opcjonalny, ale elegancki: 
-    # Skoro organizacja już istnieje, przypisujemy ją też samemu właścicielowi.
+    # 3. Optional but clean step:
+    # Now that the organization exists, assign it back to the owner as well.
     owner.organization_id = org.id
     await db.flush()
 
-    # 4. PRZEKAZUJEMY obiekt dalej do testów i innych fixture'ów
+    # 4. Pass the object to tests and other fixtures
     yield org
 
 @pytest.fixture(scope="function")

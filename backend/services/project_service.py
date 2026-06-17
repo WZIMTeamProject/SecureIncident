@@ -123,13 +123,13 @@ async def get_project(
     """Get project — only if user is a member."""
     project = await repositories.project_repo.get_project_by_id(db, project_id)
     if project is None:
-        raise HTTPException(status_code=404, detail="Projekt nie znaleziony")
+        raise HTTPException(status_code=404, detail="Project not found")
 
     membership = await repositories.project_repo.get_user_project(
         db, current_user.id, project_id
     )
     if membership is None:
-        raise HTTPException(status_code=403, detail="Brak dostępu do projektu")
+        raise HTTPException(status_code=403, detail="Access denied")
     return project
 
 
@@ -158,16 +158,16 @@ async def list_members(
     project_id: UUID,
     current_user: User,
 ) -> list[dict]:
-    """Lista członków projektu (wymaga członkostwa)."""
+    """List project members (requires membership)."""
     project = await repositories.project_repo.get_project_by_id(db, project_id)
     if project is None:
-        raise HTTPException(status_code=404, detail="Projekt nie znaleziony")
+        raise HTTPException(status_code=404, detail="Project not found")
 
     membership = await repositories.project_repo.get_user_project(
         db, current_user.id, project_id
     )
     if membership is None:
-        raise HTTPException(status_code=403, detail="Brak dostępu do projektu")
+        raise HTTPException(status_code=403, detail="Access denied")
 
     rows = await repositories.project_repo.list_members(db, project_id)
     return [
@@ -188,17 +188,17 @@ async def add_member(
     data: AddProjectMemberRequest,
     current_user: User,
 ) -> None:
-    """Dodaj użytkownika do projektu z konkretną rolą (tylko właściciel)."""
+    """Add a user to a project with a specific role (owner only)."""
     await _get_owned_project(db, project_id, current_user)
 
     user = await repositories.user_repo.get_user_by_id(db, data.user_id)
     if user is None:
-        raise HTTPException(status_code=404, detail="Użytkownik nie znaleziony")
+        raise HTTPException(status_code=404, detail="User not found")
 
     role = await repositories.project_repo.get_role_by_id(db, data.role_id)
     if role is None or role.project_id != project_id:
         raise HTTPException(
-            status_code=404, detail="Rola nie znaleziona w tym projekcie"
+            status_code=404, detail="Role not found in this project"
         )
 
     existing = await repositories.project_repo.get_user_project(
@@ -206,7 +206,7 @@ async def add_member(
     )
     if existing is not None:
         raise HTTPException(
-            status_code=409, detail="Użytkownik jest już członkiem projektu"
+            status_code=409, detail="User is already a member of this project"
         )
 
     await repositories.project_repo.create_user_project(
@@ -226,13 +226,13 @@ async def change_member_role(
     data: AssignRoleRequest,
     current_user: User,
 ) -> None:
-    """Zmień rolę członka projektu (tylko właściciel)."""
+    """Change a project member's role (owner only)."""
     await _get_owned_project(db, project_id, current_user)
 
     role = await repositories.project_repo.get_role_by_id(db, data.role_id)
     if role is None or role.project_id != project_id:
         raise HTTPException(
-            status_code=404, detail="Rola nie znaleziona w tym projekcie"
+            status_code=404, detail="Role not found in this project"
         )
 
     membership = await repositories.project_repo.get_user_project(
@@ -240,7 +240,7 @@ async def change_member_role(
     )
     if membership is None:
         raise HTTPException(
-            status_code=404, detail="Użytkownik nie jest członkiem projektu"
+            status_code=404, detail="User is not a member of this project"
         )
 
     await repositories.project_repo.update_user_project_role(

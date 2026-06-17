@@ -61,7 +61,7 @@ async def logout_user(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Wyloguj użytkownika poprzez dodanie unikalnego JTI tokenu do czarnej listy."""
+    """Log out the user by adding the token's unique JTI to the revocation list."""
     token = token_credentials.credentials
     payload = decode_token(token)
     jti = payload.get("jti")

@@ -24,7 +24,7 @@ router = APIRouter(prefix="/projects/{project_id}/roles", tags=["Roles"])
 
 
 def _to_response(role: Role) -> RoleResponse:
-    """Zmapuj model Role na RoleResponse (kolumny can_* -> RolePermissions)."""
+    """Map a Role model to RoleResponse (can_* columns -> RolePermissions)."""
     return RoleResponse(
         id=role.id,
         name=role.name,
@@ -46,7 +46,7 @@ async def get_roles(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Lista ról w projekcie (wymaga członkostwa)."""
+    """List roles in the project (requires membership)."""
     roles = await role_service.list_roles(
         db, project_id=project_id, current_user=current_user
     )
@@ -63,7 +63,7 @@ async def create_role(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Utwórz własną rolę w projekcie (tylko właściciel)."""
+    """Create a custom role in the project (owner only)."""
     role = await role_service.create_role(
         db, project_id=project_id, data=body, current_user=current_user
     )
@@ -77,7 +77,7 @@ async def get_role(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Szczegóły roli (wymaga członkostwa)."""
+    """Get role details (requires membership)."""
     role = await role_service.get_role(
         db, project_id=project_id, role_id=role_id, current_user=current_user
     )
@@ -92,7 +92,7 @@ async def update_role(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Zaktualizuj nazwę i/lub uprawnienia roli (tylko właściciel)."""
+    """Update a role's name and/or permissions (owner only)."""
     await role_service.update_role(
         db, project_id=project_id, role_id=role_id, data=body, current_user=current_user
     )

@@ -24,7 +24,7 @@ async def create_organization(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Utwórz organizację (twórca zostaje właścicielem i członkiem)."""
+    """Create an organization (creator becomes owner and member)."""
     organization = await organization_service.create_organization(
         db, data=data, current_user=current_user
     )
@@ -67,7 +67,7 @@ async def join_organization(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Dołącz do organizacji za pomocą tokenu zaproszenia."""
+    """Join an organization using an invitation token."""
     await organization_service.join_organization(
         db, current_user=current_user, raw_token=data.token
     )
