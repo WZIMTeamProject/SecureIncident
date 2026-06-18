@@ -28,6 +28,6 @@ repos:
       - id: eslint
         name: eslint (frontend)
         language: node
-        entry: bash -c 'cd frontend && npx eslint --fix src/'
-        files: ^frontend/.*\.[jt]sx?$
+        entry: bash -c 'cd Frontend && npx eslint --fix src/'
+        files: ^Frontend/.*\.[jt]sx?$
         pass_filenames: false
