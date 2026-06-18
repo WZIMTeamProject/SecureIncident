@@ -1,5 +1,4 @@
-import {useContext, useEffect, useState} from "react";
-import {AuthUserContext} from "../data/auth.ts";
+import {useEffect, useState} from "react";
 import type {Project} from "../data/project.ts";
 import {useParams} from "react-router";
 import Api from "../data/Api.ts";
