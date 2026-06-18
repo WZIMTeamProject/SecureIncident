@@ -1,4 +1,4 @@
-import {useLoaderData} from "react-router";
+import {Link, useLoaderData} from "react-router";
 import type {AuthState} from "../data/auth.ts";
 import {useEffect, useState} from "react";
 import type {Incident, Organization, Project} from "../data/project.ts";
@@ -36,35 +36,47 @@ export default function DashboardSidebar() {
             <h1>Moja Organizacja</h1>
             <hr/>
 
-            <OrganizationLink organization={userOrganization}/>
+            <OrganizationLink organization={userOrganization}/><br/>
 
             <h1>Moje Projekty</h1>
             <hr/>
 
-            <ProjectLinks projects={userProjects}/>
+            <ProjectLinks projects={userProjects}/><br/>
 
             <h1>Moje Incydenty</h1>
             <hr/>
 
-            <IncidentLinks incidents={userIncidents}/>
+            <IncidentLinks incidents={userIncidents}/><br/>
         </div>
     );
 }
 
-function OrganizationLink({ organization } : { organization: Organization | null | undefined }) {
+function OrganizationLink({organization}: { organization: Organization | null | undefined }) {
+    if (organization === undefined) {
+        return <h2>Wczytywanie...</h2>;
+    }
+
     return <h2>
-        {organization === undefined ? "Wczytywanie..." : (organization?.name ?? "- Brak -") }
+        <Link to="/dashboard">{organization?.name ?? "- Brak -"}</Link>
     </h2>;
 }
 
-function ProjectLinks({ projects } : { projects: Project[] | undefined }) {
+function ProjectLinks({projects}: { projects: Project[] | undefined }) {
+    if (projects === undefined) {
+        return <h2>Wczytywanie...</h2>;
+    }
+
     return <>
-        {projects?.map((project) => project.name) ?? "Wczytywanie..." }
+        {projects.map((project) => <h2>{project.name}</h2>)}
     </>;
 }
 
-function IncidentLinks({ incidents } : { incidents: Incident[] | undefined }) {
+function IncidentLinks({incidents}: { incidents: Incident[] | undefined }) {
+    if (incidents === undefined) {
+        return <h2>Wczytywanie...</h2>;
+    }
+
     return <>
-        {incidents?.map((incident) => incident.title) ?? "Wczytywanie..." }
+        {incidents.map((incident) => <h2>{incident.title}</h2>)}
     </>
 }
