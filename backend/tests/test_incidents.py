@@ -1,4 +1,3 @@
-import uuid
 from uuid import uuid4
 from datetime import datetime, timezone
 
@@ -79,7 +78,6 @@ class TestIncidentHelperModel:
 
     async def test_incident_helper_added_at_has_server_default(self, db: AsyncSession, test_project: Project, test_user: User):
         from db.models.incident_helper import IncidentHelper
-        from sqlalchemy import inspect
 
         incident = Incident(
             project_id=test_project.id,

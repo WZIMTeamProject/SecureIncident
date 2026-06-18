@@ -16,7 +16,6 @@ from db.models import User, Project, Organization, Role
 from db.models.organization_invite import OrganizationInvite
 from db.models.user_project import UserProject
 from db.models.incident import Incident
-from db.models.incident_helper import IncidentHelper
 from core.security import create_access_token, generate_token, hash_token
 from core.config import settings
 from core.security import hash_password
