@@ -5,7 +5,46 @@ on:
     paths: [backend/**]
 
 jobs:
+  security-checks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install tools
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+          pip install bandit pip-audit vulture
+
+      - name: Run bandit
+        working-directory: backend
+        run: bandit -r api core db services main.py > ../docs/bandit.txt 2>&1 || true
+
+      - name: Run pip-audit
+        working-directory: backend
+        run: pip-audit -r requirements.txt > ../docs/pip-audit.txt 2>&1 || true
+
+      - name: Run vulture
+        working-directory: backend
+        run: vulture . --min-confidence 80 > ../docs/vulture.txt 2>&1 || true
+
+      - name: Commit results to docs/
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/bandit.txt docs/pip-audit.txt docs/vulture.txt
+          git diff --staged --quiet || git commit -m "update security scan results"
+          git push
+
   test-build-deploy:
+    needs: security-checks
     runs-on: ubuntu-latest
     permissions:
       contents: read
