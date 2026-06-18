@@ -33,6 +33,7 @@ export function SIResetPassword() {
                                 <span className="text-[var(--color-si-input-icon)]"><IconLock/></span>
                                 <input
                                     id={FORM_PASSWORD}
+                                    required={true}
                                     type="password"
                                     name={FORM_PASSWORD}
                                     placeholder="Hasło"
@@ -55,6 +56,7 @@ export function SIResetPassword() {
                                 <span className="text-[var(--color-si-input-icon)]"><IconLock/></span>
                                 <input
                                     id={FORM_PASSWORD_REPEAT}
+                                    required={true}
                                     type="password"
                                     name={FORM_PASSWORD_REPEAT}
                                     placeholder="Powtórz Hasło"

@@ -50,6 +50,7 @@ export function SIRegisterPage() {
                             <span className="text-[var(--color-si-input-icon)]"><IconUser/></span>
                             <input
                                 id={FORM_USERNAME}
+                                required={true}
                                 type="text"
                                 name={FORM_USERNAME}
                                 placeholder="Nazwa użytkownika"
@@ -72,6 +73,7 @@ export function SIRegisterPage() {
                             <span className="text-[var(--color-si-input-icon)]"><IconIdCard/></span>
                             <input
                                 id={FORM_FIRST_NAME}
+                                required={true}
                                 type="text"
                                 name={FORM_FIRST_NAME}
                                 placeholder="Imię"
@@ -93,6 +95,7 @@ export function SIRegisterPage() {
                             <span className="text-[var(--color-si-input-icon)]"><IconTag/></span>
                             <input
                                 id={FORM_LAST_NAME}
+                                required={true}
                                 type="text"
                                 name={FORM_LAST_NAME}
                                 placeholder="Nazwisko"
@@ -112,6 +115,7 @@ export function SIRegisterPage() {
                             <span className="text-[var(--color-si-input-icon)]"><IconMail/></span>
                             <input
                                 id={FORM_EMAIL}
+                                required={true}
                                 type="email"
                                 name={FORM_EMAIL}
                                 placeholder="Adres e-mail"
@@ -133,6 +137,7 @@ export function SIRegisterPage() {
                             <input
                                 ref={passwordRef}
                                 id={FORM_PASSWORD}
+                                required={true}
                                 type="password"
                                 name={FORM_PASSWORD}
                                 placeholder="Hasło"
@@ -154,6 +159,7 @@ export function SIRegisterPage() {
                             <input
                                 ref={passwordRepeatRef}
                                 id={FORM_PASSWORD_REPEAT}
+                                required={true}
                                 type="password"
                                 name={FORM_PASSWORD_REPEAT}
                                 placeholder="Powtórz hasło"

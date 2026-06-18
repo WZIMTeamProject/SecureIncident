@@ -58,6 +58,7 @@ export function SILoginPage() {
                             <span className="text-[var(--color-si-input-icon)]"><IconUser/></span>
                             <input
                                 id={FORM_USERNAME}
+                                required={true}
                                 type="text"
                                 name={FORM_USERNAME}
                                 placeholder="Nazwa użytkownika"
@@ -80,6 +81,7 @@ export function SILoginPage() {
                             <input
                                 ref={passwordRef}
                                 id={FORM_PASSWORD}
+                                required={true}
                                 type="password"
                                 name={FORM_PASSWORD}
                                 placeholder="Hasło"
@@ -147,6 +149,5 @@ export function SILoginPage() {
                 </Link>
             </div>
         </Background>
-
     );
 }
