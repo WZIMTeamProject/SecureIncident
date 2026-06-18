@@ -13,10 +13,10 @@ const Shield = ({ className }: { className?: string }) => (
 
 export default function Footer() {
     return (
-        <footer className="relative z-10 w-screen bg-[var(--color-si-footer)] py-3 overflow-hidden">
+        <footer className="relative z-10 w-screen bg-(--color-si-footer) py-3 overflow-hidden">
             <div className="flex items-center gap-3 w-max mx-auto animate-none">
                 {Array.from({ length: 40 }).map((_, i) => (
-                    <Shield key={i} className="w-7 h-7 shrink-0 text-[var(--color-si-footer-shield)] opacity-70" />
+                    <Shield key={i} className="w-7 h-7 shrink-0 text-(--color-si-footer-shield) opacity-70" />
                 ))}
             </div>
         </footer>

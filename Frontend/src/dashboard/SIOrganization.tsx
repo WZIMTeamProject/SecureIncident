@@ -3,9 +3,9 @@ import {useContext, useEffect, useRef, useState} from "react";
 import type {Organization, Project} from "../data/project.ts";
 import {Popup} from "../components/Popup.tsx";
 import {
-    FORM_ACTION, FORM_ACTION_DELETE_ORGANIZATION, FORM_ACTION_INVITE_USER,
+    FORM_ACTION, FORM_ACTION_CREATE_ORGANIZATION, FORM_ACTION_DELETE_ORGANIZATION, FORM_ACTION_INVITE_USER,
     FORM_ACTION_NEW_PROJECT,
-    FORM_INVITE_NAME,
+    FORM_INVITE_NAME, FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
     FORM_PROJECT_DESCRIPTION,
     FORM_PROJECT_NAME
 } from "./forms.ts";
@@ -42,18 +42,25 @@ function LoadingMessage() {
 }
 
 function CreateOrganizationWidget() {
+    const [shownPopup, setShownPopup] = useState<ShownCreateOrganizationPopup>(null);
+    const hidePopup = () => setShownPopup(null)
+
     return (
         <div className="w-full flex gap-3 p-3 justify-end">
-            <button className="px-6 py-2
-                        bg-[var(--color-si-btn)]
-                        hover:bg-[var(--color-si-btn-hover)] shadow-lg
+            <CreateOrganizationPopup show={shownPopup == "new_organization"} onHide={hidePopup}/>
+
+            <button
+                onClick={() => setShownPopup("new_organization")}
+                className="px-6 py-2
+                        bg-(--color-si-btn)
+                        hover:bg-(--color-si-btn-hover) shadow-lg
                         text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                 Utwórz organizację
             </button>
 
             <button className="px-6 py-2
-                        bg-[var(--color-si-btn)]
-                        hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                        bg-(--color-si-btn)
+                        hover:bg-(--color-si-btn-hover) shadow-lg
                         text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                 Dołącz do organizacji
             </button>
@@ -61,12 +68,13 @@ function CreateOrganizationWidget() {
     );
 }
 
-type ShownPopup = "new_project" | "invite_user" | "delete_organization" | null;
+type ShownCreateOrganizationPopup = "new_organization" | "join_organization" | null;
+type ShownOrganizationPopup = "new_project" | "invite_user" | "delete_organization" | null;
 
 function OrganizationView({organization}: { organization: Organization }) {
     const auth = useContext(AuthUserContext)!;
 
-    const [shownPopup, setShownPopup] = useState<ShownPopup>(null);
+    const [shownPopup, setShownPopup] = useState<ShownOrganizationPopup>(null);
     const hidePopup = () => setShownPopup(null)
 
     const [projects, setProjects] = useState<Project[] | undefined>();
@@ -102,8 +110,8 @@ function OrganizationView({organization}: { organization: Organization }) {
                 <button
                     onClick={() => setShownPopup("new_project")}
                     className="px-6 py-2
-                        bg-[var(--color-si-btn)]
-                        hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                        bg-(--color-si-btn)
+                        hover:bg-(--color-si-btn-hover) shadow-lg
                         text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                     Dodaj nowy projekt
                 </button>
@@ -111,8 +119,8 @@ function OrganizationView({organization}: { organization: Organization }) {
                 <button
                     onClick={() => setShownPopup("invite_user")}
                     className="px-6 py-2
-                        bg-[var(--color-si-btn)]
-                        hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                        bg-(--color-si-btn)
+                        hover:bg-(--color-si-btn-hover) shadow-lg
                         text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                     Dodaj użytkownika do organizacji
                 </button>
@@ -122,8 +130,8 @@ function OrganizationView({organization}: { organization: Organization }) {
                 <button
                     onClick={() => setShownPopup("delete_organization")}
                     className="px-6 py-2
-                        bg-[var(--color-si-btn-error)]
-                        hover:bg-[var(--color-si-btn-error-hover)] shadow-lg
+                        bg-(--color-si-btn-error)
+                        hover:bg-(--color-si-btn-error-hover) shadow-lg
                         text-white text-md font-semibold underline rounded-lg cursor-pointer transition-colors duration-200">
                     Usuń organizację
                 </button>
@@ -160,9 +168,9 @@ function NewProjectPopup({show, onHide}: PopupProps) {
 
                 <div className="flex flex-col gap-1.5 my-3">
                     <div className="flex items-center gap-3
-                                border border-[var(--color-si-input-border)]
+                                border border-(--color-si-input-border)
                                 rounded-lg px-3 py-2.5
-                                bg-[var(--color-si-input-bg)] transition-colors">
+                                bg-(--color-si-input-bg) transition-colors">
                         <input
                             ref={projectNameRef}
                             id={FORM_PROJECT_NAME}
@@ -170,21 +178,21 @@ function NewProjectPopup({show, onHide}: PopupProps) {
                             required={true}
                             name={FORM_PROJECT_NAME}
                             placeholder="Nazwa"
-                            className="flex-1 bg-transparent outline-none text-sm text-[var(--color-si-input-text)]"
+                            className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
                     </div>
 
                     <div className="flex items-center gap-3
-                                border border-[var(--color-si-input-border)]
+                                border border-(--color-si-input-border)
                                 rounded-lg px-3 py-2.5
-                                bg-[var(--color-si-input-bg)] transition-colors">
+                                bg-(--color-si-input-bg) transition-colors">
                         <input
                             ref={projectDescriptionRef}
                             id={FORM_PROJECT_DESCRIPTION}
                             type="text"
                             name={FORM_PROJECT_DESCRIPTION}
                             placeholder="Opis (opcjonalny)"
-                            className="flex-1 bg-transparent outline-none text-sm text-[var(--color-si-input-text)]"
+                            className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
                     </div>
                 </div>
@@ -198,8 +206,8 @@ function NewProjectPopup({show, onHide}: PopupProps) {
                             onHide();
                         }}
                         className="px-6 py-2
-                                bg-[var(--color-si-btn-error)]
-                                hover:bg-[var(--color-si-btn-error-hover)] shadow-lg
+                                bg-(--color-si-btn-error)
+                                hover:bg-(--color-si-btn-error-hover) shadow-lg
                                 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                         Anuluj
                     </button>
@@ -209,8 +217,8 @@ function NewProjectPopup({show, onHide}: PopupProps) {
                         value={busy ? "Zapisywanie..." : "Zapisz"}
                         disabled={busy}
                         className="px-6 py-2
-                                    bg-[var(--color-si-btn)]
-                                    hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                                    bg-(--color-si-btn)
+                                    hover:bg-(--color-si-btn-hover) shadow-lg
                                     disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                     />
                 </div>
@@ -243,16 +251,16 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
 
                 <div className="flex flex-col gap-1.5 my-3">
                     <div className="flex items-center gap-3
-                                border border-[var(--color-si-input-border)]
+                                border border-(--color-si-input-border)
                                 rounded-lg px-3 py-2.5
-                                bg-[var(--color-si-input-bg)] transition-colors">
+                                bg-(--color-si-input-bg) transition-colors">
                         <input
                             ref={usernameRef}
                             id={FORM_INVITE_NAME}
                             type="text"
                             name={FORM_INVITE_NAME}
                             placeholder="Ręcznie (wpisz nazwę użytkownika)"
-                            className="flex-1 bg-transparent outline-none text-sm text-[var(--color-si-input-text)]"
+                            className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
                     </div>
                 </div>
@@ -264,8 +272,8 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                             onHide();
                         }}
                         className="px-6 py-2
-                                bg-[var(--color-si-btn-error)]
-                                hover:bg-[var(--color-si-btn-error-hover)] shadow-lg
+                                bg-(--color-si-btn-error)
+                                hover:bg-(--color-si-btn-error-hover) shadow-lg
                                 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                         Anuluj
                     </button>
@@ -275,8 +283,8 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                         value={busy ? "Zapisywanie..." : "Zapisz"}
                         disabled={busy}
                         className="px-6 py-2
-                                    bg-[var(--color-si-btn)]
-                                    hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                                    bg-(--color-si-btn)
+                                    hover:bg-(--color-si-btn-hover) shadow-lg
                                     disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                     />
                 </div>
@@ -311,8 +319,8 @@ function DeleteOrganizationPopup({show, onHide}: PopupProps) {
                     <button
                         onClick={onHide}
                         className="px-6 py-2
-                                bg-[var(--color-si-btn)]
-                                hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                                bg-(--color-si-btn)
+                                hover:bg-(--color-si-btn-hover) shadow-lg
                                 text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                         NIE, ANULUJ
                     </button>
@@ -322,8 +330,8 @@ function DeleteOrganizationPopup({show, onHide}: PopupProps) {
                         value={busy ? "Usuwanie..." : "Tak, usuń"}
                         disabled={busy}
                         className="px-6 py-2
-                                    bg-[var(--color-si-btn-error)]
-                                    hover:bg-[var(--color-si-btn-error-hover)] shadow-lg
+                                    bg-(--color-si-btn-error)
+                                    hover:bg-(--color-si-btn-error-hover) shadow-lg
                                     disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                     />
                 </div>
@@ -332,6 +340,95 @@ function DeleteOrganizationPopup({show, onHide}: PopupProps) {
                     name={FORM_ACTION}
                     type="hidden"
                     value={FORM_ACTION_DELETE_ORGANIZATION}/>
+            </fetcher.Form>
+        </Popup>
+    );
+}
+
+function CreateOrganizationPopup({show, onHide}: PopupProps) {
+    const fetcher = useFetcher();
+    const busy = fetcher.state != "idle";
+
+    const [pendingHide, setPendingHide] = useState<boolean>(false);
+
+    const organizationName = useRef<HTMLInputElement>(null);
+    const organizationDescription = useRef<HTMLInputElement>(null);
+
+    if (fetcher.state == "idle" && pendingHide) {
+        setPendingHide(false);
+        onHide();
+    }
+
+    return (
+        <Popup show={show} className={"w-full max-w-xl"} >
+            <fetcher.Form method="POST" onSubmit={() => setPendingHide(true)}>
+                <h1 className="text-3xl font-bold">
+                    Utwórz nową organizację
+                </h1>
+                <h3 className="text-lg font-medium">
+                    Wpisz nazwę organizacji:
+                </h3>
+
+                <div className="flex flex-col gap-1.5 my-3">
+                    <div className="flex items-center gap-3
+                                border border-(--color-si-input-border)
+                                rounded-lg px-3 py-2.5
+                                bg-(--color-si-input-bg) transition-colors">
+                        <input
+                            ref={organizationName}
+                            required={true}
+                            id={FORM_ORGANIZATION_NAME}
+                            type="text"
+                            name={FORM_ORGANIZATION_NAME}
+                            placeholder="Nazwa organizacji"
+                            className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-3
+                                border border-(--color-si-input-border)
+                                rounded-lg px-3 py-2.5
+                                bg-(--color-si-input-bg) transition-colors">
+                        <input
+                            ref={organizationDescription}
+                            id={FORM_ORGANIZATION_DESCRIPTION}
+                            type="text"
+                            name={FORM_ORGANIZATION_DESCRIPTION}
+                            placeholder="Opis (opcjonalny)"
+                            className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
+                        />
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                    <button
+                        onClick={() => {
+                            organizationName.current = null;
+                            organizationDescription.current = null;
+                            onHide();
+                        }}
+                        className="px-6 py-2
+                                bg-(--color-si-btn-error)
+                                hover:bg-(--color-si-btn-error-hover) shadow-lg
+                                text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                        Anuluj
+                    </button>
+
+                    <input
+                        type="submit"
+                        value={busy ? "Tworzenie..." : "Zatwierdź"}
+                        disabled={busy}
+                        className="px-6 py-2
+                                    bg-(--color-si-btn)
+                                    hover:bg-(--color-si-btn-hover) shadow-lg
+                                    disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
+                    />
+                </div>
+
+                <input
+                    name={FORM_ACTION}
+                    type="hidden"
+                    value={FORM_ACTION_CREATE_ORGANIZATION}/>
             </fetcher.Form>
         </Popup>
     );
