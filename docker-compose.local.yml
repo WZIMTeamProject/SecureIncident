@@ -6,6 +6,8 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: secure_incident
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -37,13 +39,13 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./Frontend
       args:
         VITE_API_BASE_URL: http://localhost/api
     ports:
       - "80:80"
     volumes:
-      - ./frontend/nginx.local.conf:/etc/nginx/conf.d/app.conf:ro
+      - ./Frontend/nginx.local.conf:/etc/nginx/conf.d/app.conf:ro
     depends_on:
       backend:
         condition: service_healthy

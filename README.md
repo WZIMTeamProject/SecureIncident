@@ -6,12 +6,138 @@ Web-based incident reporting platform — React 19 frontend + FastAPI backend + 
 
 ```
 SecureIncident/
-├── Frontend/        # React 19 + Vite + Tailwind CSS
-├── backend/         # FastAPI + SQLAlchemy + Alembic
-├── docs/api/        # OpenAPI specification
-├── docker-compose.yml
-└── .env             # environment variables (gitignored)
+├── Frontend/                 # React 19 + Vite + Tailwind CSS
+├── backend/                  # FastAPI + SQLAlchemy + Alembic
+├── docs/api/                 # OpenAPI specification
+├── docker-compose.yml        # production
+├── docker-compose.local.yml  # local development
+└── .env                      # environment variables (gitignored)
 ```
+
+---
+
+## Running the Application
+
+### Method 1 — Docker Compose (recommended before committing)
+
+Runs the full stack (PostgreSQL, backend, frontend, Mailpit) in containers.
+The frontend is served at **http://localhost** and proxies all `/api/` requests to the backend.
+
+```bash
+# First run, or after a migration or Dockerfile change:
+make up
+# equivalent:
+docker compose -f docker-compose.local.yml up --build
+
+# Subsequent runs with no code/dependency changes:
+docker compose -f docker-compose.local.yml up
+```
+
+> **When to use `--build`:** always after pulling a commit that adds a migration file,
+> changes `requirements.txt`, or modifies a `Dockerfile`. Without it Docker uses the
+> cached image and your new code won't be included.
+
+```bash
+# Stop and remove containers (data is preserved in the postgres_data volume)
+make down
+# equivalent:
+docker compose -f docker-compose.local.yml down
+
+# Stop and wipe all data
+docker compose -f docker-compose.local.yml down -v
+```
+
+Follow live logs while the stack is running:
+
+```bash
+make logs
+# equivalent:
+docker compose -f docker-compose.local.yml logs -f
+```
+
+---
+
+### Method 2 — Manual (quick iteration)
+
+Start only the database and Mailpit containers (their ports are exposed for direct local access),
+then run the backend and frontend from source for fast reloads.
+
+**Step 1 — Start infrastructure containers:**
+
+```bash
+# Database only:
+make db
+# equivalent:
+docker compose -f docker-compose.local.yml up -d db
+
+# Database + Mailpit:
+docker compose -f docker-compose.local.yml up -d db mailpit
+```
+
+**Step 2 — Start the backend** (from the `backend/` directory):
+
+```bash
+# Apply any pending migrations first:
+cd backend
+alembic upgrade head
+
+# Start the dev server with hot reload:
+uvicorn main:app --reload
+```
+
+API available at **http://localhost:8000** · Swagger UI at **http://localhost:8000/docs**
+
+**Step 3 — Start the frontend** (from the `Frontend/` directory):
+
+```bash
+cd Frontend
+npm install          # first run only
+npm run dev
+```
+
+App available at **http://localhost:5173**
+
+> When running manually the frontend dev server (`npm run dev`) talks directly to the
+> backend on port 8000 via `VITE_API_URL` — no nginx proxy is involved.
+> See [Frontend — Environment Variables](#step-2--configure-environment-variables-1) for the required `.env.local`.
+
+---
+
+### Method 3 — Building individual services
+
+Use these commands to verify a service builds correctly without starting the full stack —
+useful before pushing a PR, after changing a `Dockerfile`, or after adding/removing dependencies.
+
+**Build only one service:**
+
+```bash
+docker compose -f docker-compose.local.yml build backend
+docker compose -f docker-compose.local.yml build frontend
+```
+
+**Run a subset of services** (e.g. to test the backend without the frontend):
+
+```bash
+# Database + backend only:
+docker compose -f docker-compose.local.yml up db backend
+
+# Database + frontend only (frontend needs a running backend to be useful):
+docker compose -f docker-compose.local.yml up db frontend
+```
+
+**Check container status:**
+
+```bash
+make ps
+# equivalent:
+docker compose -f docker-compose.local.yml ps
+```
+
+> Run individual service builds after every change to `Dockerfile`, `requirements.txt`,
+> `package.json`, or `package-lock.json` — and always before opening a PR that touches
+> those files.
+
+---
 
 # Backend — SecureIncident API
 
@@ -196,24 +322,22 @@ You can also test both steps via Swagger at [http://localhost:8000/docs](http://
 
 ## Daily Workflow
 
-```bash
-# Start database + email sink
-docker compose up -d
+See [Running the Application](#running-the-application) at the top of this README for all startup options.
 
-# Start API server (from backend/)
+Quick reference for manual backend dev:
+
+```bash
+# 1. Start the database
+docker compose -f docker-compose.local.yml up -d db
+
+# 2. Apply pending migrations (from backend/)
+alembic upgrade head
+
+# 3. Start the API server (from backend/)
 uvicorn main:app --reload
-```
 
-## Stopping
-
-```bash
-# Stop API: Ctrl+C
-
-# Stop containers
-docker compose down
-
-# Stop containers and wipe all data
-docker compose down -v
+# Stop: Ctrl+C, then:
+docker compose -f docker-compose.local.yml down
 ```
 
 ---
