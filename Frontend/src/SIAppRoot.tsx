@@ -1,5 +1,5 @@
-import {Link, type LoaderFunction, Outlet, type RouterContextProvider, useLoaderData} from "react-router";
-import {AuthRouterContext, AuthState, AuthUserContext} from "./data/auth.ts";
+import {Link, Outlet, useLoaderData} from "react-router";
+import {AuthState, AuthUserContext} from "./data/auth.ts";
 import {useState} from "react";
 import {IconClose, IconMenu} from "./components/icons.tsx";
 
@@ -117,12 +117,6 @@ export function SIAppRoot() {
     )
 }
 
-export const appRootLoader: LoaderFunction = async ({context}) => {
-    const middlewareContext = (context as Readonly<RouterContextProvider>);
-    return middlewareContext.get(AuthRouterContext);
-}
-
-
 function AnonymousUserToolbar() {
     return (
         <nav className="hidden md:flex items-center gap-7 ml-2">
@@ -140,7 +134,9 @@ function LoggedUserToolbar() {
         <nav className="hidden md:flex items-center">
             <NavIconLink to="/" label="Strona główna"><IconHome/></NavIconLink>
             <NavIconLink to="/account" label="Moje Konto"><IconUser/></NavIconLink>
-            {/* TODO home icon, but only for users that have unlocked the dashboard (therefore completed their registration or simply logged in) */}
+            <NavIconLink to="/dashboard" label="Dashboard">DASHBOARD TEMP</NavIconLink>
+            <NavIconLink to="/login?logout=true" label="Wyloguj">LOGOUT TEMP</NavIconLink>
+            {/* TODO Ikonki do dashboardu i wylogowywanie (pamiętać też o MobileNav poniżej) */}
         </nav>
     );
 }
@@ -154,6 +150,8 @@ function MobileNav({authState, onNavigate}: { authState: AuthState | null; onNav
                 <>
                     <Link to="/" onClick={onNavigate} className={linkClass}><IconHome/>Strona główna</Link>
                     <Link to="/account" onClick={onNavigate} className={linkClass}><IconUser/>Moje Konto</Link>
+                    <Link to="/dashboard" onClick={onNavigate} className={linkClass}>Dashboard</Link>
+                    <Link to="/login?logout=true" onClick={onNavigate} className={linkClass}>Wyloguj</Link>
                 </>
             ) : (
                 <>
