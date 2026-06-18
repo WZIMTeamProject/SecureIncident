@@ -13,17 +13,20 @@ logger = logging.getLogger("backend.access")
 
 
 def get_request_id() -> str:
+    """Returns the request ID for the current async context."""
     return request_id_var.get()
 
 
 class RequestIDFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
+        """Injects the current request ID into log records."""
         record.request_id = request_id_var.get("no-request")
         return True
 
 
 class LoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
+        """Logs each request and attaches an X-Request-ID header to the response."""
         request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
         token = request_id_var.set(request_id)
         start = time.perf_counter()

@@ -1,5 +1,17 @@
 {
   "plugin": ["typedoc-plugin-markdown"],
-  "entryPoints": ["src/api/*.ts"],
+  "entryPoints": [
+    "src/api/index.ts",
+    "src/data/auth.ts",
+    "src/data/Api.ts",
+    "src/data/project.ts",
+    "src/data/cookies.ts",
+    "src/data/context.ts",
+    "src/login/routing.ts",
+    "src/login/validation.ts",
+    "src/dashboard/routing.ts"
+  ],
+  "entryPointStrategy": "expand",
+  "tsconfig": "tsconfig.app.json",
   "out": "../docs/build/Frontend"
 }

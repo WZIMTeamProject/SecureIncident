@@ -23,7 +23,7 @@ async def create_organization(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Create an organization (creator becomes owner and member)."""
+    """Create organization. Creator becomes owner; user may belong to only one org."""
     organization = await organization_service.create_organization(
         db, data=data, current_user=current_user
     )
@@ -35,7 +35,7 @@ async def get_current_organization(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Get current user's organization (404 if not a member of any)."""
+    """Return current user's organization (404 if not a member of any)."""
     organization = await organization_service.get_current_organization(
         db, current_user=current_user
     )
@@ -81,7 +81,7 @@ async def create_invite(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Create organization invitation (organization owner only)."""
+    """Create organization invitation (organization owner only). Returns one-time raw token."""
     invite, raw_token = await organization_service.create_invite(
         db, data=data, current_user=current_user
     )
@@ -95,7 +95,7 @@ async def join_organization(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Join an organization using an invitation token."""
+    """Join organization via invite. Fails with 409 if user already belongs to an org."""
     await organization_service.join_organization(
         db, current_user=current_user, raw_token=data.token
     )

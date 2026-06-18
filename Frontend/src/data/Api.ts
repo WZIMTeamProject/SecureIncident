@@ -9,6 +9,9 @@ import {
     UsersApi
 } from "../api";
 
+/**
+ * Shared API client singleton. Attaches the JWT from the bearer cookie to each request.
+ */
 export default class Api {
     private static configuration: Configuration = new Configuration({
         basePath: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api", // This is important for CI/CD

@@ -24,7 +24,10 @@ async def get_current_user(
     ],
     db: AsyncSession = Depends(get_db),
 ) -> User:
-    """Get currently authenticated user from Bearer token."""
+    """Resolve the authenticated user from a Bearer JWT.
+
+    Rejects expired, malformed, revoked (blocklisted JTI), or inactive accounts.
+    """
     if credentials is None:
         logger.warning("Authentication failed: no credentials provided")
         raise HTTPException(

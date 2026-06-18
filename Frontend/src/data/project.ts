@@ -37,6 +37,9 @@ export interface IncidentHistoryEntry {
     newValue?: string;
 }
 
+/**
+ * Hardcoded sample projects for local UI development. Returns an empty list in production.
+ */
 export function getDummyProjects(): Project[] {
     if (import.meta.env.DEV) {
         return [

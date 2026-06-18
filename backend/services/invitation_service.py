@@ -59,7 +59,11 @@ async def create_project_invite(
     created_by: User,
     data: CreateInviteRequest,
 ) -> tuple[OrganizationInvite, str]:
-    """Create project invitation."""
+    """Create project invitation (project owner only).
+
+    Returns (invite, raw_token). Only token hash is stored — raw token cannot be recovered later.
+    Role must belong to the target project.
+    """
     # 1. Check if project exists
     project = await repositories.project_repo.get_project_by_id(db, project_id)
     if project is None:
@@ -155,7 +159,11 @@ async def join_project_by_invite(
     current_user: User,
     raw_token: str,
 ) -> None:
-    """Join project using invitation."""
+    """Join project using invitation.
+
+    Read-only pre-check validates scope and org membership before consuming a use slot,
+    so cross-org users cannot drain limited-use invites with repeated 403s.
+    """
     token_hash = security.hash_token(raw_token)
 
     # Read-only pre-check: validate scope and org membership BEFORE consuming a use slot.

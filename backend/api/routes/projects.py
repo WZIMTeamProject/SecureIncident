@@ -31,7 +31,7 @@ async def create_project(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Create a project (atomically: project + Owner role + owner membership)."""
+    """Create project with Owner role and membership (atomic). See project_service for scope rules."""
     project = await project_service.create_project(
         db, data=data, current_user=current_user
     )
@@ -44,7 +44,7 @@ async def list_projects(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """List projects the current user is a member of."""
+    """Lists projects for the current user."""
     projects = await project_service.list_projects(
         db, current_user=current_user, scope=scope
     )
@@ -69,7 +69,7 @@ async def get_project(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Get project details (requires membership)."""
+    """Returns one project."""
     project = await project_service.get_project(
         db, project_id=project_id, current_user=current_user
     )
@@ -89,7 +89,7 @@ async def update_project(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Update project metadata (owner only)."""
+    """Updates project metadata. Project owner only."""
     await project_service.update_project(
         db, project_id=project_id, data=data, current_user=current_user
     )
@@ -102,7 +102,7 @@ async def list_members(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """List project members (requires membership)."""
+    """Lists members of a project."""
     members = await project_service.list_members(
         db, project_id=project_id, current_user=current_user
     )
@@ -118,7 +118,7 @@ async def add_member(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Add a user to the project (owner only)."""
+    """Adds a member to a project. Project owner only."""
     await project_service.add_member(
         db, project_id=project_id, data=data, current_user=current_user
     )
@@ -135,7 +135,7 @@ async def change_member_role(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Change a member's role in the project (owner only)."""
+    """Changes a member's role. Project owner only."""
     await project_service.change_member_role(
         db, project_id=project_id, user_id=user_id, data=data, current_user=current_user
     )

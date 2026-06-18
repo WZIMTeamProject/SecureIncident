@@ -19,8 +19,8 @@ Write no comments by default. Only add a comment when the **WHY** is non-obvious
 
 ## Docstrings (Python)
 
-Skip docstrings on trivial functions. Only add one when the function's contract isn't derivable from its signature — complex preconditions, non-obvious side effects, or public API intended for external consumers. Keep it one line when possible; never write multi-paragraph docstrings for internal code.
+Write a concise description for every function in the style of professional API documentation. Start with what the function does; add a second sentence or short paragraph when the contract is not obvious from the signature — permissions, domain rules, security behavior, atomicity, or one-time token semantics. Include information that was previously documented in comments rather than dropping it during refactors. Keep it readable, not exhaustive; never write multi-paragraph essays for internal helpers.
 
 ## JSDoc (TypeScript)
 
-Prefer typed signatures over JSDoc. Only add JSDoc for public utility functions or hooks that have non-obvious usage constraints.
+Prefer typed signatures over JSDoc. Add JSDoc for exported utilities and hooks when usage constraints are non-obvious — auth cookie behavior, dev-only bypasses, error mapping, or middleware contracts. One short description plus `@param` / `@returns` when they clarify behavior not visible from types.
