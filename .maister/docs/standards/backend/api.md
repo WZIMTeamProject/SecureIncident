@@ -13,18 +13,17 @@
 | Method | Use |
 |--------|-----|
 | `GET` | Read resource(s), never mutates state |
-| `POST` | Create a new resource |
-| `PUT` | Full replacement of a resource |
-| `PATCH` | Partial update |
-| `DELETE` | Remove a resource |
+| `POST` | Create a new resource — returns 201 + `CreatedIdResponse` |
+| `PATCH` | Partial update — returns 204 No Content |
+| `DELETE` | Remove a resource — returns 204 No Content |
 
 ## Response Status Codes
 
 ```python
-# Creation
-return JSONResponse(status_code=status.HTTP_201_CREATED, content=response.model_dump())
+# Creation — always 201 + CreatedIdResponse
+return JSONResponse(status_code=status.HTTP_201_CREATED, content={"id": str(obj.id)})
 
-# No content (delete, assign)
+# No content (update, delete, action endpoints)
 return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 # Common client errors
@@ -35,18 +34,46 @@ raise HTTPException(status_code=404, detail="Incident not found")
 raise HTTPException(status_code=409, detail="Email already registered")
 ```
 
-## Request / Response Schemas
+## Schema Organization
 
-Every endpoint has explicit Pydantic `request_model` and `response_model`. Never return raw SQLAlchemy model instances.
+Pydantic schemas are organized by domain under `api/schemas/<domain>/` with separate files:
+
+```
+api/schemas/
+  incident/
+    request.py    # CreateIncidentRequest, UpdateIncidentStatusRequest, ...
+    response.py   # IncidentListResponse, IncidentDetailsResponse, ...
+  project/
+    request.py
+    response.py
+  common/
+    base.py       # CreatedIdResponse, ErrorResponse
+    pagination.py # PaginatedResponse[T]
+    enums.py
+```
+
+No monolithic schema files. Every endpoint has explicit Pydantic `request_model` and `response_model` — never return raw SQLAlchemy model instances.
+
+## Route Handler Structure
+
+Route handlers contain **zero business logic**. They only extract parameters, call a service function, and return the result:
 
 ```python
-@router.post("/incidents", response_model=IncidentResponse, status_code=201)
+@router.post(
+    "/projects/{project_id}/incidents",
+    response_model=CreatedIdResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_incident(
+    project_id: UUID,
     body: CreateIncidentRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> IncidentResponse:
+) -> CreatedIdResponse:
+    return await incident_service.create_incident(db, project_id, body, current_user)
 ```
+
+All validation, authorization, and DB access happen in the service layer. Services are imported as modules (`from api.services import incident_service`), never instantiated.
 
 ## Authentication & Authorization
 
@@ -54,6 +81,24 @@ async def create_incident(
 - Always inject `current_user` via `Depends(get_current_user)` — never read the JWT manually in a route
 - After confirming identity, check project membership and role permissions explicitly
 - Authorization check order: authenticate → load resource → verify ownership/membership → execute
+
+## Authorization Guard Helpers
+
+Extract 404/403 guard logic into private async helper functions in the service file:
+
+```python
+async def _get_incident_or_404(db: AsyncSession, incident_id: UUID) -> Incident:
+    incident = await repositories.incident_repo.get_by_id(db, incident_id)
+    if incident is None:
+        raise HTTPException(status_code=404, detail="Incident not found")
+    return incident
+
+async def _get_membership_or_403(db: AsyncSession, project_id: UUID, user_id: UUID) -> UserProject:
+    membership = await repositories.project_repo.get_membership(db, project_id, user_id)
+    if membership is None:
+        raise HTTPException(status_code=403, detail="Not a project member")
+    return membership
+```
 
 ## Pagination
 

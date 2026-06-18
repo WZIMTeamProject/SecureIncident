@@ -14,7 +14,9 @@ Always use functional components with hooks. No class components.
 
 ## Naming
 
-- Component names: `PascalCase` matching the filename (`IncidentCard.tsx` exports `IncidentCard`)
+- **Page-level components**: `SI` prefix + PascalCase — `SILoginPage`, `SIDashboard`, `SIAccountPage`
+- **Shared / utility components**: plain PascalCase — `Background`, `Footer`, `IncidentCard`
+- Component file name must match the exported component name (`SILoginPage.tsx` exports `SILoginPage`)
 - Event handlers: `handle` prefix — `handleSubmit`, `handleStatusChange`
 - Boolean props: adjective or `is`/`has` prefix — `disabled`, `isLoading`, `hasError`
 
@@ -33,6 +35,27 @@ interface IncidentCardProps {
 
 export function IncidentCard({ incident, onAssign, isLoading = false }: IncidentCardProps) {
   // ...
+}
+```
+
+## Form Submission
+
+Use React Router's `useFetcher` for form submissions — not controlled state + `useEffect`:
+
+```tsx
+export function SILoginPage() {
+  const fetcher = useFetcher()
+  const busy = fetcher.state !== 'idle'
+
+  return (
+    <fetcher.Form method="POST">
+      <input name="login" type="text" disabled={busy} />
+      <button type="submit" disabled={busy}>
+        {busy ? 'Logging in...' : 'Log in'}
+      </button>
+      {fetcher.data?.error && <p>{fetcher.data.error}</p>}
+    </fetcher.Form>
+  )
 }
 ```
 
