@@ -172,7 +172,29 @@ async def join_organization(
 
     token_hash = security.hash_token(raw_token)
 
-    # Atomic use_count increment — only if invitation is valid.
+    # Pre-check scope without consuming a use slot (same pattern as join_project_by_invite).
+    pre_check = await repositories.invite_repo.get_invite_by_hash(db, token_hash)
+    if pre_check is None:
+        logger.warning(
+            "Join organization failed: invitation not found user_id=%s",
+            current_user.id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired invitation",
+        )
+    if pre_check.scope != "ORGANIZATION" or pre_check.organization_id is None:
+        logger.warning(
+            "Join organization failed: invitation not for organization scope=%s user_id=%s",
+            pre_check.scope,
+            current_user.id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This invitation is not for an organization",
+        )
+
+    # Atomic use_count increment — only after scope validated.
     invite = await repositories.invite_repo.get_and_increment_invite(db, token_hash)
     if invite is None:
         logger.warning(
@@ -182,17 +204,6 @@ async def join_organization(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired invitation",
-        )
-
-    if invite.scope != "ORGANIZATION" or invite.organization_id is None:
-        logger.warning(
-            "Join organization failed: invitation not for organization scope=%s user_id=%s",
-            invite.scope,
-            current_user.id,
-        )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This invitation is not for an organization",
         )
 
     current_user.organization_id = invite.organization_id

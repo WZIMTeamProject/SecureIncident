@@ -171,8 +171,13 @@ async def get_incident_detail(
 async def get_my_reported(
     db: AsyncSession,
     current_user: User,
+    *,
+    offset: int = 0,
+    limit: int = 20,
 ) -> IncidentListResponse:
-    incidents = await repositories.incident_repo.get_by_reporter(db, current_user.id)
+    incidents, total = await repositories.incident_repo.get_by_reporter(
+        db, current_user.id, offset=offset, limit=limit
+    )
     items = [
         IncidentSummary(
             id=i.id,
@@ -185,14 +190,19 @@ async def get_my_reported(
         )
         for i in incidents
     ]
-    return IncidentListResponse(items=items, total=len(items), limit=len(items), offset=0)
+    return IncidentListResponse(items=items, total=total, limit=limit, offset=offset)
 
 
 async def get_my_assigned(
     db: AsyncSession,
     current_user: User,
+    *,
+    offset: int = 0,
+    limit: int = 20,
 ) -> IncidentListResponse:
-    incidents = await repositories.incident_repo.get_by_assignee(db, current_user.id)
+    incidents, total = await repositories.incident_repo.get_by_assignee(
+        db, current_user.id, offset=offset, limit=limit
+    )
     items = [
         IncidentSummary(
             id=i.id,
@@ -205,7 +215,7 @@ async def get_my_assigned(
         )
         for i in incidents
     ]
-    return IncidentListResponse(items=items, total=len(items), limit=len(items), offset=0)
+    return IncidentListResponse(items=items, total=total, limit=limit, offset=offset)
 
 
 async def update_status(

@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.schemas.invitation.request import CreateInviteRequest
-from api.schemas.invitation.response import InviteResponse, InvitePreviewResponse
+from api.schemas.invitation.response import InvitePreviewResponse
 from core import security
 from db.models.organization_invite import OrganizationInvite
 from db.models.user import User
@@ -24,7 +24,7 @@ async def create_project_invite(
 ) -> tuple[OrganizationInvite, str]:
     """Create project invitation."""
     # 1. Check if project exists
-    project = await repositories.invite_repo.get_project_by_id(db, project_id)
+    project = await repositories.project_repo.get_project_by_id(db, project_id)
     if project is None:
         logger.warning(
             "Invite creation failed: project not found project_id=%s user_id=%s",
@@ -45,7 +45,7 @@ async def create_project_invite(
         )
 
     # 3. Check if role exists and belongs to this project
-    role = await repositories.invite_repo.get_role_by_id(db, data.role_id)
+    role = await repositories.project_repo.get_role_by_id(db, data.role_id)
     if role is None:
         logger.warning(
             "Invite creation failed: role not found role_id=%s project_id=%s",
@@ -155,7 +155,7 @@ async def join_project_by_invite(
         raise HTTPException(status_code=400, detail="Invalid or expired invitation")
 
     # Check if user is already member
-    existing = await repositories.invite_repo.get_user_project(
+    existing = await repositories.project_repo.get_user_project(
         db, current_user.id, invite.project_id
     )
     if existing is not None:
@@ -167,7 +167,7 @@ async def join_project_by_invite(
         raise HTTPException(status_code=409, detail="You are already a member of this project")
 
     # Create membership
-    await repositories.invite_repo.create_user_project(
+    await repositories.project_repo.create_user_project(
         db,
         user_id=current_user.id,
         project_id=invite.project_id,
@@ -180,6 +180,31 @@ async def join_project_by_invite(
         current_user.id,
         invite.project_id,
     )
+
+
+async def revoke_invite(
+    db: AsyncSession,
+    *,
+    raw_token: str,
+    current_user: User,
+) -> None:
+    """Revoke an invitation — allowed for its creator, the project owner, or the org owner."""
+    token_hash = security.hash_token(raw_token)
+    invite = await repositories.invite_repo.get_invite_by_hash(db, token_hash)
+    if invite is None:
+        logger.warning("Invite revoke failed: not found user_id=%s", current_user.id)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invite not found")
+
+    is_creator = invite.created_by_id == current_user.id
+    is_project_owner = invite.project is not None and invite.project.project_owner_id == current_user.id
+    is_org_owner = invite.organization is not None and invite.organization.org_owner_id == current_user.id
+    if not (is_creator or is_project_owner or is_org_owner):
+        logger.warning("Invite revoke denied: permission denied user_id=%s", current_user.id)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to revoke this invite")
+
+    await repositories.invite_repo.delete_invite_by_hash(db, token_hash)
+    await db.commit()
+    logger.info("Invite revoked user_id=%s", current_user.id)
 
 
 def _is_invite_valid(invite: OrganizationInvite) -> bool:
