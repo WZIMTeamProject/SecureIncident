@@ -1,18 +1,16 @@
-import {Link} from "react-router";
-import {FORM_LOGOUT} from "../login/forms.ts";
+import {Background} from "../components/Background.tsx";
+import DashboardSidebar from "./DashboardSidebar.tsx";
 
 export function SIDashboard() {
-    return <div>
-        <div>
-            <h1>Dashboard</h1>
-        </div>
-        <div>
-            <Link to={{
-                pathname: "/login",
-                search: `?${FORM_LOGOUT}=true`
-            }}>
-                Wyloguj
-            </Link>
-        </div>
-    </div>
+    return (
+        <Background>
+            <div className="flex flex-1 w-full gap-5">
+                <DashboardSidebar/>
+
+                <div>
+                    TODO: Dashboard contents go here
+                </div>
+            </div>
+        </Background>
+    );
 }

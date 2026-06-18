@@ -1,6 +1,6 @@
 import {Link, useFetcher, useSearchParams} from "react-router";
 import {
-    FORM_AFTER,
+    FORM_AFTER, FORM_LOGOUT,
     FORM_PASSWORD,
     FORM_REMEMBER_ME,
     FORM_USERNAME,
@@ -19,6 +19,7 @@ export function SILoginPage() {
 
     const isAfterRegister = searchParams.get(FORM_AFTER) == FORM_VALUE_AFTER_REGISTER;
     const isAfterPasswordReset = searchParams.get(FORM_AFTER) == FORM_VALUE_AFTER_PASSWORD_RESET;
+    const isAfterLogout = searchParams.get(FORM_LOGOUT);
 
     // TODO: Clear credentials on failed login attempts.
     // TODO: Display more helpful errors.
@@ -114,6 +115,9 @@ export function SILoginPage() {
             {isAfterPasswordReset && (
                 <p className="text-green-500 dark:text-green-400 text-sm">Hasło zmienione poprawnie. Możesz się
                     zalogować.</p>
+            )}
+            {isAfterLogout && (
+                <p className="text-green-500 dark:text-green-400 text-sm">Wylogowano pomyślnie!</p>
             )}
 
             {/* Links */}

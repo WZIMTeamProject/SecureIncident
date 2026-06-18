@@ -1,11 +1,11 @@
 import {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
-import {createBrowserRouter, RouterContextProvider} from 'react-router'
+import {createBrowserRouter, type LoaderFunction, RouterContextProvider} from 'react-router'
 import {RouterProvider} from 'react-router/dom'
 
 import './index.css'
 
-import {appRootLoader, SIAppRoot} from './SIAppRoot.tsx'
+import {SIAppRoot} from './SIAppRoot.tsx'
 
 import {SIDashboard} from "./dashboard";
 import {
@@ -23,6 +23,11 @@ import {SIStartPage} from "./SIStartPage.tsx";
 import {SIPageNotFound} from "./SIPageNotFound.tsx";
 import {SIAccountPage, SINotificationPage} from "./account";
 import {SIResetPassword} from "./login/SIResetPassword.tsx";
+
+const appRootLoader: LoaderFunction = async ({context}) => {
+    const middlewareContext = (context as Readonly<RouterContextProvider>);
+    return middlewareContext.get(AuthRouterContext);
+}
 
 const router = createBrowserRouter([
     {
