@@ -1,4 +1,3 @@
-import json
 import logging.config
 import asyncio
 import os
@@ -16,8 +15,6 @@ from core.config import settings
 from middleware.logging_middleware import LoggingMiddleware
 
 BASE_DIR = Path(__file__).resolve().parent
-OPENAPI_PATH = BASE_DIR.parent / "docs" / "api" / "openapi-core.json"
-
 logger = logging.getLogger(__name__)
 
 _formatter = "json" if settings.LOG_FORMAT == "json" else "default"
@@ -146,18 +143,6 @@ async def health():
     return {"status": "ok"}
 
 
-def custom_openapi():
-    if app.openapi_schema:
-        return app.openapi_schema
-
-    with open(OPENAPI_PATH, "r", encoding="utf-8") as f:
-        openapi_schema = json.load(f)
-
-    app.openapi_schema = openapi_schema
-    return app.openapi_schema
-
-
-app.openapi = custom_openapi
 
 from api.routes import auth
 app.include_router(auth.router, prefix="/api")
