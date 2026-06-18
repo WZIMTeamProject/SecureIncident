@@ -68,14 +68,16 @@ async def logout_user(
     exp_timestamp = payload.get("exp")
     expires_at = datetime.datetime.fromtimestamp(exp_timestamp, tz=datetime.timezone.utc).replace(tzinfo=None)
 
-    await repositories.revoked_token_repo.cleanup_expired_revoked_tokens(db)
-
     await repositories.revoked_token_repo.add_revoked_token(
         db,
         jti=jti,
         user_id=current_user.id,
-        expires_at=expires_at
+        expires_at=expires_at,
     )
+    await db.commit()
+
+    await repositories.revoked_token_repo.cleanup_expired_revoked_tokens(db)
+    await db.commit()
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
