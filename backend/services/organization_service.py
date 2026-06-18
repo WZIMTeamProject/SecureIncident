@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,6 +12,8 @@ from db.models.organization import Organization
 from db.models.organization_invite import OrganizationInvite
 from db.models.user import User
 from db import repositories
+
+logger = logging.getLogger(__name__)
 
 
 async def create_organization(
@@ -24,6 +28,10 @@ async def create_organization(
     If already member of one, cannot create another.
     """
     if current_user.organization_id is not None:
+        logger.warning(
+            "Organization creation failed: user already belongs to an org user_id=%s",
+            current_user.id,
+        )
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="User already belongs to an organization",
@@ -42,6 +50,7 @@ async def create_organization(
 
     await db.commit()
     await db.refresh(organization)
+    logger.info("Organization created org_id=%s user_id=%s", organization.id, current_user.id)
     return organization
 
 
@@ -52,6 +61,10 @@ async def get_current_organization(
 ) -> Organization:
     """Return current user's organization (404 if not a member of any)."""
     if current_user.organization_id is None:
+        logger.warning(
+            "Organization fetch failed: user has no organization user_id=%s",
+            current_user.id,
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User does not belong to any organization",
@@ -61,6 +74,10 @@ async def get_current_organization(
         db, current_user.organization_id
     )
     if organization is None:
+        logger.warning(
+            "Organization fetch failed: record not found org_id=%s",
+            current_user.organization_id,
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Organization not found",
@@ -80,6 +97,10 @@ async def create_invite(
     raw token is only returned to caller and cannot be recovered later.
     """
     if current_user.organization_id is None:
+        logger.warning(
+            "Invite creation failed: user has no organization user_id=%s",
+            current_user.id,
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User does not belong to any organization",
@@ -89,12 +110,21 @@ async def create_invite(
         db, current_user.organization_id
     )
     if organization is None:
+        logger.warning(
+            "Invite creation failed: organization not found org_id=%s",
+            current_user.organization_id,
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Organization not found",
         )
 
     if organization.org_owner_id != current_user.id:
+        logger.warning(
+            "Invite creation failed: permission denied user_id=%s org_id=%s",
+            current_user.id,
+            organization.id,
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only organization owner can create invitations",
@@ -113,7 +143,12 @@ async def create_invite(
     )
     await db.commit()
     await db.refresh(invite)
-
+    logger.info(
+        "Organization invite created invite_id=%s org_id=%s user_id=%s",
+        invite.id,
+        organization.id,
+        current_user.id,
+    )
     return invite, raw_token
 
 
@@ -129,6 +164,7 @@ async def join_organization(
     if already member of one, return 409 (before consuming invitation).
     """
     if current_user.organization_id is not None:
+        logger.warning("Join organization failed: user already has org user_id=%s", current_user.id)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="User already belongs to an organization",
@@ -139,12 +175,21 @@ async def join_organization(
     # Atomic use_count increment — only if invitation is valid.
     invite = await repositories.invite_repo.get_and_increment_invite(db, token_hash)
     if invite is None:
+        logger.warning(
+            "Join organization failed: invalid or expired invitation user_id=%s",
+            current_user.id,
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired invitation",
         )
 
     if invite.scope != "ORGANIZATION" or invite.organization_id is None:
+        logger.warning(
+            "Join organization failed: invitation not for organization scope=%s user_id=%s",
+            invite.scope,
+            current_user.id,
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This invitation is not for an organization",
@@ -153,3 +198,8 @@ async def join_organization(
     current_user.organization_id = invite.organization_id
     db.add(current_user)
     await db.commit()
+    logger.info(
+        "User joined organization org_id=%s user_id=%s",
+        invite.organization_id,
+        current_user.id,
+    )

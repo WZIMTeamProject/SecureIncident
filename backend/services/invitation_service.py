@@ -1,4 +1,5 @@
-﻿from uuid import UUID
+﻿import logging
+from uuid import UUID
 from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
@@ -10,6 +11,8 @@ from core import security
 from db.models.organization_invite import OrganizationInvite
 from db.models.user import User
 from db import repositories
+
+logger = logging.getLogger(__name__)
 
 
 async def create_project_invite(
@@ -23,10 +26,20 @@ async def create_project_invite(
     # 1. Check if project exists
     project = await repositories.invite_repo.get_project_by_id(db, project_id)
     if project is None:
+        logger.warning(
+            "Invite creation failed: project not found project_id=%s user_id=%s",
+            project_id,
+            created_by.id,
+        )
         raise HTTPException(status_code=404, detail="Project not found")
 
     # 2. Check if current user is project owner
     if project.project_owner_id != created_by.id:
+        logger.warning(
+            "Invite creation failed: permission denied user_id=%s project_id=%s",
+            created_by.id,
+            project_id,
+        )
         raise HTTPException(
             status_code=403, detail="Only project owner can create invitations"
         )
@@ -34,8 +47,18 @@ async def create_project_invite(
     # 3. Check if role exists and belongs to this project
     role = await repositories.invite_repo.get_role_by_id(db, data.role_id)
     if role is None:
+        logger.warning(
+            "Invite creation failed: role not found role_id=%s project_id=%s",
+            data.role_id,
+            project_id,
+        )
         raise HTTPException(status_code=404, detail="Role not found")
     if role.project_id != project_id:
+        logger.warning(
+            "Invite creation failed: role not in project role_id=%s project_id=%s",
+            data.role_id,
+            project_id,
+        )
         raise HTTPException(status_code=400, detail="This role does not exist in this project")
 
     # 4. Generate token
@@ -54,7 +77,12 @@ async def create_project_invite(
     )
     await db.commit()
     await db.refresh(invite)
-
+    logger.info(
+        "Project invite created invite_id=%s project_id=%s user_id=%s",
+        invite.id,
+        project_id,
+        created_by.id,
+    )
     return invite, raw_token
 
 
@@ -64,6 +92,7 @@ async def get_invite_preview(db: AsyncSession, raw_token: str) -> InvitePreviewR
     invite = await repositories.invite_repo.get_invite_by_hash(db, token_hash)
 
     if invite is None:
+        logger.warning("Invite preview failed: invitation not found")
         raise HTTPException(status_code=404, detail="Invitation not found")
 
     is_valid = _is_invite_valid(invite)
@@ -92,13 +121,25 @@ async def join_project_by_invite(
     # This prevents a cross-org user from draining limited-use invites with repeated 403s.
     pre_check = await repositories.invite_repo.get_invite_by_hash(db, token_hash)
     if pre_check is None:
+        logger.warning("Project join failed: invitation not found user_id=%s", current_user.id)
         raise HTTPException(status_code=400, detail="Invalid or expired invitation")
 
     if pre_check.scope != "PROJECT":
+        logger.warning(
+            "Project join failed: wrong invitation scope=%s user_id=%s",
+            pre_check.scope,
+            current_user.id,
+        )
         raise HTTPException(status_code=400, detail="This invitation is not for a project")
 
     if pre_check.project is not None and pre_check.project.organization_id is not None:
         if current_user.organization_id != pre_check.project.organization_id:
+            logger.warning(
+                "Project join failed: org mismatch user_id=%s user_org_id=%s required_org_id=%s",
+                current_user.id,
+                current_user.organization_id,
+                pre_check.project.organization_id,
+            )
             raise HTTPException(
                 status_code=403,
                 detail="You must be a member of this organization to join its projects"
@@ -107,6 +148,10 @@ async def join_project_by_invite(
     # Atomic increment — only after scope and auth checks pass
     invite = await repositories.invite_repo.get_and_increment_invite(db, token_hash)
     if invite is None:
+        logger.warning(
+            "Project join failed: invitation exhausted or expired user_id=%s",
+            current_user.id,
+        )
         raise HTTPException(status_code=400, detail="Invalid or expired invitation")
 
     # Check if user is already member
@@ -114,6 +159,11 @@ async def join_project_by_invite(
         db, current_user.id, invite.project_id
     )
     if existing is not None:
+        logger.warning(
+            "Project join failed: already member user_id=%s project_id=%s",
+            current_user.id,
+            invite.project_id,
+        )
         raise HTTPException(status_code=409, detail="You are already a member of this project")
 
     # Create membership
@@ -125,6 +175,11 @@ async def join_project_by_invite(
     )
 
     await db.commit()
+    logger.info(
+        "User joined project via invite user_id=%s project_id=%s",
+        current_user.id,
+        invite.project_id,
+    )
 
 
 def _is_invite_valid(invite: OrganizationInvite) -> bool:

@@ -1,3 +1,4 @@
+import logging
 from uuid import UUID
 from typing import Optional, Sequence
 
@@ -15,6 +16,7 @@ from db.models.project import Project
 from db.models.user import User
 from db import repositories
 
+logger = logging.getLogger(__name__)
 
 # ADR-001: Owner role has all permissions. Seeded atomically with project.
 _OWNER_PERMISSIONS = {
@@ -48,6 +50,10 @@ async def create_project(
     """
     if data.scope == ProjectScope.ORGANIZATION:
         if current_user.organization_id is None:
+            logger.warning(
+                "Project creation failed: user not in org for org project user_id=%s",
+                current_user.id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only organization members can create organization projects",
@@ -56,6 +62,11 @@ async def create_project(
             db, current_user.organization_id
         )
         if organization is None:
+            logger.warning(
+                "Project creation failed: org not found org_id=%s user_id=%s",
+                current_user.organization_id,
+                current_user.id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Organization not found",
@@ -64,6 +75,10 @@ async def create_project(
         organization_id: Optional[UUID] = organization.id
     else:  # ProjectScope.PRIVATE
         if current_user.organization_id is not None:
+            logger.warning(
+                "Project creation failed: org member attempted private project user_id=%s",
+                current_user.id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Organization members cannot create private projects",
@@ -97,6 +112,7 @@ async def create_project(
 
     await db.commit()
     await db.refresh(project)
+    logger.info("Project created project_id=%s user_id=%s", project.id, current_user.id)
     return project
 
 
@@ -123,12 +139,22 @@ async def get_project(
     """Get project — only if user is a member."""
     project = await repositories.project_repo.get_project_by_id(db, project_id)
     if project is None:
+        logger.warning(
+            "Project fetch failed: project not found project_id=%s user_id=%s",
+            project_id,
+            current_user.id,
+        )
         raise HTTPException(status_code=404, detail="Project not found")
 
     membership = await repositories.project_repo.get_user_project(
         db, current_user.id, project_id
     )
     if membership is None:
+        logger.warning(
+            "Project access denied: user not member project_id=%s user_id=%s",
+            project_id,
+            current_user.id,
+        )
         raise HTTPException(status_code=403, detail="Access denied")
     return project
 
@@ -150,6 +176,7 @@ async def update_project(
 
     db.add(project)
     await db.commit()
+    logger.info("Project updated project_id=%s user_id=%s", project_id, current_user.id)
 
 
 async def list_members(
@@ -161,12 +188,22 @@ async def list_members(
     """List project members (requires membership)."""
     project = await repositories.project_repo.get_project_by_id(db, project_id)
     if project is None:
+        logger.warning(
+            "Member list failed: project not found project_id=%s user_id=%s",
+            project_id,
+            current_user.id,
+        )
         raise HTTPException(status_code=404, detail="Project not found")
 
     membership = await repositories.project_repo.get_user_project(
         db, current_user.id, project_id
     )
     if membership is None:
+        logger.warning(
+            "Member list denied: user not member project_id=%s user_id=%s",
+            project_id,
+            current_user.id,
+        )
         raise HTTPException(status_code=403, detail="Access denied")
 
     rows = await repositories.project_repo.list_members(db, project_id)
@@ -193,10 +230,20 @@ async def add_member(
 
     user = await repositories.user_repo.get_user_by_id(db, data.user_id)
     if user is None:
+        logger.warning(
+            "Add member failed: target user not found target_user_id=%s project_id=%s",
+            data.user_id,
+            project_id,
+        )
         raise HTTPException(status_code=404, detail="User not found")
 
     role = await repositories.project_repo.get_role_by_id(db, data.role_id)
     if role is None or role.project_id != project_id:
+        logger.warning(
+            "Add member failed: role not found role_id=%s project_id=%s",
+            data.role_id,
+            project_id,
+        )
         raise HTTPException(
             status_code=404, detail="Role not found in this project"
         )
@@ -205,6 +252,11 @@ async def add_member(
         db, data.user_id, project_id
     )
     if existing is not None:
+        logger.warning(
+            "Add member failed: user already member target_user_id=%s project_id=%s",
+            data.user_id,
+            project_id,
+        )
         raise HTTPException(
             status_code=409, detail="User is already a member of this project"
         )
@@ -216,6 +268,11 @@ async def add_member(
         role_id=data.role_id,
     )
     await db.commit()
+    logger.info(
+        "Member added to project target_user_id=%s project_id=%s",
+        data.user_id,
+        project_id,
+    )
 
 
 async def change_member_role(
@@ -231,6 +288,11 @@ async def change_member_role(
 
     role = await repositories.project_repo.get_role_by_id(db, data.role_id)
     if role is None or role.project_id != project_id:
+        logger.warning(
+            "Role change failed: role not found role_id=%s project_id=%s",
+            data.role_id,
+            project_id,
+        )
         raise HTTPException(
             status_code=404, detail="Role not found in this project"
         )
@@ -239,6 +301,11 @@ async def change_member_role(
         db, user_id, project_id
     )
     if membership is None:
+        logger.warning(
+            "Role change failed: target user not member target_user_id=%s project_id=%s",
+            user_id,
+            project_id,
+        )
         raise HTTPException(
             status_code=404, detail="User is not a member of this project"
         )
@@ -247,6 +314,12 @@ async def change_member_role(
         db, membership=membership, role_id=data.role_id
     )
     await db.commit()
+    logger.info(
+        "Member role changed target_user_id=%s project_id=%s role_id=%s",
+        user_id,
+        project_id,
+        data.role_id,
+    )
 
 
 async def _get_owned_project(
@@ -258,8 +331,18 @@ async def _get_owned_project(
     """
     project = await repositories.project_repo.get_project_by_id(db, project_id)
     if project is None:
+        logger.warning(
+            "Project operation failed: project not found project_id=%s user_id=%s",
+            project_id,
+            current_user.id,
+        )
         raise HTTPException(status_code=404, detail="Project not found")
     if project.project_owner_id != current_user.id:
+        logger.warning(
+            "Project operation denied: user not owner project_id=%s user_id=%s",
+            project_id,
+            current_user.id,
+        )
         raise HTTPException(
             status_code=403, detail="Only project owner can perform this operation"
         )

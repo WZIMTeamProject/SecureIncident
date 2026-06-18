@@ -8,16 +8,21 @@ from db.models.user import User
 from db import repositories
 from services import email_service
 import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
     """Register a new user."""
     if await repositories.user_repo.get_user_by_username(db, data.username):
+        logger.warning("Registration failed: username already taken")
         raise HTTPException(status_code=409, detail="Username already registered")
     if await repositories.user_repo.get_user_by_email(db, data.email):
+        logger.warning("Registration failed: email already registered")
         raise HTTPException(status_code=409, detail="Email already registered")
     
     hashed = security.hash_password(data.password)
-    return await repositories.user_repo.create_user(
+    user = await repositories.user_repo.create_user(
         db,
         first_name=data.first_name,
         last_name=data.last_name,
@@ -25,19 +30,24 @@ async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
         email=str(data.email),
         password=hashed,
     )
+    logger.info("User registered user_id=%s", user.id)
+    return user
 
 
 async def login_user(db: AsyncSession, data: LoginRequest) -> tuple[User, str]:
     """Authenticate and return (user, token)."""
     user = await repositories.user_repo.get_user_by_username(db, data.username)
     if user is None or not security.verify_password(data.password, user.password):
+        logger.warning("Login failed: invalid credentials")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication credentials"
         )
     if not user.is_active:
+        logger.warning("Login failed: inactive account user_id=%s", user.id)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is inactive")
 
     token = security.create_access_token(str(user.id), remember_user=data.remember_user)
+    logger.info("User logged in user_id=%s", user.id)
     return user, token
 
 
@@ -62,6 +72,7 @@ async def request_password_reset(db: AsyncSession, email_or_username: str, backg
         expires_at=expires_at
     )
     background_tasks.add_task(email_service.send_reset_email, user.email, raw_token)
+    logger.info("Password reset email queued user_id=%s", user.id)
 
 
 async def reset_password(db: AsyncSession, raw_token: str, new_password: str) -> None:
@@ -69,9 +80,11 @@ async def reset_password(db: AsyncSession, raw_token: str, new_password: str) ->
     token_hash = security.hash_token(raw_token)
     token_record = await repositories.user_repo.get_valid_password_reset_token(db, token_hash)
     if token_record is None:
+        logger.warning("Password reset failed: invalid or expired token")
         raise HTTPException(status_code=400, detail="Invalid or expired password reset token")
 
     hashed = security.hash_password(new_password)
     await repositories.user_repo.update_user_password(db, token_record.user_id, hashed)
     await repositories.user_repo.mark_password_reset_token_used(db, token_record)
     await db.commit()
+    logger.info("Password reset completed user_id=%s", token_record.user_id)

@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 from uuid import UUID
 
@@ -8,6 +9,8 @@ from db.models.user import User
 from api.schemas.profile.request import UpdateProfileRequest
 from api.schemas.profile.response import ProfileResponse, UserSearchResult, UserSearchResponse
 from db.repositories import user_repo
+
+logger = logging.getLogger(__name__)
 
 
 async def get_profile(current_user: User) -> ProfileResponse:
@@ -29,6 +32,10 @@ async def update_profile(
     if data.username and data.username != current_user.username:
         existing = await user_repo.get_user_by_username(db, data.username)
         if existing:
+            logger.warning(
+                "Profile update failed: username already taken user_id=%s",
+                current_user.id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Username already taken",
@@ -36,6 +43,7 @@ async def update_profile(
     await user_repo.update_user_profile(db, current_user, data)
     await db.commit()
     await db.refresh(current_user)
+    logger.info("Profile updated user_id=%s", current_user.id)
 
 
 async def search_users(

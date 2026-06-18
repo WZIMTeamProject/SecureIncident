@@ -1,3 +1,4 @@
+import logging
 from uuid import UUID
 from typing import Sequence
 
@@ -9,6 +10,8 @@ from db.models.project import Project
 from db.models.role import Role
 from db.models.user import User
 from db import repositories
+
+logger = logging.getLogger(__name__)
 
 
 async def list_roles(
@@ -34,6 +37,12 @@ async def get_role(
 
     role = await repositories.project_repo.get_role_by_id(db, role_id)
     if role is None or role.project_id != project_id:
+        logger.warning(
+            "Role fetch failed: role not found role_id=%s project_id=%s user_id=%s",
+            role_id,
+            project_id,
+            current_user.id,
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Role not found in this project",
@@ -59,6 +68,12 @@ async def create_role(
     )
     await db.commit()
     await db.refresh(role)
+    logger.info(
+        "Role created role_id=%s project_id=%s user_id=%s",
+        role.id,
+        project_id,
+        current_user.id,
+    )
     return role
 
 
@@ -75,6 +90,12 @@ async def update_role(
 
     role = await repositories.project_repo.get_role_by_id(db, role_id)
     if role is None or role.project_id != project_id:
+        logger.warning(
+            "Role update failed: role not found role_id=%s project_id=%s user_id=%s",
+            role_id,
+            project_id,
+            current_user.id,
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Role not found in this project",
@@ -87,6 +108,12 @@ async def update_role(
         db, role=role, name=name, permissions=permissions
     )
     await db.commit()
+    logger.info(
+        "Role updated role_id=%s project_id=%s user_id=%s",
+        role_id,
+        project_id,
+        current_user.id,
+    )
 
 
 # --- authorization helpers (MVP: owner-check / member-check) ---
@@ -94,6 +121,7 @@ async def update_role(
 async def _get_project(db: AsyncSession, project_id: UUID) -> Project:
     project = await repositories.project_repo.get_project_by_id(db, project_id)
     if project is None:
+        logger.warning("Role operation failed: project not found project_id=%s", project_id)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
         )
@@ -108,6 +136,11 @@ async def _require_member(
         db, current_user.id, project_id
     )
     if membership is None:
+        logger.warning(
+            "Role access denied: user not member project_id=%s user_id=%s",
+            project_id,
+            current_user.id,
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
         )
@@ -119,6 +152,11 @@ async def _require_owner(
 ) -> Project:
     project = await _get_project(db, project_id)
     if project.project_owner_id != current_user.id:
+        logger.warning(
+            "Role management denied: user not owner project_id=%s user_id=%s",
+            project_id,
+            current_user.id,
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only the project owner can manage roles",
