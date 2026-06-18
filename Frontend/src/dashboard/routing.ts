@@ -1,9 +1,9 @@
 import {type ActionFunction} from "react-router";
 import {
-    FORM_ACTION,
+    FORM_ACTION, FORM_ACTION_CREATE_ORGANIZATION,
     FORM_ACTION_DELETE_ORGANIZATION,
     FORM_ACTION_INVITE_USER,
-    FORM_ACTION_NEW_PROJECT,
+    FORM_ACTION_NEW_PROJECT, FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
     FORM_PROJECT_DESCRIPTION,
     FORM_PROJECT_NAME
 } from "./forms.ts";
@@ -38,6 +38,22 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
         } else if (organizationAction === FORM_ACTION_INVITE_USER) {
             // TODO
             return {ok: true}
+        } else if (organizationAction === FORM_ACTION_CREATE_ORGANIZATION) {
+            const organizationName = formData.get(FORM_ORGANIZATION_NAME)?.toString()?.trim();
+            const organizationDescription = formData.get(FORM_ORGANIZATION_DESCRIPTION)?.toString()?.trim();
+
+            if (organizationName) {
+                const organizationId = await Api.organization.organizationPost({
+                    createOrganizationRequest: {
+                        name: organizationName,
+                        description: organizationDescription,
+                    }
+                }).catch(() => null);
+
+                if (organizationId) {
+                    return {ok: true};
+                }
+            }
         }
     } else if (request.method === "DELETE") {
         if (organizationAction === FORM_ACTION_DELETE_ORGANIZATION) {
