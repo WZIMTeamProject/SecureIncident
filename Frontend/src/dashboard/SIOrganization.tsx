@@ -52,15 +52,15 @@ function CreateOrganizationWidget() {
             <button
                 onClick={() => setShownPopup("new_organization")}
                 className="px-6 py-2
-                        bg-[var(--color-si-btn)]
-                        hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                        bg-(--color-si-btn)
+                        hover:bg-(--color-si-btn-hover) shadow-lg
                         text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                 Utwórz organizację
             </button>
 
             <button className="px-6 py-2
-                        bg-[var(--color-si-btn)]
-                        hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                        bg-(--color-si-btn)
+                        hover:bg-(--color-si-btn-hover) shadow-lg
                         text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                 Dołącz do organizacji
             </button>
@@ -110,8 +110,8 @@ function OrganizationView({organization}: { organization: Organization }) {
                 <button
                     onClick={() => setShownPopup("new_project")}
                     className="px-6 py-2
-                        bg-[var(--color-si-btn)]
-                        hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                        bg-(--color-si-btn)
+                        hover:bg-(--color-si-btn-hover) shadow-lg
                         text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                     Dodaj nowy projekt
                 </button>
@@ -119,8 +119,8 @@ function OrganizationView({organization}: { organization: Organization }) {
                 <button
                     onClick={() => setShownPopup("invite_user")}
                     className="px-6 py-2
-                        bg-[var(--color-si-btn)]
-                        hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                        bg-(--color-si-btn)
+                        hover:bg-(--color-si-btn-hover) shadow-lg
                         text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                     Dodaj użytkownika do organizacji
                 </button>
@@ -130,8 +130,8 @@ function OrganizationView({organization}: { organization: Organization }) {
                 <button
                     onClick={() => setShownPopup("delete_organization")}
                     className="px-6 py-2
-                        bg-[var(--color-si-btn-error)]
-                        hover:bg-[var(--color-si-btn-error-hover)] shadow-lg
+                        bg-(--color-si-btn-error)
+                        hover:bg-(--color-si-btn-error-hover) shadow-lg
                         text-white text-md font-semibold underline rounded-lg cursor-pointer transition-colors duration-200">
                     Usuń organizację
                 </button>
@@ -168,9 +168,9 @@ function NewProjectPopup({show, onHide}: PopupProps) {
 
                 <div className="flex flex-col gap-1.5 my-3">
                     <div className="flex items-center gap-3
-                                border border-[var(--color-si-input-border)]
+                                border border-(--color-si-input-border)
                                 rounded-lg px-3 py-2.5
-                                bg-[var(--color-si-input-bg)] transition-colors">
+                                bg-(--color-si-input-bg) transition-colors">
                         <input
                             ref={projectNameRef}
                             id={FORM_PROJECT_NAME}
@@ -178,21 +178,21 @@ function NewProjectPopup({show, onHide}: PopupProps) {
                             required={true}
                             name={FORM_PROJECT_NAME}
                             placeholder="Nazwa"
-                            className="flex-1 bg-transparent outline-none text-sm text-[var(--color-si-input-text)]"
+                            className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
                     </div>
 
                     <div className="flex items-center gap-3
-                                border border-[var(--color-si-input-border)]
+                                border border-(--color-si-input-border)
                                 rounded-lg px-3 py-2.5
-                                bg-[var(--color-si-input-bg)] transition-colors">
+                                bg-(--color-si-input-bg) transition-colors">
                         <input
                             ref={projectDescriptionRef}
                             id={FORM_PROJECT_DESCRIPTION}
                             type="text"
                             name={FORM_PROJECT_DESCRIPTION}
                             placeholder="Opis (opcjonalny)"
-                            className="flex-1 bg-transparent outline-none text-sm text-[var(--color-si-input-text)]"
+                            className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
                     </div>
                 </div>
@@ -206,8 +206,8 @@ function NewProjectPopup({show, onHide}: PopupProps) {
                             onHide();
                         }}
                         className="px-6 py-2
-                                bg-[var(--color-si-btn-error)]
-                                hover:bg-[var(--color-si-btn-error-hover)] shadow-lg
+                                bg-(--color-si-btn-error)
+                                hover:bg-(--color-si-btn-error-hover) shadow-lg
                                 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                         Anuluj
                     </button>
@@ -217,8 +217,8 @@ function NewProjectPopup({show, onHide}: PopupProps) {
                         value={busy ? "Zapisywanie..." : "Zapisz"}
                         disabled={busy}
                         className="px-6 py-2
-                                    bg-[var(--color-si-btn)]
-                                    hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                                    bg-(--color-si-btn)
+                                    hover:bg-(--color-si-btn-hover) shadow-lg
                                     disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                     />
                 </div>
@@ -251,16 +251,16 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
 
                 <div className="flex flex-col gap-1.5 my-3">
                     <div className="flex items-center gap-3
-                                border border-[var(--color-si-input-border)]
+                                border border-(--color-si-input-border)
                                 rounded-lg px-3 py-2.5
-                                bg-[var(--color-si-input-bg)] transition-colors">
+                                bg-(--color-si-input-bg) transition-colors">
                         <input
                             ref={usernameRef}
                             id={FORM_INVITE_NAME}
                             type="text"
                             name={FORM_INVITE_NAME}
                             placeholder="Ręcznie (wpisz nazwę użytkownika)"
-                            className="flex-1 bg-transparent outline-none text-sm text-[var(--color-si-input-text)]"
+                            className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
                     </div>
                 </div>
@@ -272,8 +272,8 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                             onHide();
                         }}
                         className="px-6 py-2
-                                bg-[var(--color-si-btn-error)]
-                                hover:bg-[var(--color-si-btn-error-hover)] shadow-lg
+                                bg-(--color-si-btn-error)
+                                hover:bg-(--color-si-btn-error-hover) shadow-lg
                                 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                         Anuluj
                     </button>
@@ -283,8 +283,8 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                         value={busy ? "Zapisywanie..." : "Zapisz"}
                         disabled={busy}
                         className="px-6 py-2
-                                    bg-[var(--color-si-btn)]
-                                    hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                                    bg-(--color-si-btn)
+                                    hover:bg-(--color-si-btn-hover) shadow-lg
                                     disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                     />
                 </div>
@@ -319,8 +319,8 @@ function DeleteOrganizationPopup({show, onHide}: PopupProps) {
                     <button
                         onClick={onHide}
                         className="px-6 py-2
-                                bg-[var(--color-si-btn)]
-                                hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                                bg-(--color-si-btn)
+                                hover:bg-(--color-si-btn-hover) shadow-lg
                                 text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                         NIE, ANULUJ
                     </button>
@@ -330,8 +330,8 @@ function DeleteOrganizationPopup({show, onHide}: PopupProps) {
                         value={busy ? "Usuwanie..." : "Tak, usuń"}
                         disabled={busy}
                         className="px-6 py-2
-                                    bg-[var(--color-si-btn-error)]
-                                    hover:bg-[var(--color-si-btn-error-hover)] shadow-lg
+                                    bg-(--color-si-btn-error)
+                                    hover:bg-(--color-si-btn-error-hover) shadow-lg
                                     disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                     />
                 </div>
@@ -371,9 +371,9 @@ function CreateOrganizationPopup({show, onHide}: PopupProps) {
 
                 <div className="flex flex-col gap-1.5 my-3">
                     <div className="flex items-center gap-3
-                                border border-[var(--color-si-input-border)]
+                                border border-(--color-si-input-border)
                                 rounded-lg px-3 py-2.5
-                                bg-[var(--color-si-input-bg)] transition-colors">
+                                bg-(--color-si-input-bg) transition-colors">
                         <input
                             ref={organizationName}
                             required={true}
@@ -381,21 +381,21 @@ function CreateOrganizationPopup({show, onHide}: PopupProps) {
                             type="text"
                             name={FORM_ORGANIZATION_NAME}
                             placeholder="Nazwa organizacji"
-                            className="flex-1 bg-transparent outline-none text-sm text-[var(--color-si-input-text)]"
+                            className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
                     </div>
 
                     <div className="flex items-center gap-3
-                                border border-[var(--color-si-input-border)]
+                                border border-(--color-si-input-border)
                                 rounded-lg px-3 py-2.5
-                                bg-[var(--color-si-input-bg)] transition-colors">
+                                bg-(--color-si-input-bg) transition-colors">
                         <input
                             ref={organizationDescription}
                             id={FORM_ORGANIZATION_DESCRIPTION}
                             type="text"
                             name={FORM_ORGANIZATION_DESCRIPTION}
                             placeholder="Opis (opcjonalny)"
-                            className="flex-1 bg-transparent outline-none text-sm text-[var(--color-si-input-text)]"
+                            className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
                     </div>
                 </div>
@@ -408,8 +408,8 @@ function CreateOrganizationPopup({show, onHide}: PopupProps) {
                             onHide();
                         }}
                         className="px-6 py-2
-                                bg-[var(--color-si-btn-error)]
-                                hover:bg-[var(--color-si-btn-error-hover)] shadow-lg
+                                bg-(--color-si-btn-error)
+                                hover:bg-(--color-si-btn-error-hover) shadow-lg
                                 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                         Anuluj
                     </button>
@@ -419,8 +419,8 @@ function CreateOrganizationPopup({show, onHide}: PopupProps) {
                         value={busy ? "Tworzenie..." : "Zatwierdź"}
                         disabled={busy}
                         className="px-6 py-2
-                                    bg-[var(--color-si-btn)]
-                                    hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                                    bg-(--color-si-btn)
+                                    hover:bg-(--color-si-btn-hover) shadow-lg
                                     disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                     />
                 </div>

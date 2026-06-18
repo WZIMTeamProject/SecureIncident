@@ -61,16 +61,16 @@ function ProjectView({project}: { project: Project }) {
             <div className="w-full flex gap-3 p-3 justify-end">
                 <button
                     className="px-6 py-2
-                        bg-[var(--color-si-btn)]
-                        hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                        bg-(--color-si-btn)
+                        hover:bg-(--color-si-btn-hover) shadow-lg
                         text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                     Zgłoś nowy incydent
                 </button>
 
                 <button
                     className="px-6 py-2
-                        bg-[var(--color-si-btn)]
-                        hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                        bg-(--color-si-btn)
+                        hover:bg-(--color-si-btn-hover) shadow-lg
                         text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                     Dodaj użytkownika do projektu
                 </button>
