@@ -11,7 +11,7 @@ import {
     CURRENT_USER_ID_COOKIE,
     CURRENT_USER_IS_DEBUG_COOKIE,
     CURRENT_USER_NAME_COOKIE,
-    CURRENT_USER_ORGANIZATION_COOKIE
+    CURRENT_USER_ORGANIZATION_COOKIE,
 } from "./cookies.ts";
 import * as React from "react";
 import {
@@ -215,7 +215,7 @@ export async function getAuthState(forceValidate: boolean = true): Promise<AuthS
     const [id, username, organizationId] = [
         idCookie?.value,
         usernameCookie?.value,
-        organizationCookie?.value,
+        organizationCookie?.value
     ];
 
     if (import.meta.env.DEV) {
@@ -386,7 +386,7 @@ export async function attemptRegistration(
             }
         });
 
-        return { success: true, id: response.id }
+        return {success: true, id: response.id}
     } catch (ex) {
         let status = 0;
 

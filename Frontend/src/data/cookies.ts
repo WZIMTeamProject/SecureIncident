@@ -6,6 +6,10 @@ export const CURRENT_USER_ORGANIZATION_COOKIE = "currentUserOrganization";
 export const CURRENT_USER_ID_COOKIE = "currentUserId";
 export const CURRENT_USER_IS_DEBUG_COOKIE = "currentUserIsDebug";
 
+export const THEME_PREFERENCE = "theme";
+export const THEME_PREFERENCE_DARK = "dark";
+export const THEME_PREFERENCE_LIGHT = "light";
+
 /**
  * Default name for the authentication cookie taken from the auto-generated API bindings.
  * Don't change this string unless the cookie used by the bindings also changes for some reason.

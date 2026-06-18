@@ -1,7 +1,9 @@
-import {Link, type LoaderFunction, Outlet, type RouterContextProvider, useLoaderData} from "react-router";
-import {AuthRouterContext, AuthState, AuthUserContext} from "./data/auth.ts";
-import {useState} from "react";
+import {Link, Outlet, useLoaderData} from "react-router";
+import {AuthState, AuthUserContext} from "./data/auth.ts";
+import {useEffect, useState} from "react";
 import {IconClose, IconMenu} from "./components/icons.tsx";
+import {THEME_PREFERENCE, THEME_PREFERENCE_DARK, THEME_PREFERENCE_LIGHT} from "./data/cookies.ts";
+import type {SIContext} from "./data/context.ts";
 
 // TODO: LOGO!!!!!
 
@@ -57,71 +59,71 @@ const NavIconLink = ({to, label, children}: { to: string; label: string; childre
 
 
 export function SIAppRoot() {
-    const authState = useLoaderData<AuthState | null>();
-    const [dark, setDark] = useState(false);
+    const siContext = useLoaderData<SIContext>();
+
+    const [dark, setDark] = useState(siContext.darkTheme);
     const [menuOpen, setMenuOpen] = useState(false);
 
-
-    const toggleDark = () => {
-        setDark(d => !d);
-        document.documentElement.classList.toggle("dark");
-    };
-
+    useEffect(() => {
+        if (dark) {
+            cookieStore.set(THEME_PREFERENCE, THEME_PREFERENCE_DARK).then(() => {
+                console.log("Set theme to: dark");
+            });
+        } else {
+            cookieStore.set(THEME_PREFERENCE, THEME_PREFERENCE_LIGHT).then(() => {
+                console.log("Set theme to: light");
+            });
+        }
+    }, [dark]);
 
     return (
-        <AuthUserContext value={authState}>
-            <header className="bg-[var(--color-si-header)]">
-                <div className="flex items-center px-4 py-3">
+        <div className={dark ? "dark" : ""}>
+            <AuthUserContext value={siContext.auth ?? null}>
+                <header className="bg-[var(--color-si-header)]">
+                    <div className="flex items-center px-4 py-3">
 
-                    {/* TODO: LOGO!!!! */}
-                    <div className="flex flex-col leading-tight mr-4">
-                        <span className="text-base font-bold text-white">HELLO I'M THE LOGO</span>
-                        <span className="text-base font-bold text-white">PLACEHOLDER</span>
+                        {/* TODO: LOGO!!!! */}
+                        <div className="flex flex-col leading-tight mr-4">
+                            <span className="text-base font-bold text-white">HELLO I'M THE LOGO</span>
+                            <span className="text-base font-bold text-white">PLACEHOLDER</span>
+                        </div>
+
+                        {/* Desktop toolbar — collapses into the mobile menu below md */}
+                        {siContext.auth ? <LoggedUserToolbar/> : <AnonymousUserToolbar/>}
+
+                        <div className="flex-1"/>
+
+                        {/* Mode switch */}
+                        <button
+                            onClick={() => setDark(!dark)}
+                            title={dark ? "Tryb jasny" : "Tryb ciemny"}
+                            className="p-2 rounded-lg text-white hover:bg-white/15 transition-colors"
+                        >
+                            {dark ? <IconSun/> : <IconMoon/>}
+                        </button>
+
+                        {/* Hamburger — only below md */}
+                        <button
+                            onClick={() => setMenuOpen(!menuOpen)}
+                            aria-label={menuOpen ? "Zamknij menu" : "Otwórz menu"}
+                            aria-expanded={menuOpen}
+                            aria-controls="mobile-menu"
+                            className="md:hidden flex items-center justify-center min-h-11 min-w-11 ml-1 rounded-lg text-white hover:bg-white/15 transition-colors"
+                        >
+                            {menuOpen ? <IconClose/> : <IconMenu/>}
+                        </button>
+
                     </div>
 
-                    {/* Desktop toolbar — collapses into the mobile menu below md */}
-                    {authState ? <LoggedUserToolbar/> : <AnonymousUserToolbar/>}
+                    {menuOpen && <MobileNav authState={siContext.auth ?? null} onNavigate={() => setMenuOpen(false)}/>}
 
-                    <div className="flex-1"/>
+                </header>
 
-                    {/* Mode switch */}
-                    <button
-                        onClick={toggleDark}
-                        title={dark ? "Tryb jasny" : "Tryb ciemny"}
-                        className="p-2 rounded-lg text-white hover:bg-white/15 transition-colors"
-                    >
-                        {dark ? <IconSun/> : <IconMoon/>}
-                    </button>
-
-                    {/* Hamburger — only below md */}
-                    <button
-                        onClick={() => setMenuOpen(open => !open)}
-                        aria-label={menuOpen ? "Zamknij menu" : "Otwórz menu"}
-                        aria-expanded={menuOpen}
-                        aria-controls="mobile-menu"
-                        className="md:hidden flex items-center justify-center min-h-11 min-w-11 ml-1 rounded-lg text-white hover:bg-white/15 transition-colors"
-                    >
-                        {menuOpen ? <IconClose/> : <IconMenu/>}
-                    </button>
-
-                </div>
-
-                {menuOpen && <MobileNav authState={authState} onNavigate={() => setMenuOpen(false)}/>}
-
-            </header>
-
-            <Outlet/>
-        </AuthUserContext>
-
-
+                <Outlet/>
+            </AuthUserContext>
+        </div>
     )
 }
-
-export const appRootLoader: LoaderFunction = async ({context}) => {
-    const middlewareContext = (context as Readonly<RouterContextProvider>);
-    return middlewareContext.get(AuthRouterContext);
-}
-
 
 function AnonymousUserToolbar() {
     return (
@@ -140,7 +142,9 @@ function LoggedUserToolbar() {
         <nav className="hidden md:flex items-center">
             <NavIconLink to="/" label="Strona główna"><IconHome/></NavIconLink>
             <NavIconLink to="/account" label="Moje Konto"><IconUser/></NavIconLink>
-            {/* TODO home icon, but only for users that have unlocked the dashboard (therefore completed their registration or simply logged in) */}
+            <NavIconLink to="/dashboard" label="Dashboard">DASHBOARD TEMP</NavIconLink>
+            <NavIconLink to="/login?logout=true" label="Wyloguj">LOGOUT TEMP</NavIconLink>
+            {/* TODO Ikonki do dashboardu i wylogowywanie (pamiętać też o MobileNav poniżej) */}
         </nav>
     );
 }
@@ -154,6 +158,8 @@ function MobileNav({authState, onNavigate}: { authState: AuthState | null; onNav
                 <>
                     <Link to="/" onClick={onNavigate} className={linkClass}><IconHome/>Strona główna</Link>
                     <Link to="/account" onClick={onNavigate} className={linkClass}><IconUser/>Moje Konto</Link>
+                    <Link to="/dashboard" onClick={onNavigate} className={linkClass}>Dashboard</Link>
+                    <Link to="/login?logout=true" onClick={onNavigate} className={linkClass}>Wyloguj</Link>
                 </>
             ) : (
                 <>
