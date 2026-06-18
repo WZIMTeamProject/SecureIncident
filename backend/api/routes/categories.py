@@ -14,6 +14,7 @@ from api.schemas.category.request import (
     UpdateCategoryRequest,
 )
 from db.models.user import User
+from services import category_service
 
 
 router = APIRouter(prefix="/projects/{project_id}/categories", tags=["Categories"])
@@ -25,7 +26,7 @@ async def get_categories(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return CategoryListResponse(items=[], total=0, offset=0, limit=20)
+    return await category_service.list_categories(db, project_id, current_user)
 
 
 @router.post("", response_model=CreatedIdResponse, status_code=status.HTTP_201_CREATED)
@@ -35,7 +36,7 @@ async def create_category(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return CreatedIdResponse(id="00000000-0000-0000-0000-000000000000")
+    return await category_service.create_category(db, project_id, body, current_user)
 
 
 @router.patch("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -46,7 +47,7 @@ async def update_category(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return
+    await category_service.update_category(db, project_id, category_id, body, current_user)
 
 
 @router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -56,4 +57,4 @@ async def delete_category(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return
+    await category_service.delete_category(db, project_id, category_id, current_user)

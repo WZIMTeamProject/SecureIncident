@@ -22,7 +22,7 @@
 - [ ] **Project & organization management** — Create projects, manage members and roles `[Effort: M]`
 - [ ] **Categories & roles** — Category and role management within projects `[Effort: S]`
 - [ ] **Audit trail UI** — Display IncidentLog history per incident `[Effort: S]`
-- [ ] **Testing suite** — Backend pytest coverage, frontend unit tests `[Effort: M]`
+- [x] **Testing suite** — Backend pytest coverage, frontend unit tests `[Effort: M]`
 
 ## Phase 3: AWS Deployment (June 15–17)
 

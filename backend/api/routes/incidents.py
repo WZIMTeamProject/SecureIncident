@@ -1,7 +1,6 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from uuid import UUID
 from typing import Optional
-from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies.db import get_db
@@ -28,6 +27,7 @@ from api.schemas.common.enums import (
     IncidentLogType,
 )
 from db.models.user import User
+from services import incident_service
 
 
 router = APIRouter(tags=["Incidents"])
@@ -36,10 +36,22 @@ router = APIRouter(tags=["Incidents"])
 @router.get("/projects/{project_id}/incidents", response_model=IncidentListResponse)
 async def get_incidents(
     project_id: UUID,
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
+    status: Optional[IncidentStatus] = None,
+    priority: Optional[IncidentPriority] = None,
+    assignee_id: Optional[UUID] = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return IncidentListResponse(items=[], total=0, offset=0, limit=20)
+    return await incident_service.list_incidents(
+        db, project_id, current_user,
+        offset=offset,
+        limit=limit,
+        status=status.value if status else None,
+        priority=priority.value if priority else None,
+        assignee_id=assignee_id,
+    )
 
 
 @router.post("/projects/{project_id}/incidents", response_model=CreatedIdResponse, status_code=status.HTTP_201_CREATED)
@@ -49,7 +61,7 @@ async def create_incident(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return CreatedIdResponse(id="00000000-0000-0000-0000-000000000000")
+    return await incident_service.create_incident(db, project_id, body, current_user)
 
 
 @router.get("/incidents/my-reported", response_model=IncidentListResponse)
@@ -57,7 +69,7 @@ async def get_my_reported(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return IncidentListResponse(items=[], total=0, offset=0, limit=20)
+    return await incident_service.get_my_reported(db, current_user)
 
 
 @router.get("/incidents/my-assigned", response_model=IncidentListResponse)
@@ -65,17 +77,25 @@ async def get_my_assigned(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return IncidentListResponse(items=[], total=0, offset=0, limit=20)
+    return await incident_service.get_my_assigned(db, current_user)
 
 
 @router.get("/incidents/history", response_model=IncidentLogListResponse)
 async def get_incident_history(
     project_id: Optional[UUID] = None,
     type: Optional[IncidentLogType] = None,
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return IncidentLogListResponse(items=[], total=0, offset=0, limit=20)
+    return await incident_service.get_history(
+        db, current_user,
+        project_id=project_id,
+        log_type=type.value if type else None,
+        offset=offset,
+        limit=limit,
+    )
 
 
 @router.get("/incidents/{incident_id}", response_model=IncidentDetailsResponse)
@@ -84,18 +104,7 @@ async def get_incident(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return IncidentDetailsResponse(
-        id=incident_id,
-        project_id="00000000-0000-0000-0000-000000000000",
-        title="Test incident",
-        description="Test description",
-        category_id=None,
-        priority=IncidentPriority.LOW,
-        status=IncidentStatus.NEW,
-        reporter_id="00000000-0000-0000-0000-000000000000",
-        primary_assignee_id=None,
-        report_date=datetime.now(),
-    )
+    return await incident_service.get_incident_detail(db, incident_id, current_user)
 
 
 @router.patch("/incidents/{incident_id}/status", status_code=status.HTTP_204_NO_CONTENT)
@@ -105,7 +114,7 @@ async def update_incident_status(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return
+    await incident_service.update_status(db, incident_id, body, current_user)
 
 
 @router.patch("/incidents/{incident_id}/assignee", status_code=status.HTTP_204_NO_CONTENT)
@@ -115,7 +124,7 @@ async def update_incident_assignee(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return
+    await incident_service.update_assignee(db, incident_id, body, current_user)
 
 
 @router.patch("/incidents/{incident_id}/priority", status_code=status.HTTP_204_NO_CONTENT)
@@ -125,7 +134,7 @@ async def update_incident_priority(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return
+    await incident_service.update_priority(db, incident_id, body, current_user)
 
 
 @router.patch("/incidents/{incident_id}/category", status_code=status.HTTP_204_NO_CONTENT)
@@ -135,7 +144,7 @@ async def update_incident_category(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return
+    await incident_service.update_category(db, incident_id, body, current_user)
 
 
 @router.post("/incidents/{incident_id}/close", status_code=status.HTTP_204_NO_CONTENT)
@@ -144,7 +153,7 @@ async def close_incident(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return
+    await incident_service.close_incident(db, incident_id, current_user)
 
 
 @router.post("/incidents/{incident_id}/request-reassignment", status_code=status.HTTP_204_NO_CONTENT)
@@ -153,7 +162,7 @@ async def request_reassignment(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return
+    await incident_service.request_reassignment(db, incident_id, current_user)
 
 
 @router.post("/incidents/{incident_id}/helpers", status_code=status.HTTP_204_NO_CONTENT)
@@ -163,7 +172,7 @@ async def add_helper(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return
+    await incident_service.add_helper(db, incident_id, body, current_user)
 
 
 @router.delete("/incidents/{incident_id}/helpers/{helper_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -173,7 +182,7 @@ async def remove_helper(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return
+    await incident_service.remove_helper(db, incident_id, helper_id, current_user)
 
 
 @router.get("/incidents/{incident_id}/comments", response_model=CommentListResponse)
@@ -182,7 +191,7 @@ async def get_comments(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return CommentListResponse(comments=[])
+    return await incident_service.get_comments(db, incident_id, current_user)
 
 
 @router.post("/incidents/{incident_id}/comments", response_model=CreatedIdResponse, status_code=status.HTTP_201_CREATED)
@@ -192,13 +201,15 @@ async def add_comment(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return CreatedIdResponse(id="00000000-0000-0000-0000-000000000000")
+    return await incident_service.add_comment(db, incident_id, body, current_user)
 
 
 @router.get("/incidents/{incident_id}/logs", response_model=IncidentLogListResponse)
 async def get_logs(
     incident_id: UUID,
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return IncidentLogListResponse(items=[], total=0, offset=0, limit=20)
+    return await incident_service.get_logs(db, incident_id, current_user, offset=offset, limit=limit)

@@ -57,3 +57,6 @@ class Incident(Base):
     logs: Mapped[List["IncidentLog"]] = relationship(
         "IncidentLog", back_populates="incident", cascade="all, delete-orphan", lazy="selectin"
     )
+    helpers: Mapped[List["IncidentHelper"]] = relationship(
+        "IncidentHelper", back_populates="incident", cascade="all, delete-orphan", lazy="selectin"
+    )

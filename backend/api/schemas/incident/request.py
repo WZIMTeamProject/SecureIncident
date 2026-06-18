@@ -27,7 +27,7 @@ class UpdateIncidentPriorityRequest(BaseModel):
 
 
 class UpdateIncidentCategoryRequest(BaseModel):
-    category_id: Optional[UUID] = None
+    category_id: UUID
 
 
 class AddCommentRequest(BaseModel):
