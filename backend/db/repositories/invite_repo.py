@@ -1,4 +1,4 @@
-﻿from datetime import datetime, timezone
+﻿from datetime import datetime, timezone, timedelta
 from typing import Optional
 from uuid import UUID
 
@@ -33,7 +33,7 @@ async def create_project_invite(
         created_by_id=created_by_id,
         token=token_hash,
         role_id=role_id,
-        expires_at=expires_at.replace(tzinfo=None) if expires_at is not None else None,
+        expires_at=expires_at.replace(tzinfo=None) + timedelta(hours=1) if expires_at is not None else None,
         max_uses=max_uses,
         use_count=0,
     )
@@ -62,7 +62,7 @@ async def create_organization_invite(
         role_id=None,
         created_by_id=created_by_id,
         token=token_hash,
-        expires_at=expires_at.replace(tzinfo=None) if expires_at is not None else None,
+        expires_at=expires_at.replace(tzinfo=None) + timedelta(hours=1) if expires_at is not None else None,
         max_uses=max_uses,
         use_count=0,
     )
