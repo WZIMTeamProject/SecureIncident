@@ -1,8 +1,14 @@
 import {AuthUserContext} from "../data/auth.ts";
 import {useContext, useEffect, useRef, useState} from "react";
-import type {Organization} from "../data/project.ts";
+import type {Organization, Project} from "../data/project.ts";
 import {Popup} from "../components/Popup.tsx";
-import {FORM_INVITE_NAME, FORM_PROJECT_DESCRIPTION, FORM_PROJECT_NAME} from "./forms.ts";
+import {
+    FORM_ACTION, FORM_ACTION_DELETE_ORGANIZATION, FORM_ACTION_INVITE_USER,
+    FORM_ACTION_NEW_PROJECT,
+    FORM_INVITE_NAME,
+    FORM_PROJECT_DESCRIPTION,
+    FORM_PROJECT_NAME
+} from "./forms.ts";
 import {useFetcher} from "react-router";
 
 export function SIOrganization() {
@@ -58,8 +64,18 @@ function CreateOrganizationWidget() {
 type ShownPopup = "new_project" | "invite_user" | "delete_organization" | null;
 
 function OrganizationView({organization}: { organization: Organization }) {
+    const auth = useContext(AuthUserContext)!;
+
     const [shownPopup, setShownPopup] = useState<ShownPopup>(null);
     const hidePopup = () => setShownPopup(null)
+
+    const [projects, setProjects] = useState<Project[] | undefined>();
+
+    useEffect(() => {
+        auth.getProjects("ORGANIZATION").then((orgProjects) => {
+            setProjects(orgProjects);
+        });
+    }, [auth, organization]);
 
     return (
         <div>
@@ -75,7 +91,11 @@ function OrganizationView({organization}: { organization: Organization }) {
             <div className="w-full h-96
                     border-5 border-(--color-si-card-border)
                     rounded-2xl shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll">
-                <p>TODO projekty</p>
+                {
+                    projects?.map((project) => {
+                        return <h1>{project.name} - {project.id}</h1>;
+                    }) ?? <h1>Ładowanie...</h1>
+                }
             </div>
 
             <div className="w-full flex gap-3 p-3 justify-end">
@@ -118,12 +138,19 @@ function NewProjectPopup({show, onHide}: PopupProps) {
     const fetcher = useFetcher();
     const busy = fetcher.state != "idle";
 
+    const [pendingHide, setPendingHide] = useState<boolean>(false);
+
     const projectNameRef = useRef<HTMLInputElement>(null);
     const projectDescriptionRef = useRef<HTMLInputElement>(null);
 
+    if (fetcher.state == "idle" && pendingHide) {
+        setPendingHide(false);
+        onHide();
+    }
+
     return (
         <Popup show={show} className={"w-full max-w-xl"}>
-            <fetcher.Form method="POST">
+            <fetcher.Form method="POST" onSubmit={() => setPendingHide(true)}>
                 <h1 className="text-3xl font-bold">
                     Nowy Projekt
                 </h1>
@@ -164,6 +191,7 @@ function NewProjectPopup({show, onHide}: PopupProps) {
 
                 <div className="flex items-center justify-between">
                     <button
+                        disabled={busy}
                         onClick={() => {
                             projectNameRef.current = null;
                             projectDescriptionRef.current = null;
@@ -186,6 +214,11 @@ function NewProjectPopup({show, onHide}: PopupProps) {
                                     disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                     />
                 </div>
+
+                <input
+                    name={FORM_ACTION}
+                    type="hidden"
+                    value={FORM_ACTION_NEW_PROJECT}/>
             </fetcher.Form>
         </Popup>
     );
@@ -247,6 +280,11 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                                     disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                     />
                 </div>
+
+                <input
+                    name={FORM_ACTION}
+                    type="hidden"
+                    value={FORM_ACTION_INVITE_USER}/>
             </fetcher.Form>
 
         </Popup>
@@ -289,6 +327,11 @@ function DeleteOrganizationPopup({show, onHide}: PopupProps) {
                                     disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                     />
                 </div>
+
+                <input
+                    name={FORM_ACTION}
+                    type="hidden"
+                    value={FORM_ACTION_DELETE_ORGANIZATION}/>
             </fetcher.Form>
         </Popup>
     );
