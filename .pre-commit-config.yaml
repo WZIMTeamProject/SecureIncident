@@ -21,6 +21,12 @@ repos:
     hooks:
     - id: bandit
       args: ["-c", "pyproject.toml"]
+  
+  - repo: https://github.com/pypa/pip-audit
+    rev: v2.10.1
+    hooks:
+      -   id: pip-audit
+          args: ["-r", "backend/requirements.txt"]
 
   - repo: https://github.com/jendrikseipp/vulture
     rev: v2.11
