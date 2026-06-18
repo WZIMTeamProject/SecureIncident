@@ -67,7 +67,7 @@ function ProjectLinks({projects}: { projects: Project[] | undefined }) {
     }
 
     const projectLinks = projects.map((project) => {
-        return <h2>{project.name}</h2>;
+        return <h2><Link to={`/dashboard/project/${project.id}`}>{project.name}</Link></h2>;
     });
 
     return <>{projectLinks}</>;
