@@ -66,9 +66,11 @@ function ProjectLinks({projects}: { projects: Project[] | undefined }) {
         return <h2>Wczytywanie...</h2>;
     }
 
-    return <>
-        {projects.map((project) => <h2>{project.name}</h2>)}
-    </>;
+    const projectLinks = projects.map((project) => {
+        return <h2>{project.name}</h2>;
+    });
+
+    return <>{projectLinks}</>;
 }
 
 function IncidentLinks({incidents}: { incidents: Incident[] | undefined }) {

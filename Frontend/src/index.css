@@ -121,46 +121,50 @@ code {
 
 :root {
     /* LIGHT */
-    --color-si-page-bg:        #ffffff; /* Usage example: [var(--color-si-page-bg)] or bg-[var(--color-si-page-bg)] */
-    --color-si-card-bg:        #ffffff;
-    --color-si-card-border:    #864eb1;
-    --color-si-input-bg:       #ffffff;
-    --color-si-input-border:   #864eb1;
-    --color-si-input-icon:     #864eb1;
-    --color-si-input-text:     #737373;
-    --color-si-label:          #1f2937;
-    --color-si-link:           #374151;
-    --color-si-btn:            #864eb1;
-    --color-si-btn-hover:      #7e22ce;
-    --color-si-shield:         #8f5aba;
-    --color-si-header:         #5a1b8a;
+    --color-si-page-bg:         #ffffff; /* Usage example: [var(--color-si-page-bg)] or bg-[var(--color-si-page-bg)] */
+    --color-si-card-bg:         #ffffff;
+    --color-si-card-border:     #864eb1;
+    --color-si-input-bg:        #ffffff;
+    --color-si-input-border:    #864eb1;
+    --color-si-input-icon:      #864eb1;
+    --color-si-input-text:      #737373;
+    --color-si-label:           #1f2937;
+    --color-si-link:            #374151;
+    --color-si-btn:             #864eb1;
+    --color-si-btn-error:       #e51b1b;
+    --color-si-btn-hover:       #7e22ce;
+    --color-si-btn-error-hover: #b11313;
+    --color-si-shield:          #8f5aba;
+    --color-si-header:          #5a1b8a;
 
-    --color-si-footer:         #5a1b8a;
-    --color-si-footer-shield:  #bb89e5;
+    --color-si-footer:          #5a1b8a;
+    --color-si-footer-shield:   #bb89e5;
 
     --color-si-scrollbar-fill: #c091ea;
     --color-si-scrollbar-background: #d1c1e4;
 }
- 
+
 /* DARK */
 
 .dark {
-    --color-si-page-bg:        #2c0744; /* Usage example: [var(--color-si-page-bg)] or bg-[var(--color-si-page-bg)] */
-    --color-si-card-bg:        #2c0744;
-    --color-si-card-border:    #d1c1e4;
-    --color-si-input-bg:       #2c0744;
-    --color-si-input-border:   #864eb1;
-    --color-si-input-icon:     #c091ea;
-    --color-si-input-text:     #d1c1e4;
-    --color-si-label:          #d1c1e4;
-    --color-si-link:           #d1c1e4;
-    --color-si-btn:            #7e2fba;
-    --color-si-btn-hover:      #5a1b8a;
-    --color-si-shield:         #8f5aba;
-    --color-si-header:         #5a1b8a;
+    --color-si-page-bg:         #2c0744; /* Usage example: [var(--color-si-page-bg)] or bg-[var(--color-si-page-bg)] */
+    --color-si-card-bg:         #2c0744;
+    --color-si-card-border:     #d1c1e4;
+    --color-si-input-bg:        #2c0744;
+    --color-si-input-border:    #864eb1;
+    --color-si-input-icon:      #c091ea;
+    --color-si-input-text:      #d1c1e4;
+    --color-si-label:           #d1c1e4;
+    --color-si-link:            #d1c1e4;
+    --color-si-btn:             #7e2fba;
+    --color-si-btn-error:       #e51b1b;
+    --color-si-btn-hover:       #5a1b8a;
+    --color-si-btn-error-hover: #b11313;
+    --color-si-shield:          #8f5aba;
+    --color-si-header:          #5a1b8a;
     /* same as light mode */
-    --color-si-footer:         #5a1b8a;
-    --color-si-footer-shield:  #bb89e5;
+    --color-si-footer:          #5a1b8a;
+    --color-si-footer-shield:   #bb89e5;
 
     --color-si-scrollbar-fill: #8c52ff;
     --color-si-scrollbar-background: #d1c1e4;
