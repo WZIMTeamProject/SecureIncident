@@ -1,4 +1,4 @@
-name: Frontend CI/CD
+name: Frontend Production Deploy
 on:
   push:
     branches: [main]
@@ -12,19 +12,6 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '26'
-
-      - name: Install dependencies
-        working-directory: Frontend
-        run: npm ci
-
-      - name: Audit dependencies
-        working-directory: Frontend
-        run: npm audit --audit-level=high
 
       - name: Login to GHCR
         uses: docker/login-action@v3

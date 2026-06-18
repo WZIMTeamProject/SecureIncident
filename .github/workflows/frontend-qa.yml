@@ -1,0 +1,39 @@
+name: Frontend QA (Audit & Build Checks)
+on:
+  push:
+    paths: [Frontend/**]
+  pull_request:
+    branches: [main]
+    paths: [Frontend/**]
+
+jobs:
+  frontend-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '26' 
+
+      - name: Install dependencies
+        working-directory: Frontend
+        run: npm ci
+
+      - name: Audit dependencies
+        working-directory: Frontend
+        run: npm audit --audit-level=high
+
+  test-frontend-build:
+    needs: frontend-qa
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build frontend image (Dry-run)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Frontend
+          push: false
+          build-args: VITE_API_BASE_URL=http://localhost:8000
