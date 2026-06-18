@@ -66,18 +66,22 @@ async def create_incident(
 
 @router.get("/incidents/my-reported", response_model=IncidentListResponse)
 async def get_my_reported(
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await incident_service.get_my_reported(db, current_user)
+    return await incident_service.get_my_reported(db, current_user, offset=offset, limit=limit)
 
 
 @router.get("/incidents/my-assigned", response_model=IncidentListResponse)
 async def get_my_assigned(
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await incident_service.get_my_assigned(db, current_user)
+    return await incident_service.get_my_assigned(db, current_user, offset=offset, limit=limit)
 
 
 @router.get("/incidents/history", response_model=IncidentLogListResponse)

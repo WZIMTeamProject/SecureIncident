@@ -1,6 +1,5 @@
-﻿import pytest
-from httpx import AsyncClient
-from datetime import datetime, timedelta, timezone
+﻿from httpx import AsyncClient
+from datetime import datetime, timezone
 
 from core import security
 from db.models.user import User

@@ -55,22 +55,42 @@ async def get_incidents_by_project(
     return incidents, total
 
 
-async def get_by_reporter(db: AsyncSession, user_id: UUID) -> Sequence[Incident]:
-    result = await db.execute(
+async def get_by_reporter(
+    db: AsyncSession,
+    user_id: UUID,
+    *,
+    offset: int = 0,
+    limit: int = 20,
+) -> tuple[Sequence[Incident], int]:
+    count_stmt = select(func.count()).select_from(Incident).where(Incident.reporter_id == user_id)
+    total = (await db.execute(count_stmt)).scalar_one()
+    data_stmt = (
         select(Incident)
         .where(Incident.reporter_id == user_id)
         .order_by(Incident.created_at.desc())
+        .offset(offset)
+        .limit(limit)
     )
-    return result.scalars().all()
+    return (await db.execute(data_stmt)).scalars().all(), total
 
 
-async def get_by_assignee(db: AsyncSession, user_id: UUID) -> Sequence[Incident]:
-    result = await db.execute(
+async def get_by_assignee(
+    db: AsyncSession,
+    user_id: UUID,
+    *,
+    offset: int = 0,
+    limit: int = 20,
+) -> tuple[Sequence[Incident], int]:
+    count_stmt = select(func.count()).select_from(Incident).where(Incident.primary_assignee_id == user_id)
+    total = (await db.execute(count_stmt)).scalar_one()
+    data_stmt = (
         select(Incident)
         .where(Incident.primary_assignee_id == user_id)
         .order_by(Incident.created_at.desc())
+        .offset(offset)
+        .limit(limit)
     )
-    return result.scalars().all()
+    return (await db.execute(data_stmt)).scalars().all(), total
 
 
 async def create(db: AsyncSession, incident: Incident) -> None:

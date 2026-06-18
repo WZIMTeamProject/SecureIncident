@@ -24,7 +24,7 @@ async def add_revoked_token(
 ) -> None:
     """Add the token to the revocation list after logout."""
     db.add(RevokedToken(jti=jti, user_id=user_id, expires_at=expires_at))
-    await db.commit()
+    await db.flush()
 
 
 async def cleanup_expired_revoked_tokens(db: AsyncSession) -> None:
@@ -33,4 +33,4 @@ async def cleanup_expired_revoked_tokens(db: AsyncSession) -> None:
     await db.execute(
         delete(RevokedToken).where(RevokedToken.expires_at < now_naive)
     )
-    await db.commit()
+    await db.flush()

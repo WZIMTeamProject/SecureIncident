@@ -7,12 +7,6 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models.organization_invite import OrganizationInvite
-from db.repositories.project_repo import ( # Methods invoked by invitation_service.py. Imported in order to not duplicate code.
-    get_project_by_id,
-    get_role_by_id,
-    get_user_project,
-    create_user_project,
-)
 
 
 async def create_project_invite(

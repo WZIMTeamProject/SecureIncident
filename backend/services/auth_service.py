@@ -30,6 +30,7 @@ async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
         email=str(data.email),
         password=hashed,
     )
+    await db.commit()
     logger.info("User registered user_id=%s", user.id)
     return user
 
@@ -71,6 +72,7 @@ async def request_password_reset(db: AsyncSession, email_or_username: str, backg
         token_hash=token_hash,
         expires_at=expires_at
     )
+    await db.commit()
     background_tasks.add_task(email_service.send_reset_email, user.email, raw_token)
     logger.info("Password reset email queued user_id=%s", user.id)
 

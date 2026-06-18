@@ -1,4 +1,3 @@
-import pytest
 from httpx import AsyncClient
 from uuid import uuid4
 from sqlalchemy.ext.asyncio import AsyncSession
