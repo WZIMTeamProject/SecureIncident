@@ -4,6 +4,7 @@ from db.models.project import Project
 from db.models.role import Role
 from db.models.user_project import UserProject
 from db.models.incident import Incident
+from db.models.incident_helper import IncidentHelper
 from db.models.comment import Comment
 from db.models.incident_log import IncidentLog
 from db.models.category import Category
@@ -18,6 +19,7 @@ __all__ = [
     "Role",
     "UserProject",
     "Incident",
+    "IncidentHelper",
     "Comment",
     "IncidentLog",
     "Category",

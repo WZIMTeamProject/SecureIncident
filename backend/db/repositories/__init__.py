@@ -3,3 +3,5 @@ from db.repositories import organization_repo
 from db.repositories import project_repo
 from db.repositories import invite_repo
 from db.repositories import revoked_token_repo
+from db.repositories import incident_repo
+from db.repositories import category_repo

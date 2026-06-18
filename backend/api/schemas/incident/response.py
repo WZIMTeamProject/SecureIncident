@@ -19,6 +19,11 @@ class IncidentSummary(BaseModel):
 IncidentListResponse = PaginatedResponse[IncidentSummary]
 
 
+class HelperResponse(BaseModel):
+    user_id: UUID
+    added_at: datetime
+
+
 class IncidentDetailsResponse(BaseModel):
     id: UUID
     project_id: UUID
@@ -30,3 +35,5 @@ class IncidentDetailsResponse(BaseModel):
     reporter_id: UUID
     primary_assignee_id: Optional[UUID] = None
     report_date: datetime
+    closing_date: Optional[datetime] = None
+    helpers: list[HelperResponse] = []

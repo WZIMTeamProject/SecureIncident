@@ -14,6 +14,9 @@ from alembic import command as alembic_command
 from datetime import datetime, timedelta, timezone
 from db.models import User, Project, Organization, Role
 from db.models.organization_invite import OrganizationInvite
+from db.models.user_project import UserProject
+from db.models.incident import Incident
+from db.models.incident_helper import IncidentHelper
 from core.security import create_access_token, generate_token, hash_token
 from core.config import settings
 from core.security import hash_password
@@ -241,3 +244,122 @@ async def exhausted_invite(db: AsyncSession, test_project: Project, test_user: U
     db.add(invite)
     await db.flush()
     return invite, raw_token
+
+
+@pytest.fixture(scope="function")
+async def test_role_full(db: AsyncSession, test_project: Project) -> Role:
+    """Role with all permission flags set to True."""
+    role = Role(
+        project_id=test_project.id,
+        name="Admin",
+        can_write_tickets=True,
+        can_help=True,
+        can_assign_help=True,
+        can_change_status=True,
+        can_make_roles=True,
+    )
+    db.add(role)
+    await db.flush()
+    yield role
+
+
+@pytest.fixture(scope="function")
+async def test_membership(db: AsyncSession, test_project: Project, test_user: User, test_role_full: Role) -> UserProject:
+    """UserProject linking test_user to test_project with full-permission role."""
+    membership = UserProject(
+        user_id=test_user.id,
+        project_id=test_project.id,
+        role_id=test_role_full.id,
+    )
+    db.add(membership)
+    await db.flush()
+    yield membership
+
+
+@pytest.fixture(scope="function")
+async def test_incident(db: AsyncSession, test_project: Project, test_user: User, test_membership) -> Incident:
+    """Incident created directly (bypasses service — no CREATED log written)."""
+    incident = Incident(
+        reporter_id=test_user.id,
+        project_id=test_project.id,
+        title="Test Incident",
+        description="Test incident description",
+        status="NEW",
+        priority="LOW",
+    )
+    db.add(incident)
+    await db.flush()
+    yield incident
+
+
+@pytest.fixture(scope="function")
+async def non_member_user(db: AsyncSession, test_org: Organization) -> User:
+    """User in the same org but not a member of any project."""
+    user = User(
+        username=f"nonmember_{uuid.uuid4().hex[:8]}",
+        email=f"nonmember_{uuid.uuid4().hex[:8]}@example.com",
+        first_name="Non",
+        last_name="Member",
+        password=hash_password("TestPassword123!"),
+        is_active=True,
+        organization_id=test_org.id,
+    )
+    db.add(user)
+    await db.flush()
+    yield user
+
+
+@pytest.fixture(scope="function")
+def non_member_headers(non_member_user: User) -> dict[str, str]:
+    """Bearer token headers for non_member_user."""
+    token = create_access_token(non_member_user.id)
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(scope="function")
+async def no_permission_role(db: AsyncSession, test_project: Project) -> Role:
+    """Role with all permission flags left at their default (False)."""
+    role = Role(
+        project_id=test_project.id,
+        name="ReadOnly",
+    )
+    db.add(role)
+    await db.flush()
+    yield role
+
+
+@pytest.fixture(scope="function")
+async def limited_user(db: AsyncSession, test_org: Organization) -> User:
+    """User in the same org who will be given a role with no permissions."""
+    user = User(
+        username=f"limited_{uuid.uuid4().hex[:8]}",
+        email=f"limited_{uuid.uuid4().hex[:8]}@example.com",
+        first_name="Limited",
+        last_name="User",
+        password=hash_password("TestPassword123!"),
+        is_active=True,
+        organization_id=test_org.id,
+    )
+    db.add(user)
+    await db.flush()
+    yield user
+
+
+@pytest.fixture(scope="function")
+def limited_headers(limited_user: User) -> dict[str, str]:
+    """Bearer token headers for limited_user."""
+    token = create_access_token(limited_user.id)
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(scope="function")
+async def limited_membership(db: AsyncSession, test_project: Project, limited_user: User, no_permission_role: Role) -> UserProject:
+    """UserProject linking limited_user to test_project with no-permission role."""
+    membership = UserProject(
+        user_id=limited_user.id,
+        project_id=test_project.id,
+        role_id=no_permission_role.id,
+    )
+    db.add(membership)
+    await db.flush()
+    yield membership

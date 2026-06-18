@@ -56,3 +56,6 @@ class User(Base):
     created_invites: Mapped[List["OrganizationInvite"]] = relationship(
         "OrganizationInvite", back_populates="created_by", foreign_keys="OrganizationInvite.created_by_id", lazy="selectin"
     )
+    incident_helpers: Mapped[List["IncidentHelper"]] = relationship(
+        "IncidentHelper", back_populates="user", lazy="selectin"
+    )
