@@ -48,4 +48,4 @@ jobs:
           script: |
             cd ~/secureincident
             docker compose pull --no-deps frontend
-            docker compose up -d --no-deps frontend
+            docker compose up -d --force-recreate --no-deps frontend
