@@ -1,0 +1,5 @@
+{
+  "plugin": ["typedoc-plugin-markdown"],
+  "entryPoints": ["src/api/*.ts"],
+  "out": "../docs/build/Frontend"
+}

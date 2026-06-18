@@ -21,3 +21,8 @@ for p in paths:
             shutil.rmtree(p)
     except Exception as e:
         print("Error deleting", p, "-", e)
+
+subprocess.run(
+    ["npm.cmd", "run", "docs"],
+    cwd="../Frontend", check=True
+)
