@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db.models.user import User
 from db.models.user_project import UserProject
 from db.models.password_reset_token import PasswordResetToken
+from api.schemas.profile.request import UpdateProfileRequest
 
 async def get_user_by_id(db: AsyncSession, user_id: UUID) -> Optional[User]:
     """Get user by ID."""
@@ -63,8 +64,7 @@ async def create_user(
         password=password,
     )
     db.add(user)
-    await db.commit()
-    await db.refresh(user)
+    await db.flush()
     return user
 
 
@@ -91,8 +91,7 @@ async def create_password_reset_token(
         expires_at=expires_at,
     )
     db.add(record)
-    await db.commit()
-    await db.refresh(record)
+    await db.flush()
     return record
 
 
@@ -113,13 +112,13 @@ async def mark_password_reset_token_used(
     token.used_at = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
     
     db.add(token)
-    await db.commit()
+    await db.flush()
 
 
 async def update_user_profile(
     db: AsyncSession,
     user: User,
-    data: "UpdateProfileRequest",
+    data: UpdateProfileRequest,
 ) -> None:
     update_data = data.model_dump(exclude_none=True)
     for field, value in update_data.items():
