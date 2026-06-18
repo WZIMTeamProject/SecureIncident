@@ -23,10 +23,20 @@ import {SIStartPage} from "./SIStartPage.tsx";
 import {SIPageNotFound} from "./SIPageNotFound.tsx";
 import {SIAccountPage, SINotificationPage} from "./account";
 import {SIResetPassword} from "./login/SIResetPassword.tsx";
+import {THEME_PREFERENCE, THEME_PREFERENCE_DARK} from "./data/cookies.ts";
+import type {SIContext} from "./data/context.ts";
 
 const appRootLoader: LoaderFunction = async ({context}) => {
     const middlewareContext = (context as Readonly<RouterContextProvider>);
-    return middlewareContext.get(AuthRouterContext);
+
+    const wantsDarkMode = await cookieStore.get(THEME_PREFERENCE);
+
+    const siContext: SIContext = {
+        auth: middlewareContext.get(AuthRouterContext) ?? undefined,
+        darkTheme: wantsDarkMode?.value == THEME_PREFERENCE_DARK
+    };
+
+    return siContext;
 }
 
 const router = createBrowserRouter([
