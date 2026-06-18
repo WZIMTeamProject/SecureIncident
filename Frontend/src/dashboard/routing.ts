@@ -3,7 +3,9 @@ import {
     FORM_ACTION,
     FORM_ACTION_DELETE_ORGANIZATION,
     FORM_ACTION_INVITE_USER,
-    FORM_ACTION_NEW_PROJECT, FORM_PROJECT_DESCRIPTION, FORM_PROJECT_NAME
+    FORM_ACTION_NEW_PROJECT,
+    FORM_PROJECT_DESCRIPTION,
+    FORM_PROJECT_NAME
 } from "./forms.ts";
 import Api from "../data/Api.ts";
 
@@ -12,7 +14,7 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
 
     const organizationAction = formData.get(FORM_ACTION)?.toString();
     if (!organizationAction) {
-        return { ok: false };
+        return {ok: false};
     }
 
     if (request.method === "POST") {
@@ -30,19 +32,28 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
                 }).catch(() => null);
 
                 if (createdId) {
-                    return { ok: true };
+                    return {ok: true};
                 }
             }
         } else if (organizationAction === FORM_ACTION_INVITE_USER) {
             // TODO
-            return { ok: true }
+            return {ok: true}
         }
     } else if (request.method === "DELETE") {
         if (organizationAction === FORM_ACTION_DELETE_ORGANIZATION) {
             // TODO
-            return { ok: true }
+            return {ok: true}
         }
     }
 
-    return { ok: false };
+    return {ok: false};
 };
+
+export const dashboardProjectsAction: ActionFunction = async ({request}) => {
+    const formData = await request.formData();
+
+    const projectAction = formData.get(FORM_ACTION)?.toString();
+    if (!projectAction) {
+        return {ok: false};
+    }
+}

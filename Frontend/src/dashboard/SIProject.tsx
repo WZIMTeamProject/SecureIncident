@@ -47,8 +47,34 @@ function LoadingMessage() {
 function ProjectView({project}: { project: Project }) {
     return (
         <div>
-            <p>{project.name} - {project.id}</p>
-            <p>{project.description}</p>
+            <div className="p-3">
+                <h1 className="text-2xl font-bold">{project.name}</h1>
+                <p className="text-md text-gray-600 italic font-normal">{project.description ?? "Brak opisu"}</p>
+            </div>
+
+            <div className="w-full h-96
+                    border-5 border-(--color-si-card-border)
+                    rounded-2xl shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll">
+                TODO: Incidents go here
+            </div>
+
+            <div className="w-full flex gap-3 p-3 justify-end">
+                <button
+                    className="px-6 py-2
+                        bg-[var(--color-si-btn)]
+                        hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                        text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                    Zgłoś nowy incydent
+                </button>
+
+                <button
+                    className="px-6 py-2
+                        bg-[var(--color-si-btn)]
+                        hover:bg-[var(--color-si-btn-hover)] shadow-lg
+                        text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                    Dodaj użytkownika do projektu
+                </button>
+            </div>
         </div>
     );
 }

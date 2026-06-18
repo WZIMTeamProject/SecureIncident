@@ -6,3 +6,5 @@ export const FORM_ACTION = "action";
 export const FORM_ACTION_NEW_PROJECT = "new_project";
 export const FORM_ACTION_INVITE_USER = "invite_user";
 export const FORM_ACTION_DELETE_ORGANIZATION = "delete_organization";
+
+export const FORM_ACTION_DELETE_PROJECT = "delete_project";
