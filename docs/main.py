@@ -1,15 +1,23 @@
 import os
 import subprocess
+from pathlib import Path
+import shutil
 
-root = '../backend'
-exclude = 'tests'
-py_files = []
-for dirpath, dirnames, filenames in os.walk(root):
-    if exclude in dirpath.split(os.sep):
+subprocess.run(
+    ["pdoc3", "../backend", "--skip-errors", "--template-dir", "templates", "-o", "build"],
+    check=True
+)
+
+paths = ["alembic/versions", "tests"]
+
+for p in paths:
+    p = Path("build/backend/" + p).absolute()
+    if not p.exists():
         continue
-    for f in filenames:
-        if f.endswith('.py'):
-            py_files.append(os.path.join(dirpath, f))
-
-for py in py_files[0]:
-    subprocess.Popen(f"pdoc3 {py} --template-dir templates -o build", shell=True)
+    try:
+        if p.is_file():
+            p.unlink()
+        elif p.is_dir():
+            shutil.rmtree(p)
+    except Exception as e:
+        print("Error deleting", p, "-", e)
