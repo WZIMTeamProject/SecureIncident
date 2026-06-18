@@ -89,7 +89,7 @@ export function SIAppRoot() {
                         </div>
 
                         {/* Desktop toolbar — collapses into the mobile menu below md */}
-                        {siContext ? <LoggedUserToolbar/> : <AnonymousUserToolbar/>}
+                        {siContext.auth ? <LoggedUserToolbar/> : <AnonymousUserToolbar/>}
 
                         <div className="flex-1"/>
 
