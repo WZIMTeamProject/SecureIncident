@@ -1,11 +1,13 @@
 # Error Handling
 
 ## Core Principle
+
 Handle errors at system boundaries (user input, external APIs, DB calls). Trust internal code and framework guarantees — don't wrap every internal function in try/catch.
 
 ## FastAPI (Backend)
 
 ### HTTP Exceptions
+
 Use `HTTPException` for client errors; let FastAPI's default handler convert unhandled exceptions to 500s.
 
 ```python
@@ -18,26 +20,60 @@ raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient 
 ```
 
 ### Custom Exception Handlers
+
 Register a global handler in `main.py` for domain-specific exceptions instead of scattering try/except.
 
 ### Never Expose Internals
+
 Do not return stack traces, SQL errors, or internal paths in API responses. Log the full error server-side; return a generic message to the client.
 
 ### Database Errors
+
 Catch `SQLAlchemyError` at the service/route layer. Roll back the session and raise an appropriate `HTTPException`.
 
 ## React / TypeScript (Frontend)
 
 ### API Call Errors
-Handle errors where data is fetched — in the hook or service function, not in components. Return a typed result: `{ data, error }` or use React Query's error state.
+
+Handle errors where data is fetched — in the hook or service function, not in components. Data-layer functions catch exceptions internally and return `null`, empty arrays, or a structured result type:
+
+```ts
+// In data layer (auth.ts)
+async function getProjects(): Promise<Project[]> {
+  try {
+    // ...
+  } catch {
+    return []
+  }
+}
+
+// Typed result for operations that need error detail
+interface RegistrationResult {
+  success: boolean
+  errorCause?: 'username_or_email_taken' | 'server_error'
+}
+```
+
+### Displaying Errors in Forms
+
+With React Router's `useFetcher`, read errors from `fetcher.data?.error` — do not use component state for server errors:
+
+```tsx
+{fetcher.data?.error && (
+  <p className="text-[var(--color-si-error)]">{fetcher.data.error}</p>
+)}
+```
 
 ### User-Facing Messages
+
 Show actionable messages: "Failed to create incident. Please try again." — not raw error strings from the server.
 
 ### Never Silently Swallow Errors
+
 An empty `catch {}` block is always wrong. At minimum, log to console in development and show feedback to the user.
 
 ### Form Validation Errors
+
 Display field-level errors next to the relevant input. Map server 422 validation errors to form fields.
 
 ## General Rules

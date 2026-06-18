@@ -1,6 +1,7 @@
 # CSS & Styling (Tailwind CSS v4)
 
 ## Core Rule
+
 Use Tailwind utility classes as the primary styling approach. Avoid writing custom CSS unless the utility classes genuinely cannot express the design.
 
 ## Class Organization
@@ -14,19 +15,24 @@ Order Tailwind classes consistently within an element:
 6. Interactive (`cursor-*`, `hover:*`, `focus:*`)
 7. Responsive prefixes (`sm:*`, `md:*`, `lg:*`)
 
-## CSS Custom Properties (Theming)
+## CSS Custom Properties (Color Tokens)
 
-Use CSS custom properties defined in `index.css` for design tokens (colors, spacing). This project already has light/dark theme support via CSS variables — extend them rather than hardcoding colors.
+All color values use project-specific CSS custom properties via Tailwind's arbitrary value syntax. Never use Tailwind palette names (e.g., `bg-blue-600`) or hardcoded hex values for themed colors.
 
-```css
-/* Preferred — uses theme token */
-.element { color: var(--color-text-primary); }
+```tsx
+// Correct — uses semantic token, supports light/dark theme
+<div className="bg-[var(--color-si-card-bg)] border-[var(--color-si-card-border)]">
+<p className="text-[var(--color-si-label)]">
+<button className="bg-[var(--color-si-btn)] hover:bg-[var(--color-si-btn-hover)]">
 
-/* Avoid — hardcoded, breaks theming */
-.element { color: #1a1a1a; }
+// Avoid — breaks theming
+<div className="bg-white border-gray-200">
+<button className="bg-blue-600 hover:bg-blue-700">
 ```
 
-In Tailwind classes, use the CSS variable via arbitrary values only when a semantic token exists: `text-[var(--color-text-primary)]`. For standard Tailwind colors, use them directly.
+Available token categories (defined in `index.css`): `--color-si-card-*`, `--color-si-label`, `--color-si-input-*`, `--color-si-btn*`, `--color-si-link`. Extend them in `index.css` when adding new color tokens (update both `:root` and dark-mode selectors).
+
+Structural utilities (`flex`, `gap-*`, `rounded-*`, `px-*`, `py-*`, `w-*`) use plain Tailwind classes without custom properties.
 
 ## Custom CSS
 
@@ -43,12 +49,11 @@ import { cn } from '@/lib/utils'
 
 <button className={cn(
   'px-4 py-2 rounded font-medium',
-  variant === 'primary' && 'bg-blue-600 text-white hover:bg-blue-700',
-  variant === 'secondary' && 'bg-gray-100 text-gray-900 hover:bg-gray-200',
+  variant === 'primary' && 'bg-[var(--color-si-btn)] text-white hover:bg-[var(--color-si-btn-hover)]',
   disabled && 'opacity-50 cursor-not-allowed',
 )}>
 ```
 
 ## Dark Mode
 
-This project uses the CSS variables approach for theming. Update `:root` and a dark-mode selector (e.g., `[data-theme="dark"]`) in `index.css` when adding new color tokens.
+This project uses the CSS variables approach for theming. Update `:root` and the dark-mode selector in `index.css` when adding new color tokens.

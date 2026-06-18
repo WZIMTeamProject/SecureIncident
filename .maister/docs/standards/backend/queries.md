@@ -10,18 +10,50 @@ from backend.api.dependencies.db import get_db
 
 @router.get("/incidents/{incident_id}", response_model=IncidentResponse)
 async def get_incident(
-    incident_id: int,
+    incident_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> IncidentResponse:
-    result = await db.execute(
-        select(Incident).where(Incident.id == incident_id)
-    )
-    incident = result.scalar_one_or_none()
-    if incident is None:
-        raise HTTPException(status_code=404, detail="Incident not found")
-    return IncidentResponse.model_validate(incident)
+    return await incident_service.get_incident(db, incident_id, current_user)
 ```
+
+## Repository Pattern
+
+Services never issue SQLAlchemy queries directly. All database access goes through module-level functions in `db/repositories/<model>_repo.py`:
+
+```python
+# In service layer
+from db import repositories
+
+incident = await repositories.incident_repo.get_by_id(db, incident_id)
+await repositories.incident_repo.create(db, incident)
+```
+
+Repository files follow the naming pattern `<model>_repo.py` (e.g., `incident_repo.py`, `user_repo.py`). Repository functions return ORM model instances or `None` — never raw query result proxies.
+
+## flush() vs commit() Split
+
+**Repositories** call `db.add()` + `await db.flush()` — they do NOT commit:
+
+```python
+# In repository (incident_repo.py)
+async def create(db: AsyncSession, incident: Incident) -> Incident:
+    db.add(incident)
+    await db.flush()
+    return incident
+```
+
+**Services** call `await db.commit()` (and optionally `await db.refresh()`) after all repository calls:
+
+```python
+# In service layer
+inc = Incident(**body.model_dump(), reporter_id=current_user.id)
+await repositories.incident_repo.create(db, inc)
+await db.commit()
+await db.refresh(inc)
+```
+
+This pattern ensures atomicity: a service function can call multiple repos before the single commit.
 
 ## Select Patterns
 
@@ -32,6 +64,9 @@ from sqlalchemy.orm import selectinload, joinedload
 # Single row — use scalar_one_or_none(), handle None explicitly
 result = await db.execute(select(User).where(User.id == user_id))
 user = result.scalar_one_or_none()
+
+# COUNT queries — scalar_one() since result is always present
+total = (await db.execute(count_stmt)).scalar_one()
 
 # Multiple rows
 result = await db.execute(select(Incident).where(Incident.project_id == project_id))
@@ -60,29 +95,6 @@ incidents = (await db.execute(
     select(Incident).options(selectinload(Incident.reporter))
 )).scalars().all()
 ```
-
-## Write Operations
-
-```python
-# Create
-incident = Incident(**body.model_dump(), reporter_id=current_user.id)
-db.add(incident)
-await db.commit()
-await db.refresh(incident)
-
-# Update
-incident.status = new_status
-incident.updated_at = datetime.utcnow()
-await db.commit()
-
-# Delete
-await db.delete(incident)
-await db.commit()
-```
-
-## Transactions
-
-FastAPI's request lifecycle manages one session per request. Each `await db.commit()` commits the transaction. If you need to perform multiple writes atomically, do them before a single `commit()`. On error, SQLAlchemy rolls back automatically when the session context exits.
 
 ## Parameterized Queries
 
