@@ -1,4 +1,5 @@
 import {Link, useFetcher} from "react-router";
+import {useEffect, useRef} from "react";
 import {
     FORM_EMAIL,
     FORM_FIRST_NAME,
@@ -8,15 +9,25 @@ import {
     FORM_USERNAME
 } from "./forms.ts";
 import {Background} from "../components/Background.tsx";
-import {IconLock, IconMail, IconUser} from "../components/icons.tsx";
+import {IconIdCard, IconLock, IconLockCheck, IconMail, IconTag, IconUser} from "../components/icons.tsx";
 
 
 export function SIRegisterPage() {
     const fetcher = useFetcher();
     const busy = fetcher.state !== "idle";
 
-    // TODO: Clear credentials on failed login attempts.
-    // TODO: Add different icons for fields
+    const passwordRef = useRef<HTMLInputElement>(null);
+    const passwordRepeatRef = useRef<HTMLInputElement>(null);
+
+    // Wipe entered passwords once a submission fails so they are never left sitting
+    // in the DOM; other fields are kept to spare the user re-typing them.
+    useEffect(() => {
+        if (fetcher.state === "idle" && fetcher.data?.error) {
+            if (passwordRef.current) passwordRef.current.value = "";
+            if (passwordRepeatRef.current) passwordRepeatRef.current.value = "";
+            passwordRef.current?.focus();
+        }
+    }, [fetcher.state, fetcher.data]);
 
     return (
         <Background>
@@ -58,7 +69,7 @@ export function SIRegisterPage() {
                                 rounded-lg px-3 py-2.5
                                 bg-[var(--color-si-input-bg)] transition-colors">
 
-                            <span className="text-[var(--color-si-input-icon)]"><IconUser/></span>
+                            <span className="text-[var(--color-si-input-icon)]"><IconIdCard/></span>
                             <input
                                 id={FORM_FIRST_NAME}
                                 type="text"
@@ -79,7 +90,7 @@ export function SIRegisterPage() {
                                 rounded-lg px-3 py-2.5
                                 bg-[var(--color-si-input-bg)] transition-colors">
 
-                            <span className="text-[var(--color-si-input-icon)]"><IconUser/></span>
+                            <span className="text-[var(--color-si-input-icon)]"><IconTag/></span>
                             <input
                                 id={FORM_LAST_NAME}
                                 type="text"
@@ -120,6 +131,7 @@ export function SIRegisterPage() {
                             bg-[var(--color-si-input-bg)] transition-colors">
                             <span className="text-[var(--color-si-input-icon)]"><IconLock/></span>
                             <input
+                                ref={passwordRef}
                                 id={FORM_PASSWORD}
                                 type="password"
                                 name={FORM_PASSWORD}
@@ -138,8 +150,9 @@ export function SIRegisterPage() {
                             border border-[var(--color-si-input-border)]
                             rounded-lg px-3 py-2.5
                             bg-[var(--color-si-input-bg)] transition-colors">
-                            <span className="text-[var(--color-si-input-icon)]"><IconLock/></span>
+                            <span className="text-[var(--color-si-input-icon)]"><IconLockCheck/></span>
                             <input
+                                ref={passwordRepeatRef}
                                 id={FORM_PASSWORD_REPEAT}
                                 type="password"
                                 name={FORM_PASSWORD_REPEAT}

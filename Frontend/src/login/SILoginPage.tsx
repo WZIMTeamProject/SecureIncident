@@ -1,4 +1,5 @@
 import {Link, useFetcher, useSearchParams} from "react-router";
+import {useEffect, useRef} from "react";
 import {
     FORM_AFTER,
     FORM_PASSWORD,
@@ -20,7 +21,17 @@ export function SILoginPage() {
     const isAfterRegister = searchParams.get(FORM_AFTER) == FORM_VALUE_AFTER_REGISTER;
     const isAfterPasswordReset = searchParams.get(FORM_AFTER) == FORM_VALUE_AFTER_PASSWORD_RESET;
 
-    // TODO: Clear credentials on failed login attempts.
+    const passwordRef = useRef<HTMLInputElement>(null);
+
+    // Wipe the entered password once a login fails so it is never left sitting
+    // in the DOM; the username is kept to spare the user re-typing it.
+    useEffect(() => {
+        if (fetcher.state === "idle" && fetcher.data?.error) {
+            if (passwordRef.current) passwordRef.current.value = "";
+            passwordRef.current?.focus();
+        }
+    }, [fetcher.state, fetcher.data]);
+
     // TODO: Display more helpful errors.
 
     return (
@@ -66,6 +77,7 @@ export function SILoginPage() {
 
                             <span className="text-[var(--color-si-input-icon)]"><IconLock/></span>
                             <input
+                                ref={passwordRef}
                                 id={FORM_PASSWORD}
                                 type="password"
                                 name={FORM_PASSWORD}
