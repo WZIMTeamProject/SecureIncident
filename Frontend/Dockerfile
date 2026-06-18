@@ -1,4 +1,4 @@
-FROM node:22-slim AS builder
+FROM node:26-slim AS builder
 
 WORKDIR /app
 
@@ -22,6 +22,5 @@ COPY nginx.conf /etc/nginx/conf.d/app.conf
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 443
-EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
