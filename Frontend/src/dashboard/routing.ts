@@ -5,7 +5,7 @@ import {
     FORM_ACTION_INVITE_USER, FORM_ACTION_NEW_INCIDENT,
     FORM_ACTION_NEW_PROJECT,
     FORM_INCIDENT_DESCRIPTION, FORM_INCIDENT_NAME,
-    FORM_INCIDENT_PRIORITY, FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
+    FORM_INCIDENT_PRIORITY, FORM_INVITE_COUNT, FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
     FORM_PROJECT_DESCRIPTION, FORM_PROJECT_ID,
     FORM_PROJECT_NAME
 } from "./forms.ts";
@@ -39,8 +39,23 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
                 }
             }
         } else if (organizationAction === FORM_ACTION_INVITE_USER) {
-            // TODO
-            return {ok: true}
+            const maxUses = Number(formData.get(FORM_INVITE_COUNT));
+
+            if (maxUses > 0) {
+                const inviteResponse = await Api.organization.organizationInvitesPost({
+                    createOrgInviteRequest: {
+                        expiresAt: undefined,
+                        maxUses: maxUses,
+                    }
+                }).catch(() => null);
+
+                if(inviteResponse) {
+                    return {
+                        ok: true,
+                        token: inviteResponse.token,
+                    };
+                }
+            }
         } else if (organizationAction === FORM_ACTION_CREATE_ORGANIZATION) {
             const organizationName = formData.get(FORM_ORGANIZATION_NAME)?.toString()?.trim();
             const organizationDescription = formData.get(FORM_ORGANIZATION_DESCRIPTION)?.toString()?.trim();

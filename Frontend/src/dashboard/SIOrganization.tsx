@@ -4,8 +4,8 @@ import type {Organization, Project} from "../data/project.ts";
 import {Popup} from "../components/Popup.tsx";
 import {
     FORM_ACTION, FORM_ACTION_CREATE_ORGANIZATION, FORM_ACTION_DELETE_ORGANIZATION, FORM_ACTION_INVITE_USER,
-    FORM_ACTION_NEW_PROJECT,
-    FORM_INVITE_NAME, FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
+    FORM_ACTION_NEW_PROJECT, FORM_INVITE_COUNT,
+    FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
     FORM_PROJECT_DESCRIPTION,
     FORM_PROJECT_NAME
 } from "./forms.ts";
@@ -236,7 +236,8 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
     const fetcher = useFetcher();
     const busy = fetcher.state != "idle";
 
-    const usernameRef = useRef<HTMLInputElement>(null);
+    const inviteCountRef = useRef<HTMLInputElement>(null);
+    const inviteToken = fetcher.data?.ok ? fetcher.data.token : null;
 
     return (
         <Popup show={show} className={"w-full max-w-xl"}>
@@ -245,42 +246,56 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                     Dodaj do organizacji
                 </h1>
                 <h3 className="text-lg font-medium text-(--color-si-input-text)">
-                    Możesz dodać nowego użytkownika do organizacji
-                    ręcznie lub poprzez kod bądź link.
+                    Wygeneruj token którego inni użytkownicy mogą użyć do dołączenia.
                 </h3>
 
-                <div className="flex flex-col gap-1.5 my-3">
+                <div className="flex gap-1.5 my-3 justify-center items-center">
+                    <span className="text-(--color-si-input-icon)">
+                        Liczba użytkowników:
+                    </span>
+
                     <div className="flex items-center gap-3
                                 border border-(--color-si-input-border)
                                 rounded-lg px-3 py-2.5
                                 bg-(--color-si-input-bg) transition-colors">
                         <input
-                            ref={usernameRef}
-                            id={FORM_INVITE_NAME}
-                            type="text"
-                            name={FORM_INVITE_NAME}
-                            placeholder="Ręcznie (wpisz nazwę użytkownika)"
+                            ref={inviteCountRef}
+                            id={FORM_INVITE_COUNT}
+                            type="number"
+                            min={1}
+                            max={20}
+                            defaultValue={1}
+                            name={FORM_INVITE_COUNT}
                             className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
                     </div>
                 </div>
 
+                <div
+                    hidden={!inviteToken}
+                    className="flex items-center gap-3 mb-3
+                                border border-(--color-si-input-border)
+                                rounded-lg px-3 py-2.5
+                                bg-(--color-si-input-bg) transition-colors">
+                    {inviteToken}
+                </div>
+
                 <div className="flex items-center justify-between">
                     <button
                         onClick={() => {
-                            usernameRef.current = null;
+                            inviteCountRef.current = null;
                             onHide();
                         }}
                         className="px-6 py-2
                                 bg-(--color-si-btn-error)
                                 hover:bg-(--color-si-btn-error-hover) shadow-lg
                                 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
-                        Anuluj
+                        Zamknij
                     </button>
 
                     <input
                         type="submit"
-                        value={busy ? "Zapisywanie..." : "Zapisz"}
+                        value={busy ? "Generowanie..." : "Wygeneruj"}
                         disabled={busy}
                         className="px-6 py-2
                                     bg-(--color-si-btn)
