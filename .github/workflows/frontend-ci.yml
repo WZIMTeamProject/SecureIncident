@@ -1,8 +1,8 @@
 name: Frontend CI/CD
 on:
   push:
-    branches: [main]
-    paths: [Frontend/**]
+    branches: [ main ]
+    paths: [ Frontend/** ]
 
 jobs:
   build-deploy:
@@ -12,15 +12,6 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '26'
-
-      - name: Install dependencies
-        working-directory: Frontend
-        run: npm ci
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -47,5 +38,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/secureincident
-            docker compose pull --no-deps frontend
-            docker compose up -d --force-recreate --no-deps frontend
+            docker compose pull frontend
+            docker compose up -d --force-recreate frontend
