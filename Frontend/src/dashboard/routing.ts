@@ -2,12 +2,15 @@ import {type ActionFunction} from "react-router";
 import {
     FORM_ACTION, FORM_ACTION_CREATE_ORGANIZATION,
     FORM_ACTION_DELETE_ORGANIZATION,
-    FORM_ACTION_INVITE_USER,
-    FORM_ACTION_NEW_PROJECT, FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
-    FORM_PROJECT_DESCRIPTION,
+    FORM_ACTION_INVITE_USER, FORM_ACTION_NEW_INCIDENT,
+    FORM_ACTION_NEW_PROJECT,
+    FORM_INCIDENT_DESCRIPTION, FORM_INCIDENT_NAME,
+    FORM_INCIDENT_PRIORITY, FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
+    FORM_PROJECT_DESCRIPTION, FORM_PROJECT_ID,
     FORM_PROJECT_NAME
 } from "./forms.ts";
 import Api from "../data/Api.ts";
+import type {IncidentPriority} from "../api";
 
 export const dashboardOrganizationAction: ActionFunction = async ({request}) => {
     const formData = await request.formData();
@@ -72,4 +75,33 @@ export const dashboardProjectsAction: ActionFunction = async ({request}) => {
     if (!projectAction) {
         return {ok: false};
     }
+
+    if (request.method === "POST") {
+        if (projectAction === FORM_ACTION_NEW_INCIDENT) {
+            const incidentName = formData.get(FORM_INCIDENT_NAME)?.toString()?.trim();
+            const incidentDescription = formData.get(FORM_INCIDENT_DESCRIPTION)?.toString()?.trim();
+            const incidentPriority = formData.get(FORM_INCIDENT_PRIORITY)?.toString()?.trim();
+            //const incidentAssignees = formData.get(FORM_INCIDENT_ASSIGNEES)?.toString()?.trim();
+            const projectId = formData.get(FORM_PROJECT_ID)?.toString()?.trim();
+
+            if (incidentName && incidentDescription && projectId) {
+                const createdIncidentId = await Api.incidents.projectsProjectIdIncidentsPost({
+                    projectId: projectId,
+                    createIncidentRequest: {
+                        title: incidentName,
+                        description: incidentDescription,
+                        // categoryId: undefined, ?
+                        priority: incidentPriority as IncidentPriority,
+                        // primaryAssigneeId: undefined
+                    }
+                }).catch(() => null);
+
+                if (createdIncidentId){
+                    return {ok: true};
+                }
+            }
+        }
+    }
+
+    return {ok: false};
 }

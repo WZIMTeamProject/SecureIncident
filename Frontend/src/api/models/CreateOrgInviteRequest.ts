@@ -15,60 +15,51 @@
 /**
  *
  * @export
- * @interface CreateProjectInviteRequest
+ * @interface CreateOrgInviteRequest
  */
-export interface CreateProjectInviteRequest {
-    /**
-     *
-     * @type {string}
-     * @memberof CreateProjectInviteRequest
-     */
-    roleId: string;
+export interface CreateOrgInviteRequest {
     /**
      *
      * @type {Date}
-     * @memberof CreateProjectInviteRequest
+     * @memberof CreateOrgInviteRequest
      */
     expiresAt?: Date | null;
     /**
      *
      * @type {number}
-     * @memberof CreateProjectInviteRequest
+     * @memberof CreateOrgInviteRequest
      */
     maxUses?: number | null;
 }
 
 /**
- * Check if a given object implements the CreateProjectInviteRequest interface.
+ * Check if a given object implements the CreateOrgInviteRequest interface.
  */
-export function instanceOfCreateProjectInviteRequest(value: object): value is CreateProjectInviteRequest {
-    if (!('roleId' in value) || value['roleId'] === undefined) return false;
+export function instanceOfCreateOrgInviteRequest(value: object): value is CreateOrgInviteRequest {
     return true;
 }
 
-export function CreateProjectInviteRequestFromJSON(json: any): CreateProjectInviteRequest {
-    return CreateProjectInviteRequestFromJSONTyped(json, false);
+export function CreateOrgInviteRequestFromJSON(json: any): CreateOrgInviteRequest {
+    return CreateOrgInviteRequestFromJSONTyped(json, false);
 }
 
-export function CreateProjectInviteRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): CreateProjectInviteRequest {
+export function CreateOrgInviteRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): CreateOrgInviteRequest {
     if (json == null) {
         return json;
     }
     return {
 
-        'roleId': json['role_id'],
         'expiresAt': json['expires_at'] == null ? undefined : (new Date(json['expires_at'])),
         'maxUses': json['max_uses'] == null ? undefined : json['max_uses'],
     };
 }
 
-export function CreateProjectInviteRequestToJSON(value?: CreateProjectInviteRequest | null): any {
+export function CreateOrgInviteRequestToJSON(value?: CreateOrgInviteRequest | null): any {
     if (value == null) {
         return value;
     }
     return {
 
-        'role_id': value['roleId'],
         'expires_at': value['expiresAt'] == null ? undefined : ((value['expiresAt'] as any).toISOString()),
         'max_uses': value['maxUses'],
     };

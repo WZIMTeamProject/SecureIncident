@@ -15,46 +15,55 @@
 /**
  *
  * @export
- * @interface AddHelperRequest
+ * @interface HelperResponse
  */
-export interface AddHelperRequest {
+export interface HelperResponse {
     /**
      *
      * @type {string}
-     * @memberof AddHelperRequest
+     * @memberof HelperResponse
      */
     userId: string;
+    /**
+     *
+     * @type {Date}
+     * @memberof HelperResponse
+     */
+    addedAt: Date;
 }
 
 /**
- * Check if a given object implements the AddHelperRequest interface.
+ * Check if a given object implements the HelperResponse interface.
  */
-export function instanceOfAddHelperRequest(value: object): value is AddHelperRequest {
+export function instanceOfHelperResponse(value: object): value is HelperResponse {
     if (!('userId' in value) || value['userId'] === undefined) return false;
+    if (!('addedAt' in value) || value['addedAt'] === undefined) return false;
     return true;
 }
 
-export function AddHelperRequestFromJSON(json: any): AddHelperRequest {
-    return AddHelperRequestFromJSONTyped(json, false);
+export function HelperResponseFromJSON(json: any): HelperResponse {
+    return HelperResponseFromJSONTyped(json, false);
 }
 
-export function AddHelperRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): AddHelperRequest {
+export function HelperResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): HelperResponse {
     if (json == null) {
         return json;
     }
     return {
 
         'userId': json['user_id'],
+        'addedAt': (new Date(json['added_at'])),
     };
 }
 
-export function AddHelperRequestToJSON(value?: AddHelperRequest | null): any {
+export function HelperResponseToJSON(value?: HelperResponse | null): any {
     if (value == null) {
         return value;
     }
     return {
 
         'user_id': value['userId'],
+        'added_at': ((value['addedAt']).toISOString()),
     };
 }
 
