@@ -14,12 +14,11 @@ import {Popup} from "../components/Popup.tsx";
 
 export function SIProject() {
     const urlParams = useParams();
+    const projectId = urlParams["projectId"];
 
     const [project, setProject] = useState<Project | null>();
 
     useEffect(() => {
-        const projectId = urlParams["projectId"];
-
         if (projectId) {
             Api.projects.projectsProjectIdGet({
                 projectId: projectId,
@@ -36,7 +35,7 @@ export function SIProject() {
                 () => setProject(null)
             );
         }
-    }, [urlParams]);
+    }, [projectId]);
 
     if (project === undefined) {
         return <div><LoadingMessage/></div>;

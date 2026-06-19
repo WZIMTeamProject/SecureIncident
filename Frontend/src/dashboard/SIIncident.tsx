@@ -7,12 +7,11 @@ import * as React from "react";
 
 export function SIIncident() {
     const urlParams = useParams();
+    const incidentId = urlParams["incidentId"];
 
     const [incident, setIncident] = useState<Incident | null>();
 
     useEffect(() => {
-        const incidentId = urlParams["incidentId"];
-
         if (incidentId) {
             Api.incidents.incidentsIncidentIdGet({
                 incidentId: incidentId,
@@ -32,7 +31,7 @@ export function SIIncident() {
                 () => setIncident(null),
             );
         }
-    }, [urlParams]);
+    }, [incidentId]);
 
     if (incident === undefined) {
         return <LoadingMessage/>;

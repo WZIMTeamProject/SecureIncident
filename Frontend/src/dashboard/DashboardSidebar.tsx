@@ -1,10 +1,14 @@
-import {Link, useLoaderData} from "react-router";
+import {Link, useLoaderData, useParams} from "react-router";
 import type {AuthState} from "../data/auth.ts";
 import {useEffect, useState} from "react";
 import type {Incident, Organization, Project} from "../data/project.ts";
 
 export default function DashboardSidebar() {
     const auth = useLoaderData<AuthState>();
+    const urlParams = useParams();
+
+    const selectedProject = urlParams["projectId"];
+    const selectedIncident = urlParams["incidentId"];
 
     const [userOrganization, setUserOrganization] = useState<Organization | null>();
     const [userProjects, setUserProjects] = useState<Project[]>();
@@ -36,9 +40,9 @@ export default function DashboardSidebar() {
 
             <OrganizationLink organization={userOrganization}/>
             <br/>
-            <ProjectLinks projects={userProjects}/>
+            <ProjectLinks projects={userProjects} selected={selectedProject}/>
             <br/>
-            <IncidentLinks incidents={userIncidents}/>
+            <IncidentLinks incidents={userIncidents} selected={selectedIncident}/>
             <br/>
         </div>
     );
@@ -63,7 +67,7 @@ function OrganizationLink({organization}: { organization: Organization | null | 
     </>;
 }
 
-function ProjectLinks({projects}: { projects: Project[] | undefined }) {
+function ProjectLinks({projects, selected}: { projects: Project[] | undefined, selected?: string }) {
     if (projects === undefined) {
         return <LoadingText/>;
     }
@@ -72,7 +76,8 @@ function ProjectLinks({projects}: { projects: Project[] | undefined }) {
         return <h2 className="overflow-x-clip">
             <Link
                 to={`/dashboard/project/${project.id}`}
-                className="hover:underline font-medium text-lg text-(--color-si-input-text)">
+                className={`hover:underline text-lg text-(--color-si-input-text)
+                    ${selected && project.id == selected ? "font-extrabold" : "font-medium"}`}>
                 {project.name}
             </Link>
         </h2>;
@@ -96,7 +101,7 @@ function ProjectLinks({projects}: { projects: Project[] | undefined }) {
     </>;
 }
 
-function IncidentLinks({incidents}: { incidents: Incident[] | undefined }) {
+function IncidentLinks({incidents, selected}: { incidents: Incident[] | undefined, selected?: string }) {
     if (incidents === undefined) {
         return <LoadingText/>;
     }
@@ -104,7 +109,8 @@ function IncidentLinks({incidents}: { incidents: Incident[] | undefined }) {
     const incidentLinks = incidents.map((incident) => {
         return <Link
             to={`/dashboard/incident/${incident.id}`}
-            className="hover:underline font-medium text-lg text-(--color-si-input-text)">
+            className={`hover:underline text-lg text-(--color-si-input-text)
+                ${selected && incident.id == selected ? "font-extrabold" : "font-medium"}`}>
             {incident.title}
         </Link>
     });
