@@ -29,56 +29,106 @@ export default function DashboardSidebar() {
     }, [auth]);
 
     return (
-        <div className="w-full max-w-md
+        <div className="w-full max-w-md shrink-0
                     bg-(--color-si-card-bg)
                     border-5 border-(--color-si-card-border)
                     rounded-2xl shadow-lg px-8 py-8 transition-colors duration-300">
-            <h1>Moja Organizacja</h1>
-            <hr/>
 
-            <OrganizationLink organization={userOrganization}/><br/>
-
-            <h1>Moje Projekty</h1>
-            <hr/>
-
-            <ProjectLinks projects={userProjects}/><br/>
-
-            <h1>Moje Incydenty</h1>
-            <hr/>
-
-            <IncidentLinks incidents={userIncidents}/><br/>
+            <OrganizationLink organization={userOrganization}/>
+            <br/>
+            <ProjectLinks projects={userProjects}/>
+            <br/>
+            <IncidentLinks incidents={userIncidents}/>
+            <br/>
         </div>
     );
 }
 
 function OrganizationLink({organization}: { organization: Organization | null | undefined }) {
     if (organization === undefined) {
-        return <h2>Wczytywanie...</h2>;
+        return <LoadingText/>;
     }
 
-    return <h2>
-        <Link to="/dashboard">{organization?.name ?? "- Brak -"}</Link>
-    </h2>;
+    return <>
+        <h1 className="text-xl font-bold text-(--color-si-label)">
+            Moja Organizacja
+        </h1>
+        <hr className="border-(--color-si-label)"/>
+
+        <h2 className="p-1 overflow-x-clip">
+            <Link to="/dashboard" className="hover:underline font-medium text-lg text-(--color-si-input-text)">
+                {organization?.name ?? "- Brak -"}
+            </Link>
+        </h2>
+    </>;
 }
 
 function ProjectLinks({projects}: { projects: Project[] | undefined }) {
     if (projects === undefined) {
-        return <h2>Wczytywanie...</h2>;
+        return <LoadingText/>;
     }
 
     const projectLinks = projects.map((project) => {
-        return <h2><Link to={`/dashboard/project/${project.id}`}>{project.name}</Link></h2>;
+        return <h2 className="overflow-x-clip">
+            <Link
+                to={`/dashboard/project/${project.id}`}
+                className="hover:underline font-medium text-lg text-(--color-si-input-text)">
+                {project.name}
+            </Link>
+        </h2>;
     });
 
-    return <>{projectLinks}</>;
+    if (projectLinks.length == 0) {
+        projectLinks.push(
+            <h2 className="font-medium text-lg text-(--color-si-input-text) italic"> - Brak - </h2>
+        );
+    }
+
+    return <>
+        <h1 className="text-xl font-bold text-(--color-si-label)">
+            Moje Projekty ({projects.length})
+        </h1>
+        <hr className="border-(--color-si-label)"/>
+
+        <div className="flex flex-col p-1 gap-1">
+            {projectLinks}
+        </div>
+    </>;
 }
 
 function IncidentLinks({incidents}: { incidents: Incident[] | undefined }) {
     if (incidents === undefined) {
-        return <h2>Wczytywanie...</h2>;
+        return <LoadingText/>;
+    }
+
+    const incidentLinks = incidents.map((incident) => {
+        return <h2 className="p-1 overflow-x-clip">
+            <span className="hover:underline font-medium text-lg text-(--color-si-input-text)">
+                {incident.title}
+            </span>
+        </h2>
+    });
+
+    if (incidentLinks.length == 0) {
+        incidentLinks.push(
+            <h2 className="font-medium text-lg text-(--color-si-input-text) italic"> - Brak - </h2>
+        );
     }
 
     return <>
-        {incidents.map((incident) => <h2>{incident.title}</h2>)}
-    </>
+        <h1 className="text-xl font-bold text-(--color-si-label)">
+            Moje Incydenty ({incidents.length})
+        </h1>
+        <hr className="border-(--color-si-label)"/>
+
+        <div className="flex flex-col p-1 gap-1">
+            {incidentLinks}
+        </div>
+    </>;
+}
+
+function LoadingText() {
+    return <h2 className="font-medium text-lg text-(--color-si-input-text)">
+        Wczytywanie...
+    </h2>;
 }

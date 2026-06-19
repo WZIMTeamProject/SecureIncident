@@ -48,14 +48,18 @@ function ProjectView({project}: { project: Project }) {
     return (
         <div>
             <div className="p-3">
-                <h1 className="text-2xl font-bold">{project.name}</h1>
-                <p className="text-md text-gray-600 italic font-normal">{project.description ?? "Brak opisu"}</p>
+                <h1 className="text-2xl font-bold text-(--color-si-label)">
+                    {project.name}
+                </h1>
+                <p className="text-md text-(--color-si-input-text) italic font-normal">
+                    {project.description ?? "Brak opisu"}
+                </p>
             </div>
 
             <div className="w-full h-96
                     border-5 border-(--color-si-card-border)
                     rounded-2xl shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll">
-                TODO: Incidents go here
+                <p className="text-(--color-si-input-text)">TODO: Incidents go here</p>
             </div>
 
             <div className="w-full flex gap-3 p-3 justify-end">

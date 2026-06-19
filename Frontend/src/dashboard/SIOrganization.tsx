@@ -92,13 +92,13 @@ function OrganizationView({organization}: { organization: Organization }) {
             <DeleteOrganizationPopup show={shownPopup == "delete_organization"} onHide={hidePopup}/>
 
             <div className="p-3">
-                <h1 className="text-2xl font-bold">{organization.name}</h1>
-                <p className="text-md text-gray-600 italic font-normal">{organization.description ?? "Brak opisu"}</p>
+                <h1 className="text-2xl font-bold text-(--color-si-label)">{organization.name}</h1>
+                <p className="text-md text-(--color-si-input-text) italic font-normal">{organization.description ?? "Brak opisu"}</p>
             </div>
 
             <div className="w-full h-96
                     border-5 border-(--color-si-card-border)
-                    rounded-2xl shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll">
+                    rounded-2xl shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll text-(--color-si-input-text)">
                 {
                     projects?.map((project) => {
                         return <h1>{project.name} - {project.id}</h1>;
@@ -159,10 +159,10 @@ function NewProjectPopup({show, onHide}: PopupProps) {
     return (
         <Popup show={show} className={"w-full max-w-xl"}>
             <fetcher.Form method="POST" onSubmit={() => setPendingHide(true)}>
-                <h1 className="text-3xl font-bold">
+                <h1 className="text-3xl font-bold text-(--color-si-label)">
                     Nowy Projekt
                 </h1>
-                <h3 className="text-lg font-medium">
+                <h3 className="text-lg font-medium text-(--color-si-input-text)">
                     Podaj dane nowego projektu:
                 </h3>
 
@@ -241,10 +241,10 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
     return (
         <Popup show={show} className={"w-full max-w-xl"}>
             <fetcher.Form method="POST">
-                <h1 className="text-3xl font-bold">
+                <h1 className="text-3xl font-bold text-(--color-si-label)">
                     Dodaj do organizacji
                 </h1>
-                <h3 className="text-lg font-medium">
+                <h3 className="text-lg font-medium text-(--color-si-input-text)">
                     Możesz dodać nowego użytkownika do organizacji
                     ręcznie lub poprzez kod bądź link.
                 </h3>
@@ -306,11 +306,11 @@ function DeleteOrganizationPopup({show, onHide}: PopupProps) {
     return (
         <Popup show={show} className={"w-full max-w-xl"}>
             <fetcher.Form method="DELETE">
-                <h1 className="text-3xl font-bold">
+                <h1 className="text-3xl font-bold text-(--color-si-label)">
                     USUWANIE ORGANIZACJI
                 </h1>
 
-                <h3 className="text-lg font-medium mt-2 mb-4">
+                <h3 className="text-lg font-medium mt-2 mb-4 text-(--color-si-input-text)">
                     Czy na pewno chcesz usunąć organizację?
                     Usunie ją to bezpowrotnie z Twojego dashboardu razem z projektami!
                 </h3>
@@ -362,10 +362,10 @@ function CreateOrganizationPopup({show, onHide}: PopupProps) {
     return (
         <Popup show={show} className={"w-full max-w-xl"} >
             <fetcher.Form method="POST" onSubmit={() => setPendingHide(true)}>
-                <h1 className="text-3xl font-bold">
+                <h1 className="text-3xl font-bold text-(--color-si-label)">
                     Utwórz nową organizację
                 </h1>
-                <h3 className="text-lg font-medium">
+                <h3 className="text-lg font-medium text-(--color-si-label)">
                     Wpisz nazwę organizacji:
                 </h3>
 
