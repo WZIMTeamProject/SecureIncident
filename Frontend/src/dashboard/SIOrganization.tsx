@@ -4,8 +4,9 @@ import type {Organization, Project} from "../data/project.ts";
 import {Popup} from "../components/Popup.tsx";
 import {
     FORM_ACTION, FORM_ACTION_CREATE_ORGANIZATION, FORM_ACTION_DELETE_ORGANIZATION, FORM_ACTION_INVITE_USER,
-    FORM_ACTION_NEW_PROJECT,
-    FORM_INVITE_NAME, FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
+    FORM_ACTION_JOIN_ORGANIZATION,
+    FORM_ACTION_NEW_PROJECT, FORM_INVITE_COUNT, FORM_INVITE_TOKEN,
+    FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
     FORM_PROJECT_DESCRIPTION,
     FORM_PROJECT_NAME
 } from "./forms.ts";
@@ -48,6 +49,7 @@ function CreateOrganizationWidget() {
     return (
         <div className="w-full flex gap-3 p-3 justify-end">
             <CreateOrganizationPopup show={shownPopup == "new_organization"} onHide={hidePopup}/>
+            <JoinOrganizationPopup show={shownPopup == "join_organization"} onHide={hidePopup}/>
 
             <button
                 onClick={() => setShownPopup("new_organization")}
@@ -58,7 +60,9 @@ function CreateOrganizationWidget() {
                 Utwórz organizację
             </button>
 
-            <button className="px-6 py-2
+            <button
+                onClick={() => setShownPopup("join_organization")}
+                className="px-6 py-2
                         bg-(--color-si-btn)
                         hover:bg-(--color-si-btn-hover) shadow-lg
                         text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
@@ -92,13 +96,13 @@ function OrganizationView({organization}: { organization: Organization }) {
             <DeleteOrganizationPopup show={shownPopup == "delete_organization"} onHide={hidePopup}/>
 
             <div className="p-3">
-                <h1 className="text-2xl font-bold">{organization.name}</h1>
-                <p className="text-md text-gray-600 italic font-normal">{organization.description ?? "Brak opisu"}</p>
+                <h1 className="text-2xl font-bold text-(--color-si-label)">{organization.name}</h1>
+                <p className="text-md text-(--color-si-input-text) italic font-normal">{organization.description ?? "Brak opisu"}</p>
             </div>
 
             <div className="w-full h-96
                     border-5 border-(--color-si-card-border)
-                    rounded-2xl shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll">
+                    rounded-2xl shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll text-(--color-si-input-text)">
                 {
                     projects?.map((project) => {
                         return <h1>{project.name} - {project.id}</h1>;
@@ -159,10 +163,10 @@ function NewProjectPopup({show, onHide}: PopupProps) {
     return (
         <Popup show={show} className={"w-full max-w-xl"}>
             <fetcher.Form method="POST" onSubmit={() => setPendingHide(true)}>
-                <h1 className="text-3xl font-bold">
+                <h1 className="text-3xl font-bold text-(--color-si-label)">
                     Nowy Projekt
                 </h1>
-                <h3 className="text-lg font-medium">
+                <h3 className="text-lg font-medium text-(--color-si-input-text)">
                     Podaj dane nowego projektu:
                 </h3>
 
@@ -236,51 +240,66 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
     const fetcher = useFetcher();
     const busy = fetcher.state != "idle";
 
-    const usernameRef = useRef<HTMLInputElement>(null);
+    const inviteCountRef = useRef<HTMLInputElement>(null);
+    const inviteToken = fetcher.data?.ok ? fetcher.data.token : null;
 
     return (
         <Popup show={show} className={"w-full max-w-xl"}>
             <fetcher.Form method="POST">
-                <h1 className="text-3xl font-bold">
+                <h1 className="text-3xl font-bold text-(--color-si-label)">
                     Dodaj do organizacji
                 </h1>
-                <h3 className="text-lg font-medium">
-                    Możesz dodać nowego użytkownika do organizacji
-                    ręcznie lub poprzez kod bądź link.
+                <h3 className="text-lg font-medium text-(--color-si-input-text)">
+                    Wygeneruj token którego inni użytkownicy mogą użyć do dołączenia.
                 </h3>
 
-                <div className="flex flex-col gap-1.5 my-3">
+                <div className="flex gap-1.5 my-3 justify-center items-center">
+                    <span className="text-(--color-si-input-icon)">
+                        Liczba użytkowników:
+                    </span>
+
                     <div className="flex items-center gap-3
                                 border border-(--color-si-input-border)
                                 rounded-lg px-3 py-2.5
                                 bg-(--color-si-input-bg) transition-colors">
                         <input
-                            ref={usernameRef}
-                            id={FORM_INVITE_NAME}
-                            type="text"
-                            name={FORM_INVITE_NAME}
-                            placeholder="Ręcznie (wpisz nazwę użytkownika)"
+                            ref={inviteCountRef}
+                            id={FORM_INVITE_COUNT}
+                            type="number"
+                            min={1}
+                            max={20}
+                            defaultValue={1}
+                            name={FORM_INVITE_COUNT}
                             className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
                     </div>
                 </div>
 
+                <div
+                    hidden={!inviteToken}
+                    className="flex items-center gap-3 mb-3
+                                border border-(--color-si-input-border)
+                                rounded-lg px-3 py-2.5
+                                bg-(--color-si-input-bg) transition-colors">
+                    {inviteToken}
+                </div>
+
                 <div className="flex items-center justify-between">
                     <button
                         onClick={() => {
-                            usernameRef.current = null;
+                            inviteCountRef.current = null;
                             onHide();
                         }}
                         className="px-6 py-2
                                 bg-(--color-si-btn-error)
                                 hover:bg-(--color-si-btn-error-hover) shadow-lg
                                 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
-                        Anuluj
+                        Zamknij
                     </button>
 
                     <input
                         type="submit"
-                        value={busy ? "Zapisywanie..." : "Zapisz"}
+                        value={busy ? "Generowanie..." : "Wygeneruj"}
                         disabled={busy}
                         className="px-6 py-2
                                     bg-(--color-si-btn)
@@ -306,11 +325,11 @@ function DeleteOrganizationPopup({show, onHide}: PopupProps) {
     return (
         <Popup show={show} className={"w-full max-w-xl"}>
             <fetcher.Form method="DELETE">
-                <h1 className="text-3xl font-bold">
+                <h1 className="text-3xl font-bold text-(--color-si-label)">
                     USUWANIE ORGANIZACJI
                 </h1>
 
-                <h3 className="text-lg font-medium mt-2 mb-4">
+                <h3 className="text-lg font-medium mt-2 mb-4 text-(--color-si-input-text)">
                     Czy na pewno chcesz usunąć organizację?
                     Usunie ją to bezpowrotnie z Twojego dashboardu razem z projektami!
                 </h3>
@@ -362,10 +381,10 @@ function CreateOrganizationPopup({show, onHide}: PopupProps) {
     return (
         <Popup show={show} className={"w-full max-w-xl"} >
             <fetcher.Form method="POST" onSubmit={() => setPendingHide(true)}>
-                <h1 className="text-3xl font-bold">
+                <h1 className="text-3xl font-bold text-(--color-si-label)">
                     Utwórz nową organizację
                 </h1>
-                <h3 className="text-lg font-medium">
+                <h3 className="text-lg font-medium text-(--color-si-label)">
                     Wpisz nazwę organizacji:
                 </h3>
 
@@ -429,6 +448,76 @@ function CreateOrganizationPopup({show, onHide}: PopupProps) {
                     name={FORM_ACTION}
                     type="hidden"
                     value={FORM_ACTION_CREATE_ORGANIZATION}/>
+            </fetcher.Form>
+        </Popup>
+    );
+}
+
+function JoinOrganizationPopup({show, onHide}: PopupProps) {
+    const fetcher = useFetcher();
+    const busy = fetcher.state != "idle";
+
+    const [pendingHide, setPendingHide] = useState<boolean>(false);
+
+    const tokenNameRef = useRef<HTMLInputElement>(null);
+
+    if (fetcher.state == "idle" && pendingHide) {
+        setPendingHide(false);
+        onHide();
+    }
+
+    return (
+        <Popup show={show} className={"w-full max-w-xl"} >
+            <fetcher.Form method="POST" onSubmit={() => setPendingHide(true)}>
+                <h1 className="text-3xl font-bold text-(--color-si-label)">
+                    Podaj token z zaproszenia by dołączyć do organizacji:
+                </h1>
+
+                <div className="flex flex-col gap-1.5 my-3">
+                    <div className="flex items-center gap-3
+                                border border-(--color-si-input-border)
+                                rounded-lg px-3 py-2.5
+                                bg-(--color-si-input-bg) transition-colors">
+                        <input
+                            ref={tokenNameRef}
+                            required={true}
+                            id={FORM_INVITE_TOKEN}
+                            type="text"
+                            name={FORM_INVITE_TOKEN}
+                            placeholder="Podaj token"
+                            className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
+                        />
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                    <button
+                        onClick={() => {
+                            tokenNameRef.current = null;
+                            onHide();
+                        }}
+                        className="px-6 py-2
+                                bg-(--color-si-btn-error)
+                                hover:bg-(--color-si-btn-error-hover) shadow-lg
+                                text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                        Anuluj
+                    </button>
+
+                    <input
+                        type="submit"
+                        value={busy ? "Dołączanie..." : "Zatwierdź"}
+                        disabled={busy}
+                        className="px-6 py-2
+                                    bg-(--color-si-btn)
+                                    hover:bg-(--color-si-btn-hover) shadow-lg
+                                    disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
+                    />
+                </div>
+
+                <input
+                    name={FORM_ACTION}
+                    type="hidden"
+                    value={FORM_ACTION_JOIN_ORGANIZATION}/>
             </fetcher.Form>
         </Popup>
     );

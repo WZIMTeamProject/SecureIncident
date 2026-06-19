@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+
 /**
  * Secure Incident API
  * Core API draft for the first implementation stage of Secure Incydent. This version follows the domain rule that a user can belong to many projects, but only within one organization or in private projects.

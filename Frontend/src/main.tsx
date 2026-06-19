@@ -27,7 +27,7 @@ import {THEME_PREFERENCE, THEME_PREFERENCE_DARK} from "./data/cookies.ts";
 import type {SIContext} from "./data/context.ts";
 import {SIOrganization} from "./dashboard/SIOrganization.tsx";
 import {SIIncident} from "./dashboard/SIIncident.tsx";
-import {dashboardOrganizationAction} from "./dashboard/routing.ts";
+import {dashboardIncidentsAction, dashboardOrganizationAction, dashboardProjectsAction} from "./dashboard/routing.ts";
 
 const appRootLoader: LoaderFunction = async ({context}) => {
     const middlewareContext = (context as Readonly<RouterContextProvider>);
@@ -65,10 +65,12 @@ const router = createBrowserRouter([
                     {
                         path: "/dashboard/project/:projectId",
                         Component: SIProject,
+                        action: dashboardProjectsAction,
                     },
                     {
                         path: "/dashboard/incident/:incidentId",
                         Component: SIIncident,
+                        action: dashboardIncidentsAction,
                     }
                 ]
             },
