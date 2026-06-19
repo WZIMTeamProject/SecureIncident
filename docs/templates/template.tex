@@ -19,6 +19,11 @@ $endif$
 $if(geometry)$
 \usepackage[$for(geometry)$$geometry$$sep$,$endfor$]{geometry}
 $endif$
+\usepackage{fvextra}
+\DefineVerbatimEnvironment{verbatim}{Verbatim}{
+  breaklines=true,
+  breakanywhere=true
+}
 \usepackage{amsmath,amssymb}
 $--
 $-- section numbering
