@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from "react";
 import type {Incident, Project} from "../data/project.ts";
-import {useFetcher, useParams} from "react-router";
+import {Link, useFetcher, useParams} from "react-router";
 import Api from "../data/Api.ts";
 import {
     FORM_ACTION,
@@ -41,7 +41,6 @@ export function SIProject() {
     if (project === undefined) {
         return <div><LoadingMessage/></div>;
     }
-
 
     return (
         <div>
@@ -110,7 +109,9 @@ function ProjectView({project}: { project: Project }) {
                     rounded-2xl shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll">
                 {
                     incidents?.map((incident) => {
-                        return <h1>{incident.title} - {incident.id}</h1>;
+                        return <Link to={`/dashboard/incident/${incident.id}`}>
+                            {incident.title} - {incident.id}
+                        </Link>;
                     }) ?? <h1>Ładowanie...</h1>
                 }
             </div>

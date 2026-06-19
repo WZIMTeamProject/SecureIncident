@@ -1,6 +1,4 @@
-import type {IncidentsHistoryGetTypeEnum, ProjectsGetScopeEnum} from "../api";
-
-export type ProjectScope = ProjectsGetScopeEnum;
+import type {IncidentLogType, IncidentPriority, IncidentStatus, ProjectScope} from "../api";
 
 export interface Project {
     id: string;
@@ -16,13 +14,10 @@ export interface Organization {
     description?: string;
 }
 
-export type IncidentPriority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
-export type IncidentStatus = "NEW" | "PROBLEM_IS_BEING_SOLVED" | "RESOLVED" | "CLOSED" | "REJECTED";
-export type IncidentHistoryType = IncidentsHistoryGetTypeEnum; // I have no clue why this is the only one actually documented.
-
 export interface Incident {
     id: string;
     title: string;
+    description?: string;
     categoryId?: string;
     priority: IncidentPriority;
     status: IncidentStatus;
@@ -33,7 +28,7 @@ export interface Incident {
 export interface IncidentHistoryEntry {
     id: string;
     incidentId: string;
-    type: IncidentHistoryType;
+    type: IncidentLogType,
     createdAt: Date;
     actorId: string;
     comment?: string;

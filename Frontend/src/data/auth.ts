@@ -18,15 +18,11 @@ import {
     getDummyProjects,
     type Incident,
     type IncidentHistoryEntry,
-    type IncidentHistoryType,
-    type IncidentPriority,
-    type IncidentStatus,
     type Organization,
     type Project,
-    type ProjectScope
 } from "./project.ts";
 import type {UserProfile} from "./profile.ts";
-import {ResponseError} from "../api";
+import {type IncidentLogType, type ProjectScope, ResponseError} from "../api";
 
 export const AuthRouterContext = createContext<AuthState | null>(null);
 export const AuthUserContext = React.createContext<AuthState | null>(null);
@@ -107,10 +103,11 @@ export class AuthState {
                     id: rawIncident.id,
                     title: rawIncident.title,
                     primaryAssigneeId: rawIncident.primaryAssigneeId ?? undefined,
-                    categoryId: rawIncident.categoryId,
+                    categoryId: rawIncident.categoryId ?? undefined,
                     reportDate: rawIncident.reportDate,
-                    status: rawIncident.status as IncidentStatus,
-                    priority: rawIncident.priority as IncidentPriority,
+                    status: rawIncident.status,
+                    priority: rawIncident.priority,
+                    description: "",
                 };
             });
         } catch {
@@ -130,10 +127,10 @@ export class AuthState {
                     id: rawIncident.id,
                     title: rawIncident.title,
                     primaryAssigneeId: rawIncident.primaryAssigneeId ?? undefined,
-                    categoryId: rawIncident.categoryId,
+                    categoryId: rawIncident.categoryId ?? undefined,
                     reportDate: rawIncident.reportDate,
-                    status: rawIncident.status as IncidentStatus,
-                    priority: rawIncident.priority as IncidentPriority,
+                    status: rawIncident.status,
+                    priority: rawIncident.priority,
                 };
             });
         } catch {
@@ -141,7 +138,7 @@ export class AuthState {
         }
     }
 
-    async getIncidentHistory(projectId?: string, type?: IncidentHistoryType): Promise<IncidentHistoryEntry[]> {
+    async getIncidentHistory(projectId?: string, type?: IncidentLogType): Promise<IncidentHistoryEntry[]> {
         if (import.meta.env.DEV && this.isDummyUser) {
             return [];
         }
