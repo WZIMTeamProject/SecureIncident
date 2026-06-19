@@ -26,7 +26,7 @@ dependencies = [
     "python-json-logger>=4.1.0",
 ]
 [tool.ruff]
-target-version = "py313"
+target-version = "py314"
 line-length = 88
 
 [tool.ruff.lint]
@@ -37,6 +37,7 @@ ignore = ["E501"]
 "backend/main.py" = ["E402"]
 "backend/alembic/env.py" = ["E402"]
 "backend/db/models/*.py" = ["F821"]
+"backend/tests/*.py" = ["S101"]
 
 [tool.ruff.format]
 quote-style = "double"
