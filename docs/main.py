@@ -3,6 +3,8 @@ import subprocess
 from pathlib import Path
 import shutil
 
+# Install pdoc, npm, pandoc, miktex
+
 subprocess.run(
     ["pdoc3", "../backend", "--skip-errors", "--template-dir", "templates", "-o", "build"],
     check=True
