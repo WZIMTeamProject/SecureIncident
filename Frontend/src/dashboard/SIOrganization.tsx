@@ -4,7 +4,8 @@ import type {Organization, Project} from "../data/project.ts";
 import {Popup} from "../components/Popup.tsx";
 import {
     FORM_ACTION, FORM_ACTION_CREATE_ORGANIZATION, FORM_ACTION_DELETE_ORGANIZATION, FORM_ACTION_INVITE_USER,
-    FORM_ACTION_NEW_PROJECT, FORM_INVITE_COUNT,
+    FORM_ACTION_JOIN_ORGANIZATION,
+    FORM_ACTION_NEW_PROJECT, FORM_INVITE_COUNT, FORM_INVITE_TOKEN,
     FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
     FORM_PROJECT_DESCRIPTION,
     FORM_PROJECT_NAME
@@ -48,6 +49,7 @@ function CreateOrganizationWidget() {
     return (
         <div className="w-full flex gap-3 p-3 justify-end">
             <CreateOrganizationPopup show={shownPopup == "new_organization"} onHide={hidePopup}/>
+            <JoinOrganizationPopup show={shownPopup == "join_organization"} onHide={hidePopup}/>
 
             <button
                 onClick={() => setShownPopup("new_organization")}
@@ -58,7 +60,9 @@ function CreateOrganizationWidget() {
                 Utwórz organizację
             </button>
 
-            <button className="px-6 py-2
+            <button
+                onClick={() => setShownPopup("join_organization")}
+                className="px-6 py-2
                         bg-(--color-si-btn)
                         hover:bg-(--color-si-btn-hover) shadow-lg
                         text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
@@ -444,6 +448,76 @@ function CreateOrganizationPopup({show, onHide}: PopupProps) {
                     name={FORM_ACTION}
                     type="hidden"
                     value={FORM_ACTION_CREATE_ORGANIZATION}/>
+            </fetcher.Form>
+        </Popup>
+    );
+}
+
+function JoinOrganizationPopup({show, onHide}: PopupProps) {
+    const fetcher = useFetcher();
+    const busy = fetcher.state != "idle";
+
+    const [pendingHide, setPendingHide] = useState<boolean>(false);
+
+    const tokenNameRef = useRef<HTMLInputElement>(null);
+
+    if (fetcher.state == "idle" && pendingHide) {
+        setPendingHide(false);
+        onHide();
+    }
+
+    return (
+        <Popup show={show} className={"w-full max-w-xl"} >
+            <fetcher.Form method="POST" onSubmit={() => setPendingHide(true)}>
+                <h1 className="text-3xl font-bold text-(--color-si-label)">
+                    Podaj token z zaproszenia by dołączyć do organizacji:
+                </h1>
+
+                <div className="flex flex-col gap-1.5 my-3">
+                    <div className="flex items-center gap-3
+                                border border-(--color-si-input-border)
+                                rounded-lg px-3 py-2.5
+                                bg-(--color-si-input-bg) transition-colors">
+                        <input
+                            ref={tokenNameRef}
+                            required={true}
+                            id={FORM_INVITE_TOKEN}
+                            type="text"
+                            name={FORM_INVITE_TOKEN}
+                            placeholder="Podaj token"
+                            className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
+                        />
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                    <button
+                        onClick={() => {
+                            tokenNameRef.current = null;
+                            onHide();
+                        }}
+                        className="px-6 py-2
+                                bg-(--color-si-btn-error)
+                                hover:bg-(--color-si-btn-error-hover) shadow-lg
+                                text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                        Anuluj
+                    </button>
+
+                    <input
+                        type="submit"
+                        value={busy ? "Dołączanie..." : "Zatwierdź"}
+                        disabled={busy}
+                        className="px-6 py-2
+                                    bg-(--color-si-btn)
+                                    hover:bg-(--color-si-btn-hover) shadow-lg
+                                    disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
+                    />
+                </div>
+
+                <input
+                    name={FORM_ACTION}
+                    type="hidden"
+                    value={FORM_ACTION_JOIN_ORGANIZATION}/>
             </fetcher.Form>
         </Popup>
     );

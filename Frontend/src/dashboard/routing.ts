@@ -2,10 +2,10 @@ import {type ActionFunction} from "react-router";
 import {
     FORM_ACTION, FORM_ACTION_CREATE_ORGANIZATION,
     FORM_ACTION_DELETE_ORGANIZATION,
-    FORM_ACTION_INVITE_USER, FORM_ACTION_NEW_INCIDENT,
+    FORM_ACTION_INVITE_USER, FORM_ACTION_JOIN_ORGANIZATION, FORM_ACTION_NEW_INCIDENT,
     FORM_ACTION_NEW_PROJECT,
     FORM_INCIDENT_DESCRIPTION, FORM_INCIDENT_NAME,
-    FORM_INCIDENT_PRIORITY, FORM_INVITE_COUNT, FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
+    FORM_INCIDENT_PRIORITY, FORM_INVITE_COUNT, FORM_INVITE_TOKEN, FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
     FORM_PROJECT_DESCRIPTION, FORM_PROJECT_ID,
     FORM_PROJECT_NAME
 } from "./forms.ts";
@@ -67,6 +67,23 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
                         description: organizationDescription,
                     }
                 }).catch(() => null);
+
+                if (organizationId) {
+                    return {ok: true};
+                }
+            }
+        } else if (organizationAction === FORM_ACTION_JOIN_ORGANIZATION) {
+            const token = formData.get(FORM_INVITE_TOKEN)?.toString()?.trim();
+
+            if (token) {
+                const organizationId = await Api.organization.organizationJoinPost({
+                    joinByInviteRequest: {
+                        token: token
+                    }
+                }).then(
+                    () => true,
+                    () => false
+                )
 
                 if (organizationId) {
                     return {ok: true};
