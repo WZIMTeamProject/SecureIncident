@@ -23,7 +23,7 @@ export default function DashboardSidebar() {
     }, [auth]);
 
     useEffect(() => {
-        auth.getAssignedIncidents().then((assignedIncidents) => {
+        auth.getReportedIncidents().then((assignedIncidents) => {
             setUserIncidents(() => assignedIncidents);
         });
     }, [auth]);
@@ -102,11 +102,11 @@ function IncidentLinks({incidents}: { incidents: Incident[] | undefined }) {
     }
 
     const incidentLinks = incidents.map((incident) => {
-        return <h2 className="p-1 overflow-x-clip">
-            <span className="hover:underline font-medium text-lg text-(--color-si-input-text)">
-                {incident.title}
-            </span>
-        </h2>
+        return <Link
+            to={`/dashboard/incident/${incident.id}`}
+            className="hover:underline font-medium text-lg text-(--color-si-input-text)">
+            {incident.title}
+        </Link>
     });
 
     if (incidentLinks.length == 0) {
