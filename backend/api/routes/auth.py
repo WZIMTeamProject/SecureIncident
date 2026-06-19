@@ -6,12 +6,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies.db import get_db
 from api.dependencies.auth import get_current_user, bearer_scheme
-from api.schemas.common.base import CreatedIdResponse
+from api.schemas.common.base import CreatedIdResponse, DetailResponse
 from api.schemas.auth.request import (
     RegisterRequest,
     LoginRequest,
     PasswordResetRequest,
     PasswordResetConfirmRequest,
+    ChangePasswordRequest,
 )
 from api.schemas.auth.response import CurrentUserResponse, LoginResponse
 from db.models.user import User
@@ -93,11 +94,49 @@ async def request_password_reset(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.post("/reset-password", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/reset-password",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        status.HTTP_400_BAD_REQUEST: {
+            "model": DetailResponse,
+            "description": "Invalid or expired password reset token.",
+        },
+    },
+)
 async def reset_password(
     data: PasswordResetConfirmRequest,
     db: AsyncSession = Depends(get_db),
 ):
     """Reset password using a valid reset token."""
     await auth_service.reset_password(db, data.reset_token, data.new_password)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post(
+    "/change-password",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        status.HTTP_400_BAD_REQUEST: {
+            "model": DetailResponse,
+            "description": "Current password is incorrect, or the new password equals the current one.",
+        },
+        status.HTTP_401_UNAUTHORIZED: {
+            "model": DetailResponse,
+            "description": "Not authenticated (missing, invalid, expired or revoked token).",
+        },
+    },
+)
+async def change_password(
+    data: ChangePasswordRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Change the password of the currently authenticated user."""
+    await auth_service.change_password(
+        db,
+        current_user=current_user,
+        current_password=data.current_password,
+        new_password=data.new_password,
+    )
     return Response(status_code=status.HTTP_204_NO_CONTENT)

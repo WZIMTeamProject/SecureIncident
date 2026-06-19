@@ -118,3 +118,66 @@ class TestGetOrganization:
     ):
         r = await client.get("/api/organization")
         assert r.status_code == 401
+
+
+class TestDeleteOrganization:
+    async def test_delete_organization_returns_204_when_owner(
+        self, client: AsyncClient, fresh_user_headers: dict
+    ):
+        created = await client.post(
+            "/api/organization",
+            json={"name": "Deletable Org"},
+            headers=fresh_user_headers,
+        )
+        assert created.status_code == 201
+        r = await client.delete("/api/organization", headers=fresh_user_headers)
+        assert r.status_code == 204
+
+    async def test_delete_organization_removes_org_row(
+        self, client: AsyncClient, fresh_user_headers: dict, db: AsyncSession
+    ):
+        created = await client.post(
+            "/api/organization",
+            json={"name": "Deletable Org"},
+            headers=fresh_user_headers,
+        )
+        org_id = uuid.UUID(created.json()["id"])
+        r = await client.delete("/api/organization", headers=fresh_user_headers)
+        assert r.status_code == 204
+        result = await db.execute(select(Organization).where(Organization.id == org_id))
+        assert result.scalar_one_or_none() is None
+
+    async def test_delete_organization_detaches_owner(
+        self,
+        client: AsyncClient,
+        fresh_user: User,
+        fresh_user_headers: dict,
+        db: AsyncSession,
+    ):
+        await client.post(
+            "/api/organization",
+            json={"name": "Deletable Org"},
+            headers=fresh_user_headers,
+        )
+        await client.delete("/api/organization", headers=fresh_user_headers)
+        await db.refresh(fresh_user)
+        assert fresh_user.organization_id is None
+
+    async def test_delete_organization_returns_403_when_not_owner(
+        self, client: AsyncClient, auth_headers: dict, test_org
+    ):
+        # test_user is a member of test_org but NOT its owner.
+        r = await client.delete("/api/organization", headers=auth_headers)
+        assert r.status_code == 403
+
+    async def test_delete_organization_returns_404_when_user_has_no_org(
+        self, client: AsyncClient, fresh_user_headers: dict
+    ):
+        r = await client.delete("/api/organization", headers=fresh_user_headers)
+        assert r.status_code == 404
+
+    async def test_delete_organization_returns_401_when_unauthenticated(
+        self, client: AsyncClient
+    ):
+        r = await client.delete("/api/organization")
+        assert r.status_code == 401
