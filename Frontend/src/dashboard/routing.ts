@@ -105,3 +105,14 @@ export const dashboardProjectsAction: ActionFunction = async ({request}) => {
 
     return {ok: false};
 }
+
+export const dashboardIncidentsAction: ActionFunction = async ({request}) => {
+    const formData = await request.formData();
+
+    const projectAction = formData.get(FORM_ACTION)?.toString();
+    if (!projectAction) {
+        return {ok: false};
+    }
+
+    return {ok: true};
+}
