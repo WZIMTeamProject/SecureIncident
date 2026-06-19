@@ -52,12 +52,10 @@ function LoadingMessage() {
 function IncidentView({incident}: { incident: Incident }) {
     const [logs, setLogs] = useState<IncidentLogEntry[] | undefined>(undefined);
 
-    const logLimit = 10;
-
     useEffect(() => {
         Api.incidents.incidentsIncidentIdLogsGet({
             incidentId: incident.id,
-            limit: logLimit,
+            limit: undefined
         }).then(
             (incidentLogs) => setLogs(incidentLogs.items),
             () => setLogs([]),
@@ -65,19 +63,51 @@ function IncidentView({incident}: { incident: Incident }) {
     }, [incident, logs]);
 
     return (
-        <div>
-            <div className="p-3">
+        <div className={"flex flex-col gap-3"}>
+            <div className="bg-(--color-si-card-bg) border-5 border-(--color-si-card-border) w-fit
+                    rounded-2xl shadow-lg p-4 transition-colors duration-300">
+
                 <h1 className="text-2xl font-bold text-(--color-si-label)">
                     {incident.title}
                 </h1>
+                <h3 className="text-md italic text-(--color-si-input-text)">
+                    {incident.id}
+                </h3>
+
+                <hr className="my-2"/>
+
+                <p>
+                    <span className="text-(--color-si-label)">Przypisani: </span>
+                    <span className="text-(--color-si-input-text)">
+                        {incident.primaryAssigneeId ?? "- Brak -"}
+                    </span>
+                </p>
+                <p>
+                    <span className="text-(--color-si-label)">Priorytet: </span>
+                    <span className="text-(--color-si-input-text)">
+                        {incident.priority}
+                    </span>
+                </p>
+                <p>
+                    <span className="text-(--color-si-label)">Status: </span>
+                    <span className="text-(--color-si-input-text)">
+                        {incident.status}
+                    </span>
+                </p>
+                <p>
+                    <span className="text-(--color-si-label)">Zgłoszono: </span>
+                    <span className="text-(--color-si-input-text)">
+                        {incident.reportDate.toLocaleString()}
+                    </span>
+                </p>
             </div>
 
-            <div className="p-3">
-                <p>Przypisani: {incident.primaryAssigneeId ?? "- Brak -"}</p>
-                <p>Priorytet: {incident.priority}</p>
-                <p>Status: {incident.status}</p>
-                <p>Zgłoszono: {incident.reportDate.toLocaleString()}</p>
-                <p>Opis: {incident.description}</p>
+            <div className="bg-(--color-si-card-bg) border border-(--color-si-card-border)
+                    rounded-2xl shadow-lg p-4 transition-colors duration-300">
+                <span className="text-(--color-si-input-text) italic">Opis:</span><br/>
+                <span className="text-(--color-si-label)">
+                    {incident.description}
+                </span>
             </div>
 
             <LogHistory logs={logs} />
@@ -98,7 +128,7 @@ function LogHistory({logs}: { logs?: IncidentLogEntry[] }) {
             <button
                 onClick={toggleHistory}
                 className={`px-6 py-2
-                        bg-(--color-si-btn)
+                        bg-(--color-si-btn) 
                         hover:bg-(--color-si-btn-hover) shadow-lg
                         rounded-t-lg ${isShown ? "" : "rounded-b-lg"}
                         text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>
@@ -106,7 +136,7 @@ function LogHistory({logs}: { logs?: IncidentLogEntry[] }) {
                 {isShown ? "Ukryj historię" : "Pokaż historię"}
             </button>
             <div
-                className="border-5 border-(--color-si-card-border)
+                className="border-5 border-(--color-si-card-border) bg-(--color-si-input-bg)
                     rounded-2xl rounded-tl-none shadow-lg p-4 transition-colors duration-300 overflow-y-scroll"
                 hidden={!isShown}>
 
@@ -153,7 +183,7 @@ function LogEntry({log} : {log: IncidentLogEntry}){
             return <></>;
     }
 
-    return <h1>
+    return <h1 className={"text-(--color-si-input-text) font-normal"}>
         {rowContents}
     </h1>;
 }
