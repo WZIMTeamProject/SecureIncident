@@ -24,13 +24,48 @@ for p in paths:
     except Exception as e:
         print("Error deleting", p, "-", e)
 
+def parse_env_file():
+    env = {}
+    with open("../.env.example", "r", encoding="utf-8") as f:
+        for raw in f:
+            line = raw.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            k = k.strip()
+            v = v.strip()
+            if (v.startswith('"') and v.endswith('"')) or (v.startswith("'") and v.endswith("'")):
+                v = v[1:-1]
+            env[k] = v
+    return env
+
+env = os.environ.copy()
+env_from_file = parse_env_file()
+env.update({k: v for k, v in env_from_file.items() if v is not None})
+
+res = subprocess.run(
+    ["pytest", "-v", "--no-header", "--no-summary", "-s", "--disable-warnings"],
+    env=env, cwd="../backend", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, check=False
+)
+with open("../docs/build/tests.md", "w", encoding="utf-8") as f:
+    f.write(res.stdout)
+try:
+    res.check_returncode()
+except:
+    print("Error with tests")
+
+with open("build/tests.md", "r") as f:
+    lines = f.readlines()
+with open("build/tests.md", "w") as f:
+    f.writelines(lines[3:-3])
+
 subprocess.run(
     ["npm.cmd", "run", "docs"],
     cwd="../Frontend", check=True
 )
 
 subprocess.run(
-    ["pandoc", "dokumentacja.md", "backend.md", *[str(f) for f in Path("build/backend").rglob("*.md")], "frontend.md", *[str(f) for f in Path("build/Frontend").rglob("*.md")], "--from", "markdown-blank_before_header-space_in_atx_header+lists_without_preceding_blankline", "--template", "templates/template.tex", "--toc", "-o", "dokumentacja.pdf"],
+    ["pandoc", "documentation.md", "backend.md", *[str(f) for f in Path("build/backend").rglob("*.md")], "tests.md", "build/tests.md", "frontend.md", *[str(f) for f in Path("build/Frontend").rglob("*.md")], "--from", "markdown-blank_before_header-space_in_atx_header+lists_without_preceding_blankline", "--template", "templates/template.tex", "--toc", "-o", "dokumentacja.pdf"],
     text=True,
     check=True
 )

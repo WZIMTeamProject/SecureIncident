@@ -12,6 +12,7 @@
     "src/dashboard/routing.ts"
   ],
   "entryPointStrategy": "expand",
+  "disableSources": true,
   "tsconfig": "tsconfig.app.json",
   "out": "../docs/build/Frontend"
 }

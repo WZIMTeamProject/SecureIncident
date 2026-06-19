@@ -1,5 +1,5 @@
 ---
-title: Secure Incident
+title: SecureIncident
 toc-title: Spis treści
 author: TODO
 geometry: margin=2cm
