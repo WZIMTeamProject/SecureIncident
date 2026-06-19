@@ -60,7 +60,7 @@ function IncidentView({incident}: { incident: Incident }) {
             (incidentLogs) => setLogs(incidentLogs.items),
             () => setLogs([]),
         );
-    }, [incident, logs]);
+    }, [incident]);
 
     return (
         <div className={"flex flex-col gap-3"}>
