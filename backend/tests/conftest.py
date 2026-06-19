@@ -362,3 +362,24 @@ async def limited_membership(db: AsyncSession, test_project: Project, limited_us
     db.add(membership)
     await db.flush()
     yield membership
+
+
+@pytest.fixture(scope="function")
+async def fresh_user(db: AsyncSession) -> User:
+    user = User(
+        username=f"fresh_{uuid.uuid4().hex[:8]}",
+        email=f"fresh_{uuid.uuid4().hex[:8]}@example.com",
+        first_name="Fresh",
+        last_name="User",
+        password=hash_password("TestPassword123!"),
+        is_active=True,
+        organization_id=None,
+    )
+    db.add(user)
+    await db.flush()
+    yield user
+
+
+@pytest.fixture(scope="function")
+def fresh_user_headers(fresh_user: User) -> dict[str, str]:
+    return {"Authorization": f"Bearer {create_access_token(fresh_user.id)}"}

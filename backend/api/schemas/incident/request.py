@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import Optional
 from uuid import UUID
 from api.schemas.common.enums import IncidentPriority, IncidentStatus
@@ -16,6 +16,13 @@ class CreateIncidentRequest(BaseModel):
 
 class UpdateIncidentStatusRequest(BaseModel):
     status: IncidentStatus
+
+    @field_validator("status")
+    @classmethod
+    def status_must_not_be_closed(cls, v: IncidentStatus) -> IncidentStatus:
+        if v == IncidentStatus.CLOSED:
+            raise ValueError("Use the /close endpoint to close an incident")
+        return v
 
 
 class UpdateIncidentAssigneeRequest(BaseModel):

@@ -228,6 +228,14 @@ async def update_status(
     membership = await _get_membership_or_403(db, incident.project_id, current_user.id)
     _require_flag(membership, "can_change_status")
 
+    if incident.status == IncidentStatus.CLOSED.value:
+        logger.warning(
+            "Status update rejected: incident is closed incident_id=%s user_id=%s",
+            incident_id,
+            current_user.id,
+        )
+        raise HTTPException(status_code=409, detail="Cannot change status of a closed incident")
+
     old_status = incident.status
     incident.status = data.status.value
     if data.status != IncidentStatus.CLOSED:
