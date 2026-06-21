@@ -1,13 +1,14 @@
-import uuid
-from uuid import uuid4
+from uuid import uuid4, UUID
 from datetime import datetime, timezone
 
 import pytest
 from fastapi import HTTPException
 from pydantic import ValidationError
 from httpx import AsyncClient
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from db.models.incident_log import IncidentLog
 from db.models.project import Project
 from db.models.incident import Incident
 from db.models.role import Role
@@ -79,7 +80,6 @@ class TestIncidentHelperModel:
 
     async def test_incident_helper_added_at_has_server_default(self, db: AsyncSession, test_project: Project, test_user: User):
         from db.models.incident_helper import IncidentHelper
-        from sqlalchemy import inspect
 
         incident = Incident(
             project_id=test_project.id,
@@ -527,6 +527,43 @@ class TestCreateIncident:
         )
         assert r.status_code == 404
 
+    async def test_create_incident_persists_incident_row_in_db(
+        self, client: AsyncClient, test_project, auth_headers, test_membership, test_user, db: AsyncSession
+    ):
+        r = await client.post(
+            f"/api/projects/{test_project.id}/incidents",
+            json={"title": "DB Incident", "description": "Persisted"},
+            headers=auth_headers,
+        )
+        assert r.status_code == 201
+        incident_id = UUID(r.json()["id"])
+        result = await db.execute(select(Incident).where(Incident.id == incident_id))
+        incident = result.scalar_one_or_none()
+        assert incident.title == "DB Incident"
+        assert incident.description == "Persisted"
+        assert incident.status == "NEW"
+        assert incident.priority == "LOW"
+        assert incident.reporter_id == test_user.id
+
+    async def test_create_incident_creates_created_log_entry(
+        self, client: AsyncClient, test_project, auth_headers, test_membership, db: AsyncSession
+    ):
+        r = await client.post(
+            f"/api/projects/{test_project.id}/incidents",
+            json={"title": "Log Entry", "description": "Check log"},
+            headers=auth_headers,
+        )
+        assert r.status_code == 201
+        incident_id = UUID(r.json()["id"])
+        result = await db.execute(
+            select(IncidentLog).where(
+                IncidentLog.incident_id == incident_id,
+                IncidentLog.type == "CREATED",
+            )
+        )
+        log = result.scalar_one_or_none()
+        assert log is not None
+
 
 class TestListIncidents:
     async def test_list_incidents_returns_401_when_not_authenticated(
@@ -645,6 +682,18 @@ class TestUpdateStatus:
         detail = await client.get(f"/api/incidents/{test_incident.id}", headers=auth_headers)
         assert detail.json()["status"] == "RESOLVED"
 
+    async def test_update_status_returns_409_when_incident_is_closed(
+        self, client: AsyncClient, test_incident, auth_headers, test_membership, db: AsyncSession
+    ):
+        test_incident.status = "CLOSED"
+        await db.flush()
+        r = await client.patch(
+            f"/api/incidents/{test_incident.id}/status",
+            json={"status": "RESOLVED"},
+            headers=auth_headers,
+        )
+        assert r.status_code == 409
+
 
 class TestCloseIncident:
     async def test_close_incident_returns_401_when_not_authenticated(
@@ -702,6 +751,35 @@ class TestUpdatePriority:
         detail = await client.get(f"/api/incidents/{test_incident.id}", headers=auth_headers)
         assert detail.json()["priority"] == "HIGH"
 
+    async def test_update_priority_returns_401_when_not_authenticated(
+        self, client: AsyncClient, test_incident, test_membership
+    ):
+        r = await client.patch(
+            f"/api/incidents/{test_incident.id}/priority",
+            json={"priority": "HIGH"},
+        )
+        assert r.status_code == 401
+
+    async def test_update_priority_returns_403_when_no_permission(
+        self, client: AsyncClient, test_incident, test_membership, limited_headers, limited_membership
+    ):
+        r = await client.patch(
+            f"/api/incidents/{test_incident.id}/priority",
+            json={"priority": "HIGH"},
+            headers=limited_headers,
+        )
+        assert r.status_code == 403
+
+    async def test_update_priority_returns_404_for_nonexistent_incident(
+        self, client: AsyncClient, auth_headers, test_membership
+    ):
+        r = await client.patch(
+            f"/api/incidents/{uuid4()}/priority",
+            json={"priority": "HIGH"},
+            headers=auth_headers,
+        )
+        assert r.status_code == 404
+
 
 class TestUpdateAssignee:
     async def test_update_assignee_returns_204_and_persists(
@@ -715,6 +793,35 @@ class TestUpdateAssignee:
         assert r.status_code == 204
         detail = await client.get(f"/api/incidents/{test_incident.id}", headers=auth_headers)
         assert detail.json()["primary_assignee_id"] == str(test_user.id)
+
+    async def test_update_assignee_returns_401_when_not_authenticated(
+        self, client: AsyncClient, test_incident, test_membership
+    ):
+        r = await client.patch(
+            f"/api/incidents/{test_incident.id}/assignee",
+            json={"primary_assignee_id": str(uuid4())},
+        )
+        assert r.status_code == 401
+
+    async def test_update_assignee_returns_403_when_no_permission(
+        self, client: AsyncClient, test_incident, test_membership, limited_headers, limited_membership
+    ):
+        r = await client.patch(
+            f"/api/incidents/{test_incident.id}/assignee",
+            json={"primary_assignee_id": str(uuid4())},
+            headers=limited_headers,
+        )
+        assert r.status_code == 403
+
+    async def test_update_assignee_returns_404_for_nonexistent_incident(
+        self, client: AsyncClient, auth_headers, test_membership
+    ):
+        r = await client.patch(
+            f"/api/incidents/{uuid4()}/assignee",
+            json={"primary_assignee_id": str(uuid4())},
+            headers=auth_headers,
+        )
+        assert r.status_code == 404
 
 
 class TestUpdateCategory:
@@ -754,6 +861,53 @@ class TestUpdateCategory:
         r = await client.patch(
             f"/api/incidents/{test_incident.id}/category",
             json={"category_id": str(other_category.id)},
+            headers=auth_headers,
+        )
+        assert r.status_code == 404
+
+    async def test_update_category_returns_204_and_persists(
+        self, client: AsyncClient, test_incident, auth_headers, test_membership, db: AsyncSession, test_project
+    ):
+        from db.models.category import Category
+
+        cat = Category(project_id=test_project.id, name="Test Cat", description="desc")
+        db.add(cat)
+        await db.flush()
+        r = await client.patch(
+            f"/api/incidents/{test_incident.id}/category",
+            json={"category_id": str(cat.id)},
+            headers=auth_headers,
+        )
+        assert r.status_code == 204
+        detail = await client.get(f"/api/incidents/{test_incident.id}", headers=auth_headers)
+        data = detail.json()
+        assert data["category_id"] == str(cat.id)
+
+    async def test_update_category_returns_401_when_not_authenticated(
+        self, client: AsyncClient, test_incident, test_membership
+    ):
+        r = await client.patch(
+            f"/api/incidents/{test_incident.id}/category",
+            json={"category_id": str(uuid4())},
+        )
+        assert r.status_code == 401
+
+    async def test_update_category_returns_403_when_no_permission(
+        self, client: AsyncClient, test_incident, test_membership, limited_headers, limited_membership
+    ):
+        r = await client.patch(
+            f"/api/incidents/{test_incident.id}/category",
+            json={"category_id": str(uuid4())},
+            headers=limited_headers,
+        )
+        assert r.status_code == 403
+
+    async def test_update_category_returns_404_for_nonexistent_incident(
+        self, client: AsyncClient, auth_headers, test_membership
+    ):
+        r = await client.patch(
+            f"/api/incidents/{uuid4()}/category",
+            json={"category_id": str(uuid4())},
             headers=auth_headers,
         )
         assert r.status_code == 404

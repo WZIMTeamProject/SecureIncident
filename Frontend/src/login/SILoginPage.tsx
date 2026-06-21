@@ -39,51 +39,53 @@ export function SILoginPage() {
         <Background>
             {/* Table */}
             <div className="w-full max-w-md
-                bg-[var(--color-si-card-bg)]
-                border-5 border-[var(--color-si-card-border)]
+                bg-(--color-si-card-bg)
+                border-5 border-(--color-si-card-border)
                 rounded-2xl shadow-lg px-8 py-8 transition-colors duration-300">
 
                 <fetcher.Form method="POST" className="flex flex-col gap-5">
 
                     {/* Username */}
                     <div className="flex flex-col gap-1.5">
-                        <label htmlFor={FORM_USERNAME} className="text-sm font-medium text-[var(--color-si-label)]">
+                        <label htmlFor={FORM_USERNAME} className="text-sm font-medium text-(--color-si-label)">
                             Podaj swoją nazwę użytkownika:
                         </label>
                         <div className="flex items-center gap-3
-                                border border-[var(--color-si-input-border)]
+                                border border-(--color-si-input-border)
                                 rounded-lg px-3 py-2.5
-                                bg-[var(--color-si-input-bg)] transition-colors">
+                                bg-(--color-si-input-bg) transition-colors">
 
-                            <span className="text-[var(--color-si-input-icon)]"><IconUser/></span>
+                            <span className="text-(--color-si-input-icon)"><IconUser/></span>
                             <input
                                 id={FORM_USERNAME}
+                                required={true}
                                 type="text"
                                 name={FORM_USERNAME}
                                 placeholder="Nazwa użytkownika"
-                                className="flex-1 bg-transparent outline-none text-sm text-[var(--color-si-input-text)]"
+                                className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                             />
                         </div>
                     </div>
 
                     {/* Password */}
                     <div className="flex flex-col gap-1.5">
-                        <label htmlFor={FORM_PASSWORD} className="text-sm font-medium text-[var(--color-si-label)]">
+                        <label htmlFor={FORM_PASSWORD} className="text-sm font-medium text-(--color-si-label)">
                             Podaj hasło:
                         </label>
                         <div className="flex items-center gap-3
-                                border border-[var(--color-si-input-border)]
+                                border border-(--color-si-input-border)
                                 rounded-lg px-3 py-2.5
-                                bg-[var(--color-si-input-bg)] transition-colors">
+                                bg-(--color-si-input-bg) transition-colors">
 
-                            <span className="text-[var(--color-si-input-icon)]"><IconLock/></span>
+                            <span className="text-(--color-si-input-icon)"><IconLock/></span>
                             <input
                                 ref={passwordRef}
                                 id={FORM_PASSWORD}
+                                required={true}
                                 type="password"
                                 name={FORM_PASSWORD}
                                 placeholder="Hasło"
-                                className="flex-1 bg-transparent outline-none text-sm text-[var(--color-si-input-text)]"
+                                className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                             />
                         </div>
                     </div>
@@ -91,12 +93,12 @@ export function SILoginPage() {
                     {/* REMEMBER ME and Submit */}
                     <div className="flex items-center justify-between">
                         <label htmlFor={FORM_REMEMBER_ME}
-                               className="flex items-center gap-2 text-sm text-[var(--color-si-label)] cursor-pointer">
+                               className="flex items-center gap-2 text-sm text-(--color-si-label) cursor-pointer">
                             <input
                                 id={FORM_REMEMBER_ME}
                                 type="checkbox"
                                 name={FORM_REMEMBER_ME}
-                                className="w-4 h-4 bg-[var(--color-si-input-bg)] accent-[var(--color-si-btn)] cursor-pointer"
+                                className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
                             />
                             Zapamiętaj mnie
                         </label>
@@ -106,8 +108,8 @@ export function SILoginPage() {
                             value={busy ? "Logowanie..." : "Zaloguj się"}
                             disabled={busy}
                             className="px-6 py-2
-                                    bg-[var(--color-si-btn)] 
-                                    hover:bg-[var(--color-si-btn-hover)]
+                                    bg-(--color-si-btn)
+                                    hover:bg-(--color-si-btn-hover)
                                     disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                         />
                     </div>
@@ -135,18 +137,17 @@ export function SILoginPage() {
             {/* Links */}
             <div className="flex flex-col items-center gap-2 text-sm">
                 <Link to="/login/forgot_password"
-                      className="underline text-[var(--color-si-link)] hover:opacity-75 transition-opacity">
+                      className="underline text-(--color-si-link) hover:opacity-75 transition-opacity">
                     Nie pamiętasz hasła?
                 </Link>
                 <Link to="/login/register"
-                      className="underline text-[var(--color-si-link)] hover:opacity-75 transition-opacity">
+                      className="underline text-(--color-si-link) hover:opacity-75 transition-opacity">
                     Zarejestruj się →
                 </Link>
-                <Link to="/" className="underline text-[var(--color-si-link)] hover:opacity-75 transition-opacity">
+                <Link to="/" className="underline text-(--color-si-link) hover:opacity-75 transition-opacity">
                     Powrót do strony głównej
                 </Link>
             </div>
         </Background>
-
     );
 }

@@ -6,7 +6,6 @@ from api.dependencies.db import get_db
 from api.dependencies.auth import get_current_user
 from api.schemas.common.base import CreatedIdResponse
 from api.schemas.category.response import (
-    CategoryResponse,
     CategoryListResponse,
 )
 from api.schemas.category.request import (

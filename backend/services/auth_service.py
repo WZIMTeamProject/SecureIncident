@@ -20,7 +20,7 @@ async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
     if await repositories.user_repo.get_user_by_email(db, data.email):
         logger.warning("Registration failed: email already registered")
         raise HTTPException(status_code=409, detail="Email already registered")
-    
+
     hashed = security.hash_password(data.password)
     user = await repositories.user_repo.create_user(
         db,
@@ -30,6 +30,7 @@ async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
         email=str(data.email),
         password=hashed,
     )
+    await db.commit()
     logger.info("User registered user_id=%s", user.id)
     return user
 
@@ -71,6 +72,7 @@ async def request_password_reset(db: AsyncSession, email_or_username: str, backg
         token_hash=token_hash,
         expires_at=expires_at
     )
+    await db.commit()
     background_tasks.add_task(email_service.send_reset_email, user.email, raw_token)
     logger.info("Password reset email queued user_id=%s", user.id)
 
@@ -88,3 +90,28 @@ async def reset_password(db: AsyncSession, raw_token: str, new_password: str) ->
     await repositories.user_repo.mark_password_reset_token_used(db, token_record)
     await db.commit()
     logger.info("Password reset completed user_id=%s", token_record.user_id)
+
+
+async def change_password(
+    db: AsyncSession,
+    *,
+    current_user: User,
+    current_password: str,
+    new_password: str,
+) -> None:
+    """Change the authenticated user's password (verifies the current one)."""
+    if not security.verify_password(current_password, current_user.password):
+        logger.warning("Password change failed: wrong current password user_id=%s", current_user.id)
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+    if security.verify_password(new_password, current_user.password):
+        logger.warning("Password change failed: new password equals current user_id=%s", current_user.id)
+        raise HTTPException(
+            status_code=400,
+            detail="New password must be different from the current password",
+        )
+
+    hashed = security.hash_password(new_password)
+    await repositories.user_repo.update_user_password(db, current_user.id, hashed)
+    await db.commit()
+    logger.info("Password changed user_id=%s", current_user.id)

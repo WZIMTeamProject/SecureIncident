@@ -85,6 +85,66 @@ async def get_current_organization(
     return organization
 
 
+async def delete_organization(
+    db: AsyncSession,
+    *,
+    current_user: User,
+) -> None:
+    """Delete the current user's organization (organization owner only).
+
+    Relies on DB-level ON DELETE rules defined on the models:
+      - users.organization_id                 -> SET NULL (members detached)
+      - projects.organization_id              -> SET NULL (projects orphaned)
+      - organization_invites.organization_id  -> CASCADE  (org invites removed)
+    """
+    if current_user.organization_id is None:
+        logger.warning(
+            "Organization delete failed: user has no organization user_id=%s",
+            current_user.id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User does not belong to any organization",
+        )
+
+    organization = await repositories.organization_repo.get_organization_by_id(
+        db, current_user.organization_id
+    )
+    if organization is None:
+        logger.warning(
+            "Organization delete failed: record not found org_id=%s",
+            current_user.organization_id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Organization not found",
+        )
+
+    if organization.org_owner_id != current_user.id:
+        logger.warning(
+            "Organization delete denied: user not owner user_id=%s org_id=%s",
+            current_user.id,
+            organization.id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the organization owner can delete the organization",
+        )
+
+    organization_id = organization.id
+
+    # IMPORTANT: do NOT mutate ORM relationships here (e.g. current_user.organization = None).
+    # User and Organization reference each other (org_owner_id <-> organization_id), so touching
+    # the relationship makes the unit-of-work flush hit a CircularDependencyError. Instead we issue
+    # a plain SQL DELETE and let the DB-level ON DELETE rules detach members / projects and remove
+    # org invites. The user's organization_id is set to NULL by the database (ondelete=SET NULL).
+    await repositories.organization_repo.delete_organization(db, organization_id)
+    await db.commit()
+    logger.info(
+        "Organization deleted org_id=%s user_id=%s", organization_id, current_user.id
+    )
+
+
 async def create_invite(
     db: AsyncSession,
     *,
@@ -172,7 +232,29 @@ async def join_organization(
 
     token_hash = security.hash_token(raw_token)
 
-    # Atomic use_count increment — only if invitation is valid.
+    # Pre-check scope without consuming a use slot (same pattern as join_project_by_invite).
+    pre_check = await repositories.invite_repo.get_invite_by_hash(db, token_hash)
+    if pre_check is None:
+        logger.warning(
+            "Join organization failed: invitation not found user_id=%s",
+            current_user.id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired invitation",
+        )
+    if pre_check.scope != "ORGANIZATION" or pre_check.organization_id is None:
+        logger.warning(
+            "Join organization failed: invitation not for organization scope=%s user_id=%s",
+            pre_check.scope,
+            current_user.id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This invitation is not for an organization",
+        )
+
+    # Atomic use_count increment — only after scope validated.
     invite = await repositories.invite_repo.get_and_increment_invite(db, token_hash)
     if invite is None:
         logger.warning(
@@ -182,17 +264,6 @@ async def join_organization(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired invitation",
-        )
-
-    if invite.scope != "ORGANIZATION" or invite.organization_id is None:
-        logger.warning(
-            "Join organization failed: invitation not for organization scope=%s user_id=%s",
-            invite.scope,
-            current_user.id,
-        )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This invitation is not for an organization",
         )
 
     current_user.organization_id = invite.organization_id

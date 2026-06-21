@@ -11,7 +11,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d secure_incident"]
+      test: [ "CMD-SHELL", "pg_isready -U user -d secure_incident" ]
       interval: 5s
       retries: 5
 
@@ -21,7 +21,7 @@ services:
       DATABASE_URL: postgresql+asyncpg://user:password@db:5432/secure_incident
       SECRET_KEY: test-secret
       ALLOWED_ORIGINS: '["http://localhost"]'
-      SMTP_HOST: localhost
+      SMTP_HOST: mailpit
       SMTP_PORT: 1025
       SMTP_TLS: "False"
       FRONTEND_URL: http://localhost
@@ -31,7 +31,7 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8000/health || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 5

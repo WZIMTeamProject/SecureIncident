@@ -1,12 +1,12 @@
-import pytest
 from httpx import AsyncClient
-from uuid import uuid4
+from uuid import uuid4, UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from db.models.user import User
 from db.models.project import Project
 from db.models.user_project import UserProject
+from db.models.role import Role
 from core.security import hash_password, create_access_token
 
 
@@ -64,6 +64,99 @@ class TestCreateProject:
             json={"scope": "ORGANIZATION"},
         )
         assert response.status_code == 422
+
+    async def test_create_project_persists_project_row_in_db(
+        self, client: AsyncClient, auth_headers: dict, db: AsyncSession, test_org
+    ):
+        r = await client.post(
+            "/api/projects",
+            headers=auth_headers,
+            json={"name": "DB Check Project", "scope": "ORGANIZATION"},
+        )
+        assert r.status_code == 201
+        project_id = UUID(r.json()["id"])
+        result = await db.execute(select(Project).where(Project.id == project_id))
+        project = result.scalar_one_or_none()
+        assert project is not None
+        assert project.name == "DB Check Project"
+        assert project.scope == "ORGANIZATION"
+        assert project.organization_id == test_org.id
+
+    async def test_create_project_creates_owner_role_with_all_permissions(
+        self, client: AsyncClient, auth_headers: dict, db: AsyncSession
+    ):
+        r = await client.post(
+            "/api/projects",
+            headers=auth_headers,
+            json={"name": "Role Check", "scope": "ORGANIZATION"},
+        )
+        assert r.status_code == 201
+        project_id = UUID(r.json()["id"])
+        result = await db.execute(select(Role).where(Role.project_id == project_id))
+        role = result.scalars().first()
+        assert role is not None
+        assert role.can_write_tickets is True
+        assert role.can_help is True
+        assert role.can_assign_help is True
+        assert role.can_change_status is True
+        assert role.can_make_roles is True
+        assert role.can_change_roles is True
+        assert role.can_assign_people_to_project is True
+
+    async def test_create_project_creates_user_project_membership_for_org_owner(
+        self, client: AsyncClient, auth_headers: dict, test_org, db: AsyncSession
+    ):
+        r = await client.post(
+            "/api/projects",
+            headers=auth_headers,
+            json={"name": "Membership Check", "scope": "ORGANIZATION"},
+        )
+        assert r.status_code == 201
+        project_id = UUID(r.json()["id"])
+        result = await db.execute(
+            select(UserProject).where(
+                UserProject.user_id == test_org.org_owner_id,
+                UserProject.project_id == project_id,
+            )
+        )
+        membership = result.scalar_one_or_none()
+        assert membership is not None
+
+    async def test_create_project_returns_403_when_org_member_creates_private_scope(
+        self, client: AsyncClient, auth_headers: dict
+    ):
+        response = await client.post(
+            "/api/projects",
+            headers=auth_headers,
+            json={"name": "Private Attempt", "scope": "PRIVATE"},
+        )
+        assert response.status_code == 403
+
+    async def test_create_project_sets_organization_id_null_for_private_scope(
+        self, client: AsyncClient, db: AsyncSession
+    ):
+        user = User(
+            username="private_scope_test_user",
+            email="private_scope@test.example",
+            first_name="Private",
+            last_name="Scope",
+            password=hash_password("Password123!"),
+            organization_id=None,
+        )
+        db.add(user)
+        await db.flush()
+        token = create_access_token(user.id)
+        headers = {"Authorization": f"Bearer {token}"}
+        r = await client.post(
+            "/api/projects",
+            headers=headers,
+            json={"name": "Private Project", "scope": "PRIVATE"},
+        )
+        assert r.status_code == 201
+        project_id = UUID(r.json()["id"])
+        result = await db.execute(select(Project).where(Project.id == project_id))
+        project = result.scalar_one_or_none()
+        assert project.organization_id is None
 
 
 class TestListProjects:

@@ -9,7 +9,7 @@ from api.schemas.organization.request import (
     JoinByInviteRequest,
 )
 from api.schemas.organization.response import OrganizationResponse, InviteResponse
-from api.schemas.common.base import CreatedIdResponse
+from api.schemas.common.base import CreatedIdResponse, DetailResponse
 from core.config import settings
 from db.models.user import User
 from services import organization_service
@@ -45,6 +45,33 @@ async def get_current_organization(
         name=organization.name,
         description=organization.description,
     )
+
+
+@router.delete(
+    "",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        status.HTTP_401_UNAUTHORIZED: {
+            "model": DetailResponse,
+            "description": "Not authenticated (missing, invalid, expired or revoked token).",
+        },
+        status.HTTP_403_FORBIDDEN: {
+            "model": DetailResponse,
+            "description": "Only the organization owner can delete the organization.",
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "model": DetailResponse,
+            "description": "User does not belong to any organization, or the organization was not found.",
+        },
+    },
+)
+async def delete_organization(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Delete the current user's organization (organization owner only)."""
+    await organization_service.delete_organization(db, current_user=current_user)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post("/invites", response_model=InviteResponse, status_code=status.HTTP_201_CREATED)

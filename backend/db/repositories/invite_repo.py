@@ -1,4 +1,4 @@
-﻿from datetime import datetime, timezone
+﻿from datetime import datetime, timezone, timedelta
 from typing import Optional
 from uuid import UUID
 
@@ -7,12 +7,6 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models.organization_invite import OrganizationInvite
-from db.repositories.project_repo import ( # Methods invoked by invitation_service.py. Imported in order to not duplicate code.
-    get_project_by_id,
-    get_role_by_id,
-    get_user_project,
-    create_user_project,
-)
 
 
 async def create_project_invite(
@@ -33,7 +27,7 @@ async def create_project_invite(
         created_by_id=created_by_id,
         token=token_hash,
         role_id=role_id,
-        expires_at=expires_at.replace(tzinfo=None) if expires_at is not None else None,
+        expires_at=expires_at.replace(tzinfo=None) + timedelta(hours=1) if expires_at is not None else None,
         max_uses=max_uses,
         use_count=0,
     )
@@ -62,7 +56,7 @@ async def create_organization_invite(
         role_id=None,
         created_by_id=created_by_id,
         token=token_hash,
-        expires_at=expires_at.replace(tzinfo=None) if expires_at is not None else None,
+        expires_at=expires_at.replace(tzinfo=None) + timedelta(hours=1) if expires_at is not None else None,
         max_uses=max_uses,
         use_count=0,
     )

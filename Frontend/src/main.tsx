@@ -7,7 +7,7 @@ import './index.css'
 
 import {SIAppRoot} from './SIAppRoot.tsx'
 
-import {SIDashboard} from "./dashboard";
+import {SIDashboard, SIProject} from "./dashboard";
 import {
     forgotPasswordAction,
     loginFormAction,
@@ -25,6 +25,9 @@ import {SIAccountPage, SINotificationPage} from "./account";
 import {SIResetPassword} from "./login/SIResetPassword.tsx";
 import {THEME_PREFERENCE, THEME_PREFERENCE_DARK} from "./data/cookies.ts";
 import type {SIContext} from "./data/context.ts";
+import {SIOrganization} from "./dashboard/SIOrganization.tsx";
+import {SIIncident} from "./dashboard/SIIncident.tsx";
+import {dashboardIncidentsAction, dashboardOrganizationAction, dashboardProjectsAction} from "./dashboard/routing.ts";
 
 const appRootLoader: LoaderFunction = async ({context}) => {
     const middlewareContext = (context as Readonly<RouterContextProvider>);
@@ -49,7 +52,28 @@ const router = createBrowserRouter([
             {index: true, Component: SIStartPage},
 
             // Dashboards and other important stuff
-            {path: "/dashboard", Component: SIDashboard, loader: authUserLoader},
+            {
+                path: "/dashboard",
+                Component: SIDashboard,
+                loader: authUserLoader,
+                children: [
+                    {
+                        index: true,
+                        Component: SIOrganization,
+                        action: dashboardOrganizationAction,
+                    },
+                    {
+                        path: "/dashboard/project/:projectId",
+                        Component: SIProject,
+                        action: dashboardProjectsAction,
+                    },
+                    {
+                        path: "/dashboard/incident/:incidentId",
+                        Component: SIIncident,
+                        action: dashboardIncidentsAction,
+                    }
+                ]
+            },
 
             // Login related stuff
             {

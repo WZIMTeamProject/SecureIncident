@@ -1,5 +1,4 @@
-﻿import pytest
-from httpx import AsyncClient
+﻿from httpx import AsyncClient
 
 from db.models.user import User
 from core import security

@@ -4,8 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     DATABASE_URL: str
-    TEST_DATABASE_URL: str = ""
-    SECRET_KEY: str = "prod_test"
+    SECRET_KEY: str = "secret-workflow-key"
     ALGORITHM: str = "HS256"
     REMEMBER_ME_EXPIRE_MINUTES: int = 10080
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
@@ -18,9 +17,10 @@ class Settings(BaseSettings):
     SMTP_FROM: str = "noreply@localhost"
     SMTP_TLS: bool = False
     FRONTEND_URL: str = "http://localhost:5173"
-    LOG_FORMAT: str = "text"
-
-    model_config = SettingsConfigDict(env_file=Path(__file__).parent.parent.parent / ".env"
-)
+    LOG_FORMAT: str = "text"                              
+    model_config = SettingsConfigDict(
+        env_file=Path(__file__).parent.parent.parent / ".env",
+        extra="ignore",
+    )
 
 settings = Settings()

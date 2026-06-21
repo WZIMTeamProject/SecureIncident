@@ -4,11 +4,8 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 import jwt
-from passlib.context import CryptContext
 import bcrypt
 from core.config import settings
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 ALGORITHM = settings.ALGORITHM
 
@@ -70,6 +67,8 @@ def validate_password_strength(v: str) -> str:
         raise ValueError("Password must be at least 8 characters")
     if len(v.encode("utf-8")) > 72:
         raise ValueError("Password must be at most 72 bytes")
+    if not any(c.islower() for c in v):
+        raise ValueError("Password must contain at least one lowercase letter")
     if not any(c.isupper() for c in v):
         raise ValueError("Password must contain at least one uppercase letter")
     if not any(c.isdigit() for c in v):

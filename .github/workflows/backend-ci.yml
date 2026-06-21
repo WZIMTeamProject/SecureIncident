@@ -1,8 +1,8 @@
 name: Backend Production Deploy
 on:
   push:
-    branches: [main]
-    paths: [backend/**]
+    branches: [ main ]
+    paths: [ backend/** ]
 
 jobs:
   build-and-deploy:
@@ -10,8 +10,39 @@ jobs:
     permissions:
       contents: read
       packages: write
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          python-version: '3.14'
+
+      - name: Sync dependencies
+        run: uv sync
+
+      - name: Run tests
+        working-directory: backend
+        run: uv run pytest
+        env:
+          DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/test
+
+      - name: Export production requirements
+        run: uv export --frozen --no-dev -o backend/requirements.txt
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -39,6 +70,5 @@ jobs:
             cd ~/secureincident
             ~/secureincident/fetch-secrets.sh
             docker compose pull backend
-            docker compose up -d backend
-            sleep 25
-            docker exec secureincident-backend-1 curl -f http://localhost:8000/health
+            docker compose up -d --force-recreate backend
+            timeout 60 bash -c 'until docker compose exec backend curl -sf http://localhost:8000/health; do sleep 3; done'

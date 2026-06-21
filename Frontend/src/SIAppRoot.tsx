@@ -79,7 +79,7 @@ export function SIAppRoot() {
     return (
         <div className={dark ? "dark" : ""}>
             <AuthUserContext value={siContext.auth ?? null}>
-                <header className="bg-[var(--color-si-header)]">
+                <header className="bg-(--color-si-header)">
                     <div className="flex items-center px-4 py-3">
 
                         {/* TODO: LOGO!!!! */}
