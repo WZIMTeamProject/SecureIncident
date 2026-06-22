@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="x-apple-disable-message-reformatting" />
+  <title>SecureIncident</title>
+</head>
+<body style="margin:0; padding:0; background-color:#ffffff; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+  <!-- Outer wrapper table: full-width page background, centers the 600px content table -->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        <!-- Content table: capped at 600px, centered -->
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px; margin:0 auto;">
+
+          <!-- HEADER BAND -->
+          <tr>
+            <td align="center" style="background-color:#5a1b8a; padding:24px 16px; border-top-left-radius:16px; border-top-right-radius:16px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+                <tr>
+                  <td valign="middle" style="padding-right:12px;">
+                    <!-- Decorative shield mark; degrades to the wordmark alone where inline SVG is unsupported (Outlook) -->
+                    <svg width="32" height="35" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg" role="presentation" aria-hidden="true" style="display:block;">
+                      <path d="M50 5 L90 22 L90 55 C90 78 72 98 50 105 C28 98 10 78 10 55 L10 22 Z" stroke="#8f5aba" stroke-width="3" />
+                      <path d="M35 55 L46 66 L65 44" stroke="#8f5aba" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </td>
+                  <td valign="middle">
+                    <span style="font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:20px; font-weight:bold; color:#ffffff;">SecureIncident</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- BODY CARD -->
+          <tr>
+            <td style="background-color:#ffffff; border:1px solid #864eb1; padding:32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
+              {% block content %}{% endblock %}
+            </td>
+          </tr>
+
+          <!-- FOOTER BAND -->
+          <tr>
+            <td style="background-color:#5a1b8a; padding:0; border-bottom-left-radius:16px; border-bottom-right-radius:16px;">
+              <!-- Decorative thin shield-motif accent row -->
+              <div aria-hidden="true" style="font-size:10px; line-height:14px; color:#bb89e5; text-align:center; padding:8px 16px 0 16px; letter-spacing:2px; white-space:nowrap; overflow:hidden;">&#9651; &#9651; &#9651; &#9651; &#9651; &#9651; &#9651; &#9651; &#9651; &#9651; &#9651; &#9651; &#9651; &#9651; &#9651; &#9651; &#9651; &#9651;</div>
+              <div style="font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:#ffffff; text-align:center; padding:8px 16px 16px 16px;">SecureIncident &mdash; automated message, please do not reply.</div>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
