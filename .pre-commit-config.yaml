@@ -17,7 +17,7 @@ repos:
         files: ^backend/
 
   - repo: https://github.com/PyCQA/bandit
-    rev: v1.9.4
+    rev: 1.9.4
     hooks:
     - id: bandit
       args: ["-c", "pyproject.toml"]
@@ -33,7 +33,7 @@ repos:
     hooks:
       - id: vulture
         files: ^backend/
-        args: [backend/, --min-confidence, "80"]
+        args: [backend/, --min-confidence, "80", --exclude, "*/tests/*"]
 
   - repo: local
     hooks:

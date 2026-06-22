@@ -57,6 +57,7 @@ quote-style = "double"
 [tool.vulture]
 min_confidence = 80
 paths = ["backend"]
+exclude = ["*/tests/*"]
 
 [tool.bandit]
 exclude_dirs = ["backend/tests"]

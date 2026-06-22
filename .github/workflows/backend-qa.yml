@@ -14,28 +14,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
         with:
           python-version: '3.14'
 
-      - name: Install tools
-        working-directory: backend
-        run: |
-          pip install -r requirements.txt
-          pip install bandit pip-audit vulture
+      - name: Sync dependencies
+        run: uv sync
 
       - name: Run bandit
         working-directory: backend
-        run: bandit -r api core db services main.py > ../docs/bandit.txt 2>&1 || true
+        run: uv run bandit -r api core db services main.py > ../docs/bandit.txt 2>&1 || true
 
       - name: Run pip-audit
         working-directory: backend
-        run: pip-audit -r requirements.txt > ../docs/pip-audit.txt 2>&1 || true
+        run: uv run pip-audit -r requirements.txt > ../docs/pip-audit.txt 2>&1 || true
 
       - name: Run vulture
         working-directory: backend
-        run: vulture . --min-confidence 80 > ../docs/vulture.txt 2>&1 || true
+        run: uv run vulture . --min-confidence 80 --exclude "*/tests/*" > ../docs/vulture.txt 2>&1 || true
 
       - name: Commit results to docs/
         run: |
@@ -67,16 +64,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
         with:
           python-version: '3.14'
 
+      - name: Sync dependencies
+        run: uv sync
+
       - name: Run tests
         working-directory: backend
-        run: |
-          pip install -r requirements.txt
-          pytest
+        run: uv run pytest
         env:
           DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/test
 
