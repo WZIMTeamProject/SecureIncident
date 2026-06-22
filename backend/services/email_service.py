@@ -38,7 +38,7 @@ async def send_reset_email(to: str, raw_token: str) -> None:
     )
 
     message = MIMEMultipart("alternative")
-    message["From"] = formataddr(("SecureIncident", settings.SMTP_FROM))
+    message["From"] = settings.SMTP_FROM
     message["To"] = to
     message["Subject"] = "Reset your SecureIncident password"
     message.attach(MIMEText(text_body, "plain"))
