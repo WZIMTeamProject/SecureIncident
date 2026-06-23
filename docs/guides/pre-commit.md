@@ -53,7 +53,7 @@ pre-commit validate-config .pre-commit-config.yaml
 | `ruff-format` | `backend/` | Formats Python (88-char lines, double quotes) |
 | `bandit` | `backend/` | Security linter (config in `pyproject.toml`, `-c pyproject.toml`) |
 | `pip-audit` | `backend/requirements.txt` | Flags known CVEs in dependencies |
-| `vulture` | `backend/` | Flags dead code at ≥80% confidence |
+| `vulture` | `backend/` | Flags dead code at $\ge$ 80% confidence |
 | `eslint` (local) | `Frontend/` | Runs `npx eslint --fix src/` |
 
 Ruff, bandit, and vulture configuration lives in `pyproject.toml` (`[tool.ruff]`,

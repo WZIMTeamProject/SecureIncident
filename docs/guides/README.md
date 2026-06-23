@@ -36,17 +36,17 @@ pre-commit install
 
 ```
 SecureIncident/
-├── Frontend/                  # React 19 + TypeScript + Vite + Tailwind CSS 4
-├── backend/                   # FastAPI + SQLAlchemy + Alembic (Python 3.14)
-├── docs/
-│   ├── guides/                # ← these operational guides
-│   └── api/                   # OpenAPI specification
-├── .github/workflows/         # backend-ci.yml, frontend-ci.yml
-├── .pre-commit-config.yaml
-├── Makefile                   # local + production compose shortcuts
-├── docker-compose.local.yml   # local development stack
-├── docker-compose.yml         # production stack (pulls GHCR images)
-└── pyproject.toml             # backend deps (uv) + ruff/vulture config
+|-- Frontend/                  # React 19 + TypeScript + Vite + Tailwind CSS 4
+|-- backend/                   # FastAPI + SQLAlchemy + Alembic (Python 3.14)
+|-- docs/
+|   |-- guides/                # these operational guides
+|   |-- api/                   # OpenAPI specification
+|-- .github/workflows/         # backend-ci.yml, frontend-ci.yml
+|-- .pre-commit-config.yaml
+|-- Makefile                   # local + production compose shortcuts
+|-- docker-compose.local.yml   # local development stack
+|-- docker-compose.yml         # production stack (pulls GHCR images)
+|-- pyproject.toml             # backend deps (uv) + ruff/vulture config
 ```
 
 > The files `docs/documentation.md`, `docs/backend.md`, `docs/frontend.md` and
