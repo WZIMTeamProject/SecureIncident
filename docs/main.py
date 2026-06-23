@@ -73,6 +73,7 @@ subprocess.run(
      "frontend.md", *[str(f) for f in Path("build/Frontend").rglob("*.md")], 
      "--from", "markdown-blank_before_header-space_in_atx_header+lists_without_preceding_blankline", 
      "--template", "templates/template.tex", 
+     "-V", f"author={open("authors", "r").read()}",
      "--toc", 
      "-o", "dokumentacja.pdf"],
     check=True
