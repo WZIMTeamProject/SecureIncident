@@ -62,7 +62,7 @@ jobs:
           fi
 
       - name: Commit results to docs/
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
