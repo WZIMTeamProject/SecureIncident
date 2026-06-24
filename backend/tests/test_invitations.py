@@ -1,19 +1,23 @@
-﻿from httpx import AsyncClient
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-from db.models.user_project import UserProject
+from core import security
 from db.models.organization_invite import OrganizationInvite
 from db.models.user import User
-from core import security
-from sqlalchemy.ext.asyncio import AsyncSession
+from db.models.user_project import UserProject
+from httpx import AsyncClient
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestCreateInvite:
-
     async def test_create_invite_returns_201_when_owner_requests(
-        self, client: AsyncClient, test_user: User, test_project, test_role, auth_headers: dict
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_project,
+        test_role,
+        auth_headers: dict,
     ):
         response = await client.post(
             f"/api/projects/{test_project.id}/invites",
@@ -23,7 +27,12 @@ class TestCreateInvite:
         assert response.status_code == 201
 
     async def test_create_invite_response_contains_raw_token(
-        self, client: AsyncClient, test_user: User, test_project, test_role, auth_headers: dict
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_project,
+        test_role,
+        auth_headers: dict,
     ):
         response = await client.post(
             f"/api/projects/{test_project.id}/invites",
@@ -35,7 +44,13 @@ class TestCreateInvite:
         assert len(data["token"]) > 30
 
     async def test_create_invite_db_record_stores_hashed_not_raw_token(
-        self, client: AsyncClient, test_user: User, test_project, test_role, auth_headers: dict, db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_project,
+        test_role,
+        auth_headers: dict,
+        db: AsyncSession,
     ):
         response = await client.post(
             f"/api/projects/{test_project.id}/invites",
@@ -45,7 +60,9 @@ class TestCreateInvite:
         raw_token = response.json()["token"]
 
         result = await db.execute(
-            select(OrganizationInvite).where(OrganizationInvite.project_id == test_project.id)
+            select(OrganizationInvite).where(
+                OrganizationInvite.project_id == test_project.id
+            )
         )
         invite = result.scalar_one_or_none()
 
@@ -108,9 +125,15 @@ class TestCreateInvite:
         assert response.status_code == 404
 
     async def test_create_invite_with_expiry_stores_expires_at_in_db(
-        self, client: AsyncClient, test_user: User, test_project, test_role, auth_headers: dict, db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_project,
+        test_role,
+        auth_headers: dict,
+        db: AsyncSession,
     ):
-        expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+        expires_at = datetime.now(UTC) + timedelta(days=7)
         response = await client.post(
             f"/api/projects/{test_project.id}/invites",
             headers=auth_headers,
@@ -118,13 +141,21 @@ class TestCreateInvite:
         )
 
         result = await db.execute(
-            select(OrganizationInvite).where(OrganizationInvite.project_id == test_project.id)
+            select(OrganizationInvite).where(
+                OrganizationInvite.project_id == test_project.id
+            )
         )
         invite = result.scalar_one_or_none()
         assert invite.expires_at is not None
 
     async def test_create_invite_with_max_uses_stores_max_uses_in_db(
-        self, client: AsyncClient, test_user: User, test_project, test_role, auth_headers: dict, db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_project,
+        test_role,
+        auth_headers: dict,
+        db: AsyncSession,
     ):
         response = await client.post(
             f"/api/projects/{test_project.id}/invites",
@@ -133,14 +164,15 @@ class TestCreateInvite:
         )
 
         result = await db.execute(
-            select(OrganizationInvite).where(OrganizationInvite.project_id == test_project.id)
+            select(OrganizationInvite).where(
+                OrganizationInvite.project_id == test_project.id
+            )
         )
         invite = result.scalar_one_or_none()
         assert invite.max_uses == 3
 
 
 class TestGetInvitePreview:
-
     async def test_get_invite_preview_returns_200_with_valid_token(
         self, client: AsyncClient, test_invite
     ):
@@ -196,7 +228,6 @@ class TestGetInvitePreview:
 
 
 class TestJoinProjectByInvite:
-
     async def test_join_project_returns_204_with_valid_invite(
         self, client: AsyncClient, test_user: User, test_invite, auth_headers: dict
     ):
@@ -209,7 +240,13 @@ class TestJoinProjectByInvite:
         assert response.status_code == 204
 
     async def test_join_project_creates_user_project_with_correct_role(
-        self, client: AsyncClient, test_user: User, test_project, test_invite, auth_headers: dict, db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_project,
+        test_invite,
+        auth_headers: dict,
+        db: AsyncSession,
     ):
         invite, raw_token = test_invite
         await client.post(
@@ -229,7 +266,12 @@ class TestJoinProjectByInvite:
         assert membership.role_id == test_invite[0].role_id
 
     async def test_join_project_increments_use_count(
-        self, client: AsyncClient, test_user: User, test_invite, auth_headers: dict, db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_invite,
+        auth_headers: dict,
+        db: AsyncSession,
     ):
         invite, raw_token = test_invite
         await client.post(
@@ -275,7 +317,13 @@ class TestJoinProjectByInvite:
         assert response.status_code == 400
 
     async def test_join_project_returns_409_when_already_member(
-        self, client: AsyncClient, test_user: User, test_project, test_role, auth_headers: dict, db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_project,
+        test_role,
+        auth_headers: dict,
+        db: AsyncSession,
     ):
         membership = UserProject(
             user_id=test_user.id,

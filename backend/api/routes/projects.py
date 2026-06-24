@@ -1,28 +1,26 @@
-from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status, Query, Path, Response
+from db.models.user import User
+from fastapi import APIRouter, Depends, Path, Query, Response, status
+from services import project_service
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.dependencies.db import get_db
 from api.dependencies.auth import get_current_user
+from api.dependencies.db import get_db
 from api.schemas.common.base import CreatedIdResponse
 from api.schemas.project.request import (
-    CreateProjectRequest,
-    UpdateProjectRequest,
     AddProjectMemberRequest,
     AssignRoleRequest,
+    CreateProjectRequest,
     ProjectScope,
+    UpdateProjectRequest,
 )
 from api.schemas.project.response import (
-    ProjectResponse,
     ProjectListResponse,
     ProjectMemberListResponse,
     ProjectMemberResponse,
+    ProjectResponse,
 )
-from db.models.user import User
-from services import project_service
-
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
@@ -42,7 +40,7 @@ async def create_project(
 
 @router.get("", response_model=ProjectListResponse)
 async def list_projects(
-    scope: Optional[ProjectScope] = Query(None),
+    scope: ProjectScope | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -127,7 +125,9 @@ async def add_member(
     return Response(status_code=204)
 
 
-@router.patch("/{project_id}/members/{user_id}/role", status_code=status.HTTP_204_NO_CONTENT)
+@router.patch(
+    "/{project_id}/members/{user_id}/role", status_code=status.HTTP_204_NO_CONTENT
+)
 async def change_member_role(
     project_id: UUID,
     user_id: UUID,

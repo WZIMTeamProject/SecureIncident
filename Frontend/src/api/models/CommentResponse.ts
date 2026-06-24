@@ -92,4 +92,3 @@ export function CommentResponseToJSON(value?: CommentResponse | null): any {
         'created_at': ((value['createdAt']).toISOString()),
     };
 }
-

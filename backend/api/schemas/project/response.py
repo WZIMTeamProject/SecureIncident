@@ -1,15 +1,16 @@
-from pydantic import BaseModel
-from typing import Optional, List
 from uuid import UUID
-from .request import ProjectScope
+
 from api.schemas.common.pagination import PaginatedResponse
+from pydantic import BaseModel
+
+from .request import ProjectScope
 
 
 class ProjectResponse(BaseModel):
     id: UUID
-    organization_id: Optional[UUID] = None
+    organization_id: UUID | None = None
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     scope: ProjectScope
 
 
@@ -24,4 +25,4 @@ class ProjectMemberResponse(BaseModel):
 
 
 class ProjectMemberListResponse(BaseModel):
-    members: List[ProjectMemberResponse]
+    members: list[ProjectMemberResponse]

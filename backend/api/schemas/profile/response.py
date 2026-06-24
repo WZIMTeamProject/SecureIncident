@@ -1,13 +1,13 @@
-from pydantic import BaseModel
-from typing import Optional, List
 from uuid import UUID
+
+from pydantic import BaseModel
 
 
 class ProfileResponse(BaseModel):
     id: UUID
     username: str
-    bio: Optional[str] = None
-    profile_picture_url: Optional[str] = None
+    bio: str | None = None
+    profile_picture_url: str | None = None
 
 
 class UserSearchResult(BaseModel):
@@ -16,4 +16,4 @@ class UserSearchResult(BaseModel):
 
 
 class UserSearchResponse(BaseModel):
-    users: List[UserSearchResult]
+    users: list[UserSearchResult]

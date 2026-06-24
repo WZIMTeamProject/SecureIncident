@@ -87,4 +87,3 @@ export function RoleListResponseToJSON(value?: RoleListResponse | null): any {
         'limit': value['limit'],
     };
 }
-

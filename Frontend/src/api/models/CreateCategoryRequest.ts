@@ -66,4 +66,3 @@ export function CreateCategoryRequestToJSON(value?: CreateCategoryRequest | null
         'description': value['description'],
     };
 }
-

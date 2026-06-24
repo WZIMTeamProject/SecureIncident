@@ -1,12 +1,11 @@
 from uuid import uuid4
 
-from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from core.security import create_access_token, hash_password
 from db.models.project import Project
 from db.models.role import Role
 from db.models.user import User
-from core.security import hash_password, create_access_token
+from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestBlankNameValidation:
@@ -149,7 +148,11 @@ class TestUpdateRoleNameValidation:
     """UpdateRoleRequest.name is optional but when provided must satisfy min_length=1, max_length=50."""
 
     async def test_update_role_returns_422_when_name_is_empty(
-        self, client: AsyncClient, test_project: Project, test_role: Role, auth_headers: dict
+        self,
+        client: AsyncClient,
+        test_project: Project,
+        test_role: Role,
+        auth_headers: dict,
     ):
         response = await client.patch(
             f"/api/projects/{test_project.id}/roles/{test_role.id}",
@@ -159,7 +162,11 @@ class TestUpdateRoleNameValidation:
         assert response.status_code == 422
 
     async def test_update_role_returns_422_when_name_exceeds_50_chars(
-        self, client: AsyncClient, test_project: Project, test_role: Role, auth_headers: dict
+        self,
+        client: AsyncClient,
+        test_project: Project,
+        test_role: Role,
+        auth_headers: dict,
     ):
         response = await client.patch(
             f"/api/projects/{test_project.id}/roles/{test_role.id}",
@@ -173,7 +180,11 @@ class TestInviteValidation:
     """CreateInviteRequest.max_uses must be gt=0 when provided."""
 
     async def test_create_invite_returns_422_when_max_uses_is_zero(
-        self, client: AsyncClient, test_project: Project, test_role: Role, auth_headers: dict
+        self,
+        client: AsyncClient,
+        test_project: Project,
+        test_role: Role,
+        auth_headers: dict,
     ):
         response = await client.post(
             f"/api/projects/{test_project.id}/invites",
@@ -183,7 +194,11 @@ class TestInviteValidation:
         assert response.status_code == 422
 
     async def test_create_invite_returns_422_when_max_uses_is_negative(
-        self, client: AsyncClient, test_project: Project, test_role: Role, auth_headers: dict
+        self,
+        client: AsyncClient,
+        test_project: Project,
+        test_role: Role,
+        auth_headers: dict,
     ):
         response = await client.post(
             f"/api/projects/{test_project.id}/invites",

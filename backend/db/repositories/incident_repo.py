@@ -1,17 +1,17 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 from uuid import UUID
 
-from sqlalchemy import select, func
-from sqlalchemy.orm import selectinload
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
+from db.models.comment import Comment
 from db.models.incident import Incident
 from db.models.incident_helper import IncidentHelper
 from db.models.incident_log import IncidentLog
-from db.models.comment import Comment
 
 
-async def get_by_id(db: AsyncSession, incident_id: UUID) -> Optional[Incident]:
+async def get_by_id(db: AsyncSession, incident_id: UUID) -> Incident | None:
     result = await db.execute(
         select(Incident)
         .where(Incident.id == incident_id)
@@ -32,11 +32,15 @@ async def get_incidents_by_project(
     *,
     offset: int = 0,
     limit: int = 20,
-    status: Optional[str] = None,
-    priority: Optional[str] = None,
-    assignee_id: Optional[UUID] = None,
+    status: str | None = None,
+    priority: str | None = None,
+    assignee_id: UUID | None = None,
 ) -> tuple[Sequence[Incident], int]:
-    count_stmt = select(func.count()).select_from(Incident).where(Incident.project_id == project_id)
+    count_stmt = (
+        select(func.count())
+        .select_from(Incident)
+        .where(Incident.project_id == project_id)
+    )
     data_stmt = select(Incident).where(Incident.project_id == project_id)
 
     if status is not None:
@@ -50,7 +54,9 @@ async def get_incidents_by_project(
         data_stmt = data_stmt.where(Incident.primary_assignee_id == assignee_id)
 
     total = (await db.execute(count_stmt)).scalar_one()
-    data_stmt = data_stmt.order_by(Incident.created_at.desc()).offset(offset).limit(limit)
+    data_stmt = (
+        data_stmt.order_by(Incident.created_at.desc()).offset(offset).limit(limit)
+    )
     incidents = (await db.execute(data_stmt)).scalars().all()
     return incidents, total
 
@@ -62,7 +68,11 @@ async def get_by_reporter(
     offset: int = 0,
     limit: int = 20,
 ) -> tuple[Sequence[Incident], int]:
-    count_stmt = select(func.count()).select_from(Incident).where(Incident.reporter_id == user_id)
+    count_stmt = (
+        select(func.count())
+        .select_from(Incident)
+        .where(Incident.reporter_id == user_id)
+    )
     total = (await db.execute(count_stmt)).scalar_one()
     data_stmt = (
         select(Incident)
@@ -81,7 +91,11 @@ async def get_by_assignee(
     offset: int = 0,
     limit: int = 20,
 ) -> tuple[Sequence[Incident], int]:
-    count_stmt = select(func.count()).select_from(Incident).where(Incident.primary_assignee_id == user_id)
+    count_stmt = (
+        select(func.count())
+        .select_from(Incident)
+        .where(Incident.primary_assignee_id == user_id)
+    )
     total = (await db.execute(count_stmt)).scalar_one()
     data_stmt = (
         select(Incident)
@@ -126,7 +140,7 @@ async def get_logs_by_incident(
     *,
     offset: int = 0,
     limit: int = 20,
-    type_filter: Optional[list[str]] = None,
+    type_filter: list[str] | None = None,
 ) -> tuple[Sequence[IncidentLog], int]:
     count_stmt = (
         select(func.count())
@@ -140,7 +154,9 @@ async def get_logs_by_incident(
         data_stmt = data_stmt.where(IncidentLog.type.in_(type_filter))
 
     total = (await db.execute(count_stmt)).scalar_one()
-    data_stmt = data_stmt.order_by(IncidentLog.created_at.asc()).offset(offset).limit(limit)
+    data_stmt = (
+        data_stmt.order_by(IncidentLog.created_at.asc()).offset(offset).limit(limit)
+    )
     logs = (await db.execute(data_stmt)).scalars().all()
     return logs, total
 
@@ -149,8 +165,8 @@ async def get_logs_by_user(
     db: AsyncSession,
     user_id: UUID,
     *,
-    project_id: Optional[UUID] = None,
-    log_type: Optional[str] = None,
+    project_id: UUID | None = None,
+    log_type: str | None = None,
     offset: int = 0,
     limit: int = 20,
 ) -> tuple[Sequence[IncidentLog], int]:
@@ -176,7 +192,9 @@ async def get_logs_by_user(
         data_stmt = data_stmt.where(IncidentLog.type == log_type)
 
     total = (await db.execute(count_stmt)).scalar_one()
-    data_stmt = data_stmt.order_by(IncidentLog.created_at.desc()).offset(offset).limit(limit)
+    data_stmt = (
+        data_stmt.order_by(IncidentLog.created_at.desc()).offset(offset).limit(limit)
+    )
     logs = (await db.execute(data_stmt)).scalars().all()
     return logs, total
 
@@ -188,7 +206,7 @@ async def create_log(db: AsyncSession, log: IncidentLog) -> None:
 
 async def get_helper(
     db: AsyncSession, incident_id: UUID, user_id: UUID
-) -> Optional[IncidentHelper]:
+) -> IncidentHelper | None:
     result = await db.execute(
         select(IncidentHelper).where(
             IncidentHelper.incident_id == incident_id,

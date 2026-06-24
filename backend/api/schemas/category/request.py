@@ -1,5 +1,4 @@
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Optional
 
 
 class CreateCategoryRequest(BaseModel):
@@ -12,4 +11,4 @@ class CreateCategoryRequest(BaseModel):
 class UpdateCategoryRequest(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    name: Optional[str] = Field(None, min_length=1, max_length=50)
+    name: str | None = Field(None, min_length=1, max_length=50)

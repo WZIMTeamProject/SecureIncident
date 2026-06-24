@@ -66,4 +66,3 @@ export function HelperResponseToJSON(value?: HelperResponse | null): any {
         'added_at': ((value['addedAt']).toISOString()),
     };
 }
-

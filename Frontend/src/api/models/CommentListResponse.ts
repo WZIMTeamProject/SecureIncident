@@ -60,4 +60,3 @@ export function CommentListResponseToJSON(value?: CommentListResponse | null): a
         'comments': ((value['comments'] as Array<any>).map(CommentResponseToJSON)),
     };
 }
-

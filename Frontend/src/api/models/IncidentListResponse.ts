@@ -87,4 +87,3 @@ export function IncidentListResponseToJSON(value?: IncidentListResponse | null):
         'limit': value['limit'],
     };
 }
-

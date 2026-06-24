@@ -1,15 +1,14 @@
 import logging
+from collections.abc import Sequence
 from uuid import UUID
-from typing import Sequence
-
-from fastapi import HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.schemas.role.request import CreateRoleRequest, UpdateRoleRequest
+from db import repositories
 from db.models.project import Project
 from db.models.role import Role
 from db.models.user import User
-from db import repositories
+from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +101,9 @@ async def update_role(
         )
 
     name = data.name.strip() if data.name is not None else None
-    permissions = data.permissions.model_dump() if data.permissions is not None else None
+    permissions = (
+        data.permissions.model_dump() if data.permissions is not None else None
+    )
 
     await repositories.project_repo.update_role(
         db, role=role, name=name, permissions=permissions
@@ -118,10 +119,13 @@ async def update_role(
 
 # --- authorization helpers (MVP: owner-check / member-check) ---
 
+
 async def _get_project(db: AsyncSession, project_id: UUID) -> Project:
     project = await repositories.project_repo.get_project_by_id(db, project_id)
     if project is None:
-        logger.warning("Role operation failed: project not found project_id=%s", project_id)
+        logger.warning(
+            "Role operation failed: project not found project_id=%s", project_id
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
         )

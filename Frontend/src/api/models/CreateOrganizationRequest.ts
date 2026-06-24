@@ -65,4 +65,3 @@ export function CreateOrganizationRequestToJSON(value?: CreateOrganizationReques
         'description': value['description'],
     };
 }
-

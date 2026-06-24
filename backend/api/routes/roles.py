@@ -1,24 +1,23 @@
 from uuid import UUID
 
+from db.models.role import Role
+from db.models.user import User
 from fastapi import APIRouter, Depends, status
+from services import role_service
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.dependencies.db import get_db
 from api.dependencies.auth import get_current_user
+from api.dependencies.db import get_db
+from api.schemas.common.base import CreatedIdResponse
 from api.schemas.role.request import (
-    RolePermissions,
     CreateRoleRequest,
+    RolePermissions,
     UpdateRoleRequest,
 )
 from api.schemas.role.response import (
     RoleListResponse,
     RoleResponse,
 )
-from api.schemas.common.base import CreatedIdResponse
-from db.models.role import Role
-from db.models.user import User
-from services import role_service
-
 
 router = APIRouter(prefix="/projects/{project_id}/roles", tags=["Roles"])
 
@@ -51,9 +50,7 @@ async def get_roles(
         db, project_id=project_id, current_user=current_user
     )
     items = [_to_response(r) for r in roles]
-    return RoleListResponse(
-        items=items, total=len(items), offset=0, limit=len(items)
-    )
+    return RoleListResponse(items=items, total=len(items), offset=0, limit=len(items))
 
 
 @router.post("", response_model=CreatedIdResponse, status_code=status.HTTP_201_CREATED)

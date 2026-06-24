@@ -60,4 +60,3 @@ export function ProjectMemberListResponseToJSON(value?: ProjectMemberListRespons
         'members': ((value['members'] as Array<any>).map(ProjectMemberResponseToJSON)),
     };
 }
-

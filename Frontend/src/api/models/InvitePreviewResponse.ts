@@ -86,4 +86,3 @@ export function InvitePreviewResponseToJSON(value?: InvitePreviewResponse | null
         'expires_at': value['expiresAt'] == null ? undefined : ((value['expiresAt'] as any).toISOString()),
     };
 }
-

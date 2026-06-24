@@ -65,4 +65,3 @@ export function InviteResponseToJSON(value?: InviteResponse | null): any {
         'invite_url': value['inviteUrl'],
     };
 }
-

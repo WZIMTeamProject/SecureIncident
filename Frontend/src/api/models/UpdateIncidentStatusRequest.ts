@@ -60,4 +60,3 @@ export function UpdateIncidentStatusRequestToJSON(value?: UpdateIncidentStatusRe
         'status': IncidentStatusToJSON(value['status']),
     };
 }
-

@@ -120,4 +120,3 @@ export function IncidentLogEntryToJSON(value?: IncidentLogEntry | null): any {
         'created_at': ((value['createdAt']).toISOString()),
     };
 }
-

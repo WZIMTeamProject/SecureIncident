@@ -57,4 +57,3 @@ export function AssignRoleRequestToJSON(value?: AssignRoleRequest | null): any {
         'role_id': value['roleId'],
     };
 }
-

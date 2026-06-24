@@ -84,4 +84,3 @@ export function ProjectMemberResponseToJSON(value?: ProjectMemberResponse | null
         'role_name': value['roleName'],
     };
 }
-

@@ -49,4 +49,3 @@ export function IncidentStatusFromJSONTyped(json: any, ignoreDiscriminator: bool
 export function IncidentStatusToJSON(value?: IncidentStatus | null): any {
     return value as any;
 }
-

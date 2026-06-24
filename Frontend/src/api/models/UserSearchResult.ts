@@ -66,4 +66,3 @@ export function UserSearchResultToJSON(value?: UserSearchResult | null): any {
         'username': value['username'],
     };
 }
-

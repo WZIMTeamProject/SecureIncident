@@ -66,4 +66,3 @@ export function PasswordResetConfirmRequestToJSON(value?: PasswordResetConfirmRe
         'new_password': value['newPassword'],
     };
 }
-

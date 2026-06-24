@@ -1,15 +1,15 @@
-from uuid import UUID
-from pydantic import BaseModel, ConfigDict, Field
-from typing import Optional
 from datetime import datetime
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class CreateInviteRequest(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
     role_id: UUID
-    expires_at: Optional[datetime] = None
-    max_uses: Optional[int] = Field(None, gt=0)
+    expires_at: datetime | None = None
+    max_uses: int | None = Field(None, gt=0)
 
 
 class JoinByInviteRequest(BaseModel):

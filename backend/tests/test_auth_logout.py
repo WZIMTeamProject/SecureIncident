@@ -1,9 +1,9 @@
-﻿from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, patch
+
+from db.models.revoked_token import RevokedToken
+from db.models.user import User
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.exc import SQLAlchemyError
-
-from db.models.user import User
-from db.models.revoked_token import RevokedToken
 
 
 def test_revoked_token_model_has_no_updated_at():
@@ -11,7 +11,6 @@ def test_revoked_token_model_has_no_updated_at():
 
 
 class TestLogout:
-
     async def test_logout_returns_204_with_valid_token(
         self, client: AsyncClient, test_user: User, auth_headers: dict
     ):
@@ -61,8 +60,8 @@ class TestLogout:
         self, db, test_user: User, auth_headers: dict
     ):
         """DB failure during token revocation must surface as 500, not be silently swallowed."""
-        from main import app as fastapi_app
         from api.dependencies.db import get_db
+        from main import app as fastapi_app
 
         fastapi_app.dependency_overrides[get_db] = lambda: db
 
@@ -76,7 +75,9 @@ class TestLogout:
                     new_callable=AsyncMock,
                     side_effect=SQLAlchemyError("DB error"),
                 ):
-                    response = await error_client.post("/api/auth/logout", headers=auth_headers)
+                    response = await error_client.post(
+                        "/api/auth/logout", headers=auth_headers
+                    )
             assert response.status_code == 500
         finally:
             fastapi_app.dependency_overrides.pop(get_db, None)

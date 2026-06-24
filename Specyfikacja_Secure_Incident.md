@@ -2,7 +2,7 @@
 
 ## 1. Opis projektu
 
-**Secure Incydent** to webowa platforma do zgłaszania i obsługi problemów oraz incydentów w obrębie organizacji i jej projektów.  
+**Secure Incydent** to webowa platforma do zgłaszania i obsługi problemów oraz incydentów w obrębie organizacji i jej projektów.
 Jej celem jest uporządkowanie zgłoszeń, umożliwienie śledzenia statusu, przypisywania odpowiedzialnych osób oraz utrzymywania historii zmian w jednym miejscu.
 
 Projekt ma charakter **edukacyjny**, ale równocześnie ma pokazywać dobre praktyki:
@@ -42,7 +42,7 @@ System jest projektowany głównie dla:
 - **prywatnych struktur**,
 - zespołów, które potrzebują prostego i bezpiecznego narzędzia do obsługi problemów.
 
-Projekt nie jest planowany jako rozwiązanie enterprise.  
+Projekt nie jest planowany jako rozwiązanie enterprise.
 Na etapie MVP skupia się na małej skali, prostocie użycia, bezpieczeństwie i łatwości wdrożenia.
 
 ---
@@ -205,7 +205,7 @@ Na start system przewiduje role:
 - **problem_solver**
 
 ### 8.2 Zakres ról
-Role są przypisywane **per projekt**.  
+Role są przypisywane **per projekt**.
 Użytkownik ma dokładnie **jedną rolę w projekcie**.
 
 ### 8.3 Rola owner
@@ -242,7 +242,7 @@ Solver:
 - działa w obrębie kategorii przypisanych mu w projekcie.
 
 ### 8.7 Role niestandardowe
-System ma zawierać mechanizm tworzenia własnych ról i ich dostępu.  
+System ma zawierać mechanizm tworzenia własnych ról i ich dostępu.
 Na poziomie modelu danych przyjmuje się, że użytkownik ma jedną rolę per projekt.
 
 ---
@@ -413,7 +413,7 @@ Na MVP:
 - dokumentacja ma być wystawiona przez **OpenAPI / Swagger**.
 
 ### 14.3 Frontend
-Backend ma być przygotowany pod oddzielny frontend.  
+Backend ma być przygotowany pod oddzielny frontend.
 Jednak do pierwszego demo dopuszczalne jest pokazanie:
 
 - API

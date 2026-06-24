@@ -1,11 +1,10 @@
-from httpx import AsyncClient
 from uuid import UUID, uuid4
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
-from db.models.role import Role
 from db.models.project import Project
-
+from db.models.role import Role
+from httpx import AsyncClient
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 FULL_PERMISSIONS = {
     "can_write_tickets": True,
@@ -19,7 +18,6 @@ FULL_PERMISSIONS = {
 
 
 class TestListRoles:
-
     async def test_list_roles_returns_200_when_member_requests(
         self,
         client: AsyncClient,
@@ -69,7 +67,6 @@ class TestListRoles:
 
 
 class TestCreateRole:
-
     async def test_create_role_returns_201_when_owner_provides_all_permissions(
         self,
         client: AsyncClient,
@@ -171,7 +168,6 @@ class TestCreateRole:
 
 
 class TestGetRole:
-
     async def test_get_role_returns_200_when_member_requests(
         self,
         client: AsyncClient,
@@ -242,7 +238,6 @@ class TestGetRole:
 
 
 class TestUpdateRole:
-
     async def test_update_role_returns_204_when_owner_updates_name_and_permissions(
         self,
         client: AsyncClient,

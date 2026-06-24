@@ -1,17 +1,16 @@
 import logging
 
-from fastapi import HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from api.schemas.organization.request import (
-    CreateOrganizationRequest,
     CreateInviteRequest,
+    CreateOrganizationRequest,
 )
 from core import security
+from db import repositories
 from db.models.organization import Organization
 from db.models.organization_invite import OrganizationInvite
 from db.models.user import User
-from db import repositories
+from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +49,9 @@ async def create_organization(
 
     await db.commit()
     await db.refresh(organization)
-    logger.info("Organization created org_id=%s user_id=%s", organization.id, current_user.id)
+    logger.info(
+        "Organization created org_id=%s user_id=%s", organization.id, current_user.id
+    )
     return organization
 
 
@@ -224,7 +225,9 @@ async def join_organization(
     if already member of one, return 409 (before consuming invitation).
     """
     if current_user.organization_id is not None:
-        logger.warning("Join organization failed: user already has org user_id=%s", current_user.id)
+        logger.warning(
+            "Join organization failed: user already has org user_id=%s", current_user.id
+        )
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="User already belongs to an organization",

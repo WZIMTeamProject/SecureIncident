@@ -74,4 +74,3 @@ export function CurrentUserResponseToJSON(value?: CurrentUserResponse | null): a
         'organization_id': value['organizationId'],
     };
 }
-

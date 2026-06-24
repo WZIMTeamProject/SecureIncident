@@ -78,4 +78,3 @@ export function LoginResponseToJSON(value?: LoginResponse | null): any {
         'user': CurrentUserResponseToJSON(value['user']),
     };
 }
-

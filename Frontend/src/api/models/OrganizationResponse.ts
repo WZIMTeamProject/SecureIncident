@@ -74,4 +74,3 @@ export function OrganizationResponseToJSON(value?: OrganizationResponse | null):
         'description': value['description'],
     };
 }
-

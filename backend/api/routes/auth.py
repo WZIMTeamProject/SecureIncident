@@ -1,28 +1,31 @@
 import datetime
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Response, status, Security
+from core.security import decode_token
+from db import repositories
+from db.models.user import User
+from fastapi import APIRouter, BackgroundTasks, Depends, Response, Security, status
 from fastapi.security import HTTPAuthorizationCredentials
+from services import auth_service
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.dependencies.auth import bearer_scheme, get_current_user
 from api.dependencies.db import get_db
-from api.dependencies.auth import get_current_user, bearer_scheme
-from api.schemas.common.base import CreatedIdResponse, DetailResponse
 from api.schemas.auth.request import (
-    RegisterRequest,
-    LoginRequest,
-    PasswordResetRequest,
-    PasswordResetConfirmRequest,
     ChangePasswordRequest,
+    LoginRequest,
+    PasswordResetConfirmRequest,
+    PasswordResetRequest,
+    RegisterRequest,
 )
 from api.schemas.auth.response import CurrentUserResponse, LoginResponse
-from db.models.user import User
-from db import repositories
-from services import auth_service
-from core.security import decode_token
+from api.schemas.common.base import CreatedIdResponse, DetailResponse
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
-@router.post("/register", response_model=CreatedIdResponse, status_code=status.HTTP_201_CREATED)
+
+@router.post(
+    "/register", response_model=CreatedIdResponse, status_code=status.HTTP_201_CREATED
+)
 async def register_user(data: RegisterRequest, db: AsyncSession = Depends(get_db)):
     """Register a new user."""
     user = await auth_service.register_user(db, data)
@@ -67,7 +70,9 @@ async def logout_user(
     payload = decode_token(token)
     jti = payload.get("jti")
     exp_timestamp = payload.get("exp")
-    expires_at = datetime.datetime.fromtimestamp(exp_timestamp, tz=datetime.timezone.utc).replace(tzinfo=None)
+    expires_at = datetime.datetime.fromtimestamp(
+        exp_timestamp, tz=datetime.UTC
+    ).replace(tzinfo=None)
 
     await repositories.revoked_token_repo.add_revoked_token(
         db,
@@ -90,7 +95,9 @@ async def request_password_reset(
     db: AsyncSession = Depends(get_db),
 ):
     """Request password reset (always returns 204, even if user does not exist)."""
-    await auth_service.request_password_reset(db, data.email_or_username, background_tasks)
+    await auth_service.request_password_reset(
+        db, data.email_or_username, background_tasks
+    )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
