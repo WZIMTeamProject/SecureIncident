@@ -16,6 +16,7 @@ export interface Organization {
 
 export interface Incident {
     id: string;
+    projectId?: string;
     title: string;
     description?: string;
     categoryId?: string;

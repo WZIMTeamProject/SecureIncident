@@ -1,9 +1,9 @@
 import {useFetcher, useParams} from "react-router";
+import * as React from "react";
 import {useEffect, useMemo, useRef, useState} from "react";
 import type {Incident} from "../data/project.ts";
 import Api from "../data/Api.ts";
-import type {IncidentLogEntry} from "../api";
-import * as React from "react";
+import type {IncidentLogEntry, ProjectMemberResponse} from "../api";
 import {Popup} from "../components/Popup.tsx";
 import {FORM_ACTION, FORM_ACTION_INVITE_USER, FORM_INVITE_NAME} from "./forms.ts";
 
@@ -22,6 +22,7 @@ export function SIIncident() {
                     setIncident({
                         title: incidentResponse.title,
                         id: incidentResponse.id,
+                        projectId: incidentResponse.projectId,
                         primaryAssigneeId: incidentResponse.primaryAssigneeId ?? undefined,
                         categoryId: incidentResponse.categoryId ?? undefined,
                         reportDate: incidentResponse.reportDate,
@@ -68,7 +69,10 @@ function IncidentView({incident}: { incident: Incident }) {
 
     return (
         <div className={"flex flex-col gap-3"}>
-            <AddToIncidentPopup show={shownPopup == "add_to_incident"} onHide={() => setShownPopup(null)}/>
+            <AddToIncidentPopup
+                incident={incident}
+                show={shownPopup == "add_to_incident"}
+                onHide={() => setShownPopup(null)}/>
 
             <div className={"flex gap-3"}>
                 <div className="bg-(--color-si-card-bg) border-5 border-(--color-si-card-border) w-fit
@@ -147,7 +151,7 @@ function IncidentView({incident}: { incident: Incident }) {
                 </span>
             </div>
 
-            <LogHistory logs={logs} />
+            <LogHistory logs={logs}/>
         </div>
     );
 }
@@ -183,7 +187,7 @@ function LogHistory({logs}: { logs?: IncidentLogEntry[] }) {
     );
 }
 
-function LogEntry({log} : {log: IncidentLogEntry}){
+function LogEntry({log}: { log: IncidentLogEntry }) {
     let rowContents: string = "";
     const logTime = log.createdAt.toLocaleString();
 
@@ -225,11 +229,34 @@ function LogEntry({log} : {log: IncidentLogEntry}){
     </h1>;
 }
 
-function AddToIncidentPopup({show, onHide}: {show: boolean, onHide: () => void}) {
+function AddToIncidentPopup({incident, show, onHide}: { incident: Incident, show: boolean, onHide: () => void }) {
     const fetcher = useFetcher();
     const busy = fetcher.state != "idle";
 
     const usernameRef = useRef<HTMLInputElement>(null);
+
+    const [projectMembers, setProjectMembers] = useState<ProjectMemberResponse[]>([]);
+
+    useEffect(() => {
+        const projectId = incident.projectId;
+        if (projectId) {
+            Api.projects.projectsProjectIdMembersGet({
+                projectId: projectId,
+            }).then(
+                (members) => setProjectMembers(members.members),
+                () => setProjectMembers([])
+            );
+        }
+    }, [incident]);
+
+    const projectMemberEntries = useMemo(() => {
+        return projectMembers.map((member) => (
+            <div key={member.userId} className={"w-full px-3 py-2.5"}>
+                <p>{member.username} - {member.roleName}</p>
+                <hr/>
+            </div>
+        ));
+    }, [projectMembers]);
 
     return (
         <Popup show={show} className={"w-full max-w-xl"}>
@@ -255,6 +282,15 @@ function AddToIncidentPopup({show, onHide}: {show: boolean, onHide: () => void})
                             placeholder="Nazwa użytkownika"
                             className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
+                    </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5 my-3">
+                    <div className="flex items-center gap-3 h-32
+                                border border-(--color-si-input-border)
+                                rounded-lg
+                                bg-(--color-si-input-bg) transition-colors overflow-y-scroll">
+                        {projectMemberEntries}
                     </div>
                 </div>
 

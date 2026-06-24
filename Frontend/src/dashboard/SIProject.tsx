@@ -70,12 +70,12 @@ function ProjectView({project}: { project: Project }) {
             (incidentResponse) => {
                 const fetchedIncidents: Incident[] = incidentResponse.items.map((value) => {
                     return {
+                        id: value.id,
                         status: value.status,
                         priority: value.priority,
                         reportDate: value.reportDate,
                         categoryId: value.categoryId ?? undefined,
                         primaryAssigneeId: value.primaryAssigneeId ?? undefined,
-                        id: value.id,
                         title: value.title,
                     };
                 });
