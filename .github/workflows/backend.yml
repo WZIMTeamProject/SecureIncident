@@ -49,7 +49,7 @@ jobs:
       - name: Run vulture
         working-directory: backend
         run: |
-          uv run vulture . --min-confidence 80 --exclude "*/tests/*" > ../docs/vulture.txt 2>&1
+          uv run vulture . --min-confidence 80 --exclude '*/tests/*' > ../docs/vulture.txt 2>&1
           VULTURE_EXIT=$?
           cat ../docs/vulture.txt >> "$GITHUB_STEP_SUMMARY"
           if [ "$VULTURE_EXIT" -eq 0 ] || [ "$VULTURE_EXIT" -eq 3 ]; then
