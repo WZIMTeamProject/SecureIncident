@@ -52,6 +52,10 @@ ignore = ["E501"]
 "backend/alembic/env.py" = ["E402"]
 "backend/db/models/*.py" = ["F821"]
 "backend/tests/*.py" = ["S101"]
+# E711/E712: SQLAlchemy column comparisons require `== None` / `== True` to build
+# SQL IS NULL / = true clauses; `is None` would short-circuit to a Python bool and
+# silently produce a wrong query instead of a column expression.
+"backend/db/repositories/*.py" = ["E711", "E712"]
 
 [tool.ruff.format]
 quote-style = "double"
