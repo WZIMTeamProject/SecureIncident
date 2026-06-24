@@ -134,7 +134,7 @@ class TestCreateInvite:
         db: AsyncSession,
     ):
         expires_at = datetime.now(UTC) + timedelta(days=7)
-        response = await client.post(
+        await client.post(
             f"/api/projects/{test_project.id}/invites",
             headers=auth_headers,
             json={"role_id": str(test_role.id), "expires_at": expires_at.isoformat()},
@@ -157,7 +157,7 @@ class TestCreateInvite:
         auth_headers: dict,
         db: AsyncSession,
     ):
-        response = await client.post(
+        await client.post(
             f"/api/projects/{test_project.id}/invites",
             headers=auth_headers,
             json={"role_id": str(test_role.id), "max_uses": 3},
