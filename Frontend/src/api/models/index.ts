@@ -6,6 +6,7 @@ export * from './AddProjectMemberRequest';
 export * from './AssignRoleRequest';
 export * from './CategoryListResponse';
 export * from './CategoryResponse';
+export * from './ChangePasswordRequest';
 export * from './CommentListResponse';
 export * from './CommentResponse';
 export * from './CreateCategoryRequest';

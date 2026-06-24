@@ -21,7 +21,7 @@ import {
 import {AuthRouterContext, authUserLoader, getAuthState} from "./data/auth.ts";
 import {SIStartPage} from "./SIStartPage.tsx";
 import {SIPageNotFound} from "./SIPageNotFound.tsx";
-import {SIAccountPage, SINotificationPage} from "./account";
+import {accountAction, SIAccountPage, SINotificationPage} from "./account";
 import {SIResetPassword} from "./login/SIResetPassword.tsx";
 import {THEME_PREFERENCE, THEME_PREFERENCE_DARK} from "./data/cookies.ts";
 import type {SIContext} from "./data/context.ts";
@@ -104,7 +104,7 @@ const router = createBrowserRouter([
             {
                 path: "/account",
                 children: [
-                    {index: true, Component: SIAccountPage, loader: authUserLoader},
+                    {index: true, Component: SIAccountPage, loader: authUserLoader, action: accountAction},
                     {path: "/account/notifications", Component: SINotificationPage, loader: authUserLoader}
                 ]
             },

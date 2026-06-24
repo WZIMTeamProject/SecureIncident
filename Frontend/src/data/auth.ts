@@ -27,6 +27,12 @@ import {type IncidentLogType, type ProjectScope, ResponseError} from "../api";
 export const AuthRouterContext = createContext<AuthState | null>(null);
 export const AuthUserContext = React.createContext<AuthState | null>(null);
 
+/** A page of notification feed entries plus the total unpaginated count (for "load more"). */
+export interface NotificationsPage {
+    items: IncidentHistoryEntry[];
+    total: number;
+}
+
 export class AuthState {
     name: string;
     id: string;
@@ -164,6 +170,51 @@ export class AuthState {
         } catch {
             return [];
         }
+    }
+
+    // Errors are intentionally NOT swallowed here (unlike getIncidentHistory): the
+    // notification feed has a dedicated error state, so the caller distinguishes a
+    // failed load from an empty feed.
+    async getNotifications(offset: number = 0, limit: number = 20): Promise<NotificationsPage> {
+        if (import.meta.env.DEV && this.isDummyUser) {
+            const now = Date.now();
+            const items: IncidentHistoryEntry[] = [
+                {
+                    id: "0000-0000-0000-0001",
+                    incidentId: "0000-0000-0000-0001",
+                    type: "ASSIGNEE_CHANGED",
+                    actorId: "0000-0000-0000-0002",
+                    createdAt: new Date(now - 5 * 60 * 1000),
+                },
+                {
+                    id: "0000-0000-0000-0002",
+                    incidentId: "0000-0000-0000-0003",
+                    type: "COMMENT",
+                    actorId: "0000-0000-0000-0004",
+                    createdAt: new Date(now - 2 * 60 * 60 * 1000),
+                    comment: "Logowanie nie działa po ostatniej aktualizacji.",
+                },
+            ];
+            return {items: items.slice(offset, offset + limit), total: items.length};
+        }
+
+        const notifications = await Api.incidents.incidentsNotificationsGet({offset, limit});
+
+        return {
+            items: notifications.items.map((rawEntry) => {
+                return {
+                    id: rawEntry.id,
+                    incidentId: rawEntry.incidentId,
+                    type: rawEntry.type,
+                    actorId: rawEntry.actorId,
+                    createdAt: rawEntry.createdAt,
+                    newValue: rawEntry.newValue ?? undefined,
+                    oldValue: rawEntry.oldValue ?? undefined,
+                    comment: rawEntry.comment ?? undefined,
+                };
+            }),
+            total: notifications.total,
+        };
     }
 
     async getProfile(): Promise<UserProfile | null> {
