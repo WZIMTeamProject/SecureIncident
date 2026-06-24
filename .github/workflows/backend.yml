@@ -38,7 +38,7 @@ jobs:
         working-directory: backend
         run: |
           test -f requirements.txt || { echo "missing requirements.txt"; exit 1; }
-          uv run pip-audit -r requirements.txt > ../docs/pip-audit.txt 2>&1
+          uv run pip-audit -r requirements.txt --no-deps --disable-pip > ../docs/pip-audit.txt 2>&1
           PIP_AUDIT_EXIT=$?
           cat ../docs/pip-audit.txt >> "$GITHUB_STEP_SUMMARY"
           # pip-audit has no exit code distinct from "vulnerabilities found" vs "tool error" (unlike
@@ -49,7 +49,10 @@ jobs:
       - name: Run vulture
         working-directory: backend
         run: |
-          uv run vulture . --min-confidence 80 --exclude '*/tests/*' > ../docs/vulture.txt 2>&1
+          # --ignore-names cls: Pydantic's @field_validator + @classmethod requires a `cls` first
+          # param that validator bodies never reference; vulture can't see the decorator-imposed
+          # signature and flags it as dead code, so it's suppressed here rather than in the code.
+          uv run vulture . --min-confidence 80 --exclude '*/tests/*' --ignore-names 'cls' > ../docs/vulture.txt 2>&1
           VULTURE_EXIT=$?
           cat ../docs/vulture.txt >> "$GITHUB_STEP_SUMMARY"
           if [ "$VULTURE_EXIT" -eq 0 ] || [ "$VULTURE_EXIT" -eq 3 ]; then
