@@ -2,11 +2,6 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-
-logger = logging.getLogger(__name__)
-
 from api.schemas.common.base import CreatedIdResponse
 from api.schemas.common.enums import IncidentLogType, IncidentPriority, IncidentStatus
 from api.schemas.incident.comment import CommentListResponse, CommentResponse
@@ -33,6 +28,10 @@ from db.models.incident_helper import IncidentHelper
 from db.models.incident_log import IncidentLog
 from db.models.user import User
 from db.models.user_project import UserProject
+from fastapi import HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 
 async def _get_incident_or_404(db: AsyncSession, incident_id: UUID) -> Incident:
