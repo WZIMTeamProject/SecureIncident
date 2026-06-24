@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -190,6 +190,46 @@ async def get_logs_by_user(
     if log_type is not None:
         count_stmt = count_stmt.where(IncidentLog.type == log_type)
         data_stmt = data_stmt.where(IncidentLog.type == log_type)
+
+    total = (await db.execute(count_stmt)).scalar_one()
+    data_stmt = (
+        data_stmt.order_by(IncidentLog.created_at.desc()).offset(offset).limit(limit)
+    )
+    logs = (await db.execute(data_stmt)).scalars().all()
+    return logs, total
+
+
+async def get_notifications_for_user(
+    db: AsyncSession,
+    user_id: UUID,
+    *,
+    offset: int = 0,
+    limit: int = 20,
+) -> tuple[Sequence[IncidentLog], int]:
+    # Correlated exists() (NOT a join) so multiple helpers on one incident do
+    # not multiply IncidentLog rows and corrupt the paginated total.
+    helper_exists = exists().where(
+        IncidentHelper.incident_id == Incident.id,
+        IncidentHelper.user_id == user_id,
+    )
+    connection_filter = (
+        (Incident.reporter_id == user_id)
+        | (Incident.primary_assignee_id == user_id)
+        | helper_exists
+    )
+    base_filter = [IncidentLog.person_id != user_id, connection_filter]
+
+    count_stmt = (
+        select(func.count())
+        .select_from(IncidentLog)
+        .join(Incident, IncidentLog.incident_id == Incident.id)
+        .where(*base_filter)
+    )
+    data_stmt = (
+        select(IncidentLog)
+        .join(Incident, IncidentLog.incident_id == Incident.id)
+        .where(*base_filter)
+    )
 
     total = (await db.execute(count_stmt)).scalar_one()
     data_stmt = (

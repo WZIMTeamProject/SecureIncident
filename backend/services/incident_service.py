@@ -700,6 +700,42 @@ async def get_logs(
     return IncidentLogListResponse(items=items, total=total, limit=limit, offset=offset)
 
 
+async def get_notifications(
+    db: AsyncSession,
+    current_user: User,
+    *,
+    offset: int = 0,
+    limit: int = 20,
+) -> IncidentLogListResponse:
+    logs, total = await repositories.incident_repo.get_notifications_for_user(
+        db,
+        current_user.id,
+        offset=offset,
+        limit=limit,
+    )
+    logger.debug(
+        "notifications_fetched user_id=%s total=%s offset=%s limit=%s",
+        current_user.id,
+        total,
+        offset,
+        limit,
+    )
+    items = [
+        IncidentLogEntry(
+            actor_id=log.person_id,
+            id=log.id,
+            incident_id=log.incident_id,
+            type=log.type,
+            comment=log.comment,
+            old_value=log.old_value,
+            new_value=log.new_value,
+            created_at=log.created_at,
+        )
+        for log in logs
+    ]
+    return IncidentLogListResponse(items=items, total=total, limit=limit, offset=offset)
+
+
 async def get_history(
     db: AsyncSession,
     current_user: User,
