@@ -60,4 +60,3 @@ export function UpdateIncidentPriorityRequestToJSON(value?: UpdateIncidentPriori
         'priority': IncidentPriorityToJSON(value['priority']),
     };
 }
-

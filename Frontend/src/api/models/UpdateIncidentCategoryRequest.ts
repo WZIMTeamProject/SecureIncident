@@ -57,4 +57,3 @@ export function UpdateIncidentCategoryRequestToJSON(value?: UpdateIncidentCatego
         'category_id': value['categoryId'],
     };
 }
-

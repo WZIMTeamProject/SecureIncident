@@ -1,7 +1,6 @@
-from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models.organization import Organization
@@ -9,7 +8,7 @@ from db.models.organization import Organization
 
 async def get_organization_by_id(
     db: AsyncSession, organization_id: UUID
-) -> Optional[Organization]:
+) -> Organization | None:
     """Get organization by ID."""
     result = await db.execute(
         select(Organization).where(Organization.id == organization_id)
@@ -21,7 +20,7 @@ async def create_organization(
     db: AsyncSession,
     *,
     name: str,
-    description: Optional[str],
+    description: str | None,
     owner_id: UUID,
 ) -> Organization:
     """Create organization (flush only — commit in service, multi-step flow)."""

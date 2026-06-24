@@ -77,4 +77,3 @@ export function CreateProjectRequestToJSON(value?: CreateProjectRequest | null):
         'scope': ProjectScopeToJSON(value['scope']),
     };
 }
-

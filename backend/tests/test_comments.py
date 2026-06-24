@@ -56,7 +56,12 @@ class TestComments:
         assert r.status_code == 401
 
     async def test_add_comment_returns_403_when_not_reporter_or_assignee(
-        self, client: AsyncClient, test_incident, test_membership, limited_headers, limited_membership
+        self,
+        client: AsyncClient,
+        test_incident,
+        test_membership,
+        limited_headers,
+        limited_membership,
     ):
         r = await client.post(
             f"/api/incidents/{test_incident.id}/comments",
@@ -77,7 +82,12 @@ class TestComments:
         assert "id" in r.json()
 
     async def test_get_comments_returns_403_when_not_reporter_or_assignee(
-        self, client: AsyncClient, test_incident, test_membership, limited_headers, limited_membership
+        self,
+        client: AsyncClient,
+        test_incident,
+        test_membership,
+        limited_headers,
+        limited_membership,
     ):
         r = await client.get(
             f"/api/incidents/{test_incident.id}/comments",

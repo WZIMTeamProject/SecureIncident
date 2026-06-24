@@ -1,10 +1,9 @@
-﻿from datetime import datetime, timezone, timedelta
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-from sqlalchemy import select, update, or_, delete
-from sqlalchemy.orm import selectinload
+from sqlalchemy import delete, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from db.models.organization_invite import OrganizationInvite
 
@@ -16,8 +15,8 @@ async def create_project_invite(
     created_by_id: UUID,
     token_hash: str,
     role_id: UUID,
-    expires_at: Optional[datetime],
-    max_uses: Optional[int],
+    expires_at: datetime | None,
+    max_uses: int | None,
 ) -> OrganizationInvite:
     """Create project invitation (save token hash)."""
     invite = OrganizationInvite(
@@ -27,7 +26,9 @@ async def create_project_invite(
         created_by_id=created_by_id,
         token=token_hash,
         role_id=role_id,
-        expires_at=expires_at.replace(tzinfo=None) + timedelta(hours=1) if expires_at is not None else None,
+        expires_at=expires_at.replace(tzinfo=None) + timedelta(hours=1)
+        if expires_at is not None
+        else None,
         max_uses=max_uses,
         use_count=0,
     )
@@ -42,8 +43,8 @@ async def create_organization_invite(
     organization_id: UUID,
     created_by_id: UUID,
     token_hash: str,
-    expires_at: Optional[datetime],
-    max_uses: Optional[int],
+    expires_at: datetime | None,
+    max_uses: int | None,
 ) -> OrganizationInvite:
     """Create organization invitation (scope=ORGANIZATION, no role).
 
@@ -56,7 +57,9 @@ async def create_organization_invite(
         role_id=None,
         created_by_id=created_by_id,
         token=token_hash,
-        expires_at=expires_at.replace(tzinfo=None) + timedelta(hours=1) if expires_at is not None else None,
+        expires_at=expires_at.replace(tzinfo=None) + timedelta(hours=1)
+        if expires_at is not None
+        else None,
         max_uses=max_uses,
         use_count=0,
     )
@@ -65,7 +68,9 @@ async def create_organization_invite(
     return invite
 
 
-async def get_invite_by_hash(db: AsyncSession, token_hash: str) -> Optional[OrganizationInvite]:
+async def get_invite_by_hash(
+    db: AsyncSession, token_hash: str
+) -> OrganizationInvite | None:
     """Get invitation by token hash (eager-load project + organization)."""
     result = await db.execute(
         select(OrganizationInvite)
@@ -80,9 +85,9 @@ async def get_invite_by_hash(db: AsyncSession, token_hash: str) -> Optional[Orga
 
 async def get_and_increment_invite(
     db: AsyncSession, token_hash: str
-) -> Optional[OrganizationInvite]:
+) -> OrganizationInvite | None:
     """Atomically get invitation and increment use_count (in single transaction)."""
-    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    now = datetime.now(UTC).replace(tzinfo=None)
     result = await db.execute(
         update(OrganizationInvite)
         .where(

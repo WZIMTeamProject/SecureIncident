@@ -23,7 +23,9 @@ class TestIncidentLogs:
         assert create_r.status_code == 201
         incident_id = create_r.json()["id"]
 
-        logs_r = await client.get(f"/api/incidents/{incident_id}/logs", headers=auth_headers)
+        logs_r = await client.get(
+            f"/api/incidents/{incident_id}/logs", headers=auth_headers
+        )
         assert logs_r.status_code == 200
         data = logs_r.json()
         assert data["total"] >= 1
@@ -31,7 +33,13 @@ class TestIncidentLogs:
         assert "CREATED" in types
 
     async def test_get_logs_limited_member_does_not_see_helper_added(
-        self, client: AsyncClient, test_project, auth_headers, test_membership, limited_headers, limited_membership
+        self,
+        client: AsyncClient,
+        test_project,
+        auth_headers,
+        test_membership,
+        limited_headers,
+        limited_membership,
     ):
         create_r = await client.post(
             f"/api/projects/{test_project.id}/incidents",
@@ -44,7 +52,9 @@ class TestIncidentLogs:
             headers=auth_headers,
         )
 
-        logs_r = await client.get(f"/api/incidents/{incident_id}/logs", headers=limited_headers)
+        logs_r = await client.get(
+            f"/api/incidents/{incident_id}/logs", headers=limited_headers
+        )
         assert logs_r.status_code == 200
         types = [item["type"] for item in logs_r.json()["items"]]
         assert "HELPER_ADDED" not in types
@@ -63,7 +73,9 @@ class TestIncidentLogs:
             headers=auth_headers,
         )
 
-        logs_r = await client.get(f"/api/incidents/{incident_id}/logs", headers=auth_headers)
+        logs_r = await client.get(
+            f"/api/incidents/{incident_id}/logs", headers=auth_headers
+        )
         assert logs_r.status_code == 200
         types = [item["type"] for item in logs_r.json()["items"]]
         assert "HELPER_ADDED" in types

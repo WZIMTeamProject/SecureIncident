@@ -46,4 +46,3 @@ export function InviteScopeFromJSONTyped(json: any, ignoreDiscriminator: boolean
 export function InviteScopeToJSON(value?: InviteScope | null): any {
     return value as any;
 }
-

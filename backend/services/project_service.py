@@ -1,20 +1,19 @@
 import logging
+from collections.abc import Sequence
 from uuid import UUID
-from typing import Optional, Sequence
-
-from fastapi import HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.schemas.project.request import (
-    CreateProjectRequest,
-    UpdateProjectRequest,
     AddProjectMemberRequest,
     AssignRoleRequest,
+    CreateProjectRequest,
     ProjectScope,
+    UpdateProjectRequest,
 )
+from db import repositories
 from db.models.project import Project
 from db.models.user import User
-from db import repositories
+from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +70,8 @@ async def create_project(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Organization not found",
             )
-        owner_id = organization.org_owner_id          # ADR-002
-        organization_id: Optional[UUID] = organization.id
+        owner_id = organization.org_owner_id  # ADR-002
+        organization_id: UUID | None = organization.id
     else:  # ProjectScope.PRIVATE
         if current_user.organization_id is not None:
             logger.warning(
@@ -120,7 +119,7 @@ async def list_projects(
     db: AsyncSession,
     *,
     current_user: User,
-    scope: Optional[ProjectScope] = None,
+    scope: ProjectScope | None = None,
 ) -> Sequence[Project]:
     """List projects where current user is a member."""
     return await repositories.project_repo.list_projects_for_user(
@@ -244,9 +243,7 @@ async def add_member(
             data.role_id,
             project_id,
         )
-        raise HTTPException(
-            status_code=404, detail="Role not found in this project"
-        )
+        raise HTTPException(status_code=404, detail="Role not found in this project")
 
     existing = await repositories.project_repo.get_user_project(
         db, data.user_id, project_id
@@ -293,9 +290,7 @@ async def change_member_role(
             data.role_id,
             project_id,
         )
-        raise HTTPException(
-            status_code=404, detail="Role not found in this project"
-        )
+        raise HTTPException(status_code=404, detail="Role not found in this project")
 
     membership = await repositories.project_repo.get_user_project(
         db, user_id, project_id

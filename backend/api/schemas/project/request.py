@@ -1,10 +1,10 @@
-from pydantic import BaseModel, ConfigDict, Field
-from typing import Optional
+from enum import StrEnum
 from uuid import UUID
-from enum import Enum
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class ProjectScope(str, Enum):
+class ProjectScope(StrEnum):
     PRIVATE = "PRIVATE"
     ORGANIZATION = "ORGANIZATION"
 
@@ -13,15 +13,15 @@ class CreateProjectRequest(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
     name: str = Field(min_length=1, max_length=100)
-    description: Optional[str] = Field(None, max_length=2000)
+    description: str | None = Field(None, max_length=2000)
     scope: ProjectScope
 
 
 class UpdateProjectRequest(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    description: Optional[str] = Field(None, max_length=2000)
+    name: str | None = Field(None, min_length=1, max_length=100)
+    description: str | None = Field(None, max_length=2000)
 
 
 class AddProjectMemberRequest(BaseModel):

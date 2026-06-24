@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import Footer from "../components/Footer.tsx"; 
+import Footer from "../components/Footer.tsx";
 
 // Shield icon
 const Shield = ({ className }: { className?: string }) => (

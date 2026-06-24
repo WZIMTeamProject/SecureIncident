@@ -64,4 +64,3 @@ export function CreateOrgInviteRequestToJSON(value?: CreateOrgInviteRequest | nu
         'max_uses': value['maxUses'],
     };
 }
-

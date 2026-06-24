@@ -114,7 +114,7 @@ function IncidentView({incident}: { incident: Incident }) {
                 <div className="flex flex-col justify-center gap-3">
                     <button
                         className={`px-6 py-2
-                            bg-(--color-si-btn) 
+                            bg-(--color-si-btn)
                             hover:bg-(--color-si-btn-hover) shadow-lg rounded-lg
                             text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>
                         Zmień status
@@ -123,7 +123,7 @@ function IncidentView({incident}: { incident: Incident }) {
                     <button
                         onClick={() => setShownPopup("add_to_incident")}
                         className={`px-6 py-2
-                            bg-(--color-si-btn) 
+                            bg-(--color-si-btn)
                             hover:bg-(--color-si-btn-hover) shadow-lg rounded-lg
                             text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>
                         Dodaj użytkownika
@@ -131,7 +131,7 @@ function IncidentView({incident}: { incident: Incident }) {
 
                     <button
                         className={`px-6 py-2
-                            bg-(--color-si-btn) 
+                            bg-(--color-si-btn)
                             hover:bg-(--color-si-btn-hover) shadow-lg rounded-lg
                             text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>
                         Dodaj komentarz
@@ -165,7 +165,7 @@ function LogHistory({logs}: { logs?: IncidentLogEntry[] }) {
             <button
                 onClick={toggleHistory}
                 className={`px-6 py-2
-                        bg-(--color-si-btn) 
+                        bg-(--color-si-btn)
                         hover:bg-(--color-si-btn-hover) shadow-lg
                         rounded-t-lg ${isShown ? "" : "rounded-b-lg"}
                         text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>

@@ -6,7 +6,12 @@ pytestmark = pytest.mark.asyncio
 
 class TestHelpers:
     async def test_request_reassignment_returns_403_when_no_can_help(
-        self, client: AsyncClient, test_incident, test_membership, limited_headers, limited_membership
+        self,
+        client: AsyncClient,
+        test_incident,
+        test_membership,
+        limited_headers,
+        limited_membership,
     ):
         r = await client.post(
             f"/api/incidents/{test_incident.id}/request-reassignment",
@@ -58,7 +63,13 @@ class TestHelpers:
         assert r.status_code == 409
 
     async def test_add_helper_returns_403_when_no_can_assign_help(
-        self, client: AsyncClient, test_incident, test_membership, limited_headers, limited_membership, test_user
+        self,
+        client: AsyncClient,
+        test_incident,
+        test_membership,
+        limited_headers,
+        limited_membership,
+        test_user,
     ):
         r = await client.post(
             f"/api/incidents/{test_incident.id}/helpers",
@@ -71,6 +82,7 @@ class TestHelpers:
         self, client: AsyncClient, test_incident, auth_headers, test_membership
     ):
         from uuid import uuid4
+
         non_helper_id = str(uuid4())
         r = await client.delete(
             f"/api/incidents/{test_incident.id}/helpers/{non_helper_id}",
@@ -91,5 +103,7 @@ class TestHelpers:
             headers=auth_headers,
         )
         assert r.status_code == 204
-        detail = await client.get(f"/api/incidents/{test_incident.id}", headers=auth_headers)
+        detail = await client.get(
+            f"/api/incidents/{test_incident.id}", headers=auth_headers
+        )
         assert detail.json()["helpers"] == []

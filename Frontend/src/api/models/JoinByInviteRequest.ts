@@ -57,4 +57,3 @@ export function JoinByInviteRequestToJSON(value?: JoinByInviteRequest | null): a
         'token': value['token'],
     };
 }
-

@@ -1,7 +1,9 @@
-from pydantic import BaseModel
 from uuid import UUID
-from .request import RolePermissions
+
 from api.schemas.common.pagination import PaginatedResponse
+from pydantic import BaseModel
+
+from .request import RolePermissions
 
 
 class RoleResponse(BaseModel):

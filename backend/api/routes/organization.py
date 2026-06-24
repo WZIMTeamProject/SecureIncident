@@ -1,19 +1,18 @@
-from fastapi import APIRouter, Depends, Response, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from api.dependencies.db import get_db
-from api.dependencies.auth import get_current_user
-from api.schemas.organization.request import (
-    CreateOrganizationRequest,
-    CreateInviteRequest,
-    JoinByInviteRequest,
-)
-from api.schemas.organization.response import OrganizationResponse, InviteResponse
-from api.schemas.common.base import CreatedIdResponse, DetailResponse
 from core.config import settings
 from db.models.user import User
+from fastapi import APIRouter, Depends, Response, status
 from services import organization_service
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.dependencies.auth import get_current_user
+from api.dependencies.db import get_db
+from api.schemas.common.base import CreatedIdResponse, DetailResponse
+from api.schemas.organization.request import (
+    CreateInviteRequest,
+    CreateOrganizationRequest,
+    JoinByInviteRequest,
+)
+from api.schemas.organization.response import InviteResponse, OrganizationResponse
 
 router = APIRouter(prefix="/organization", tags=["Organization"])
 
@@ -74,7 +73,9 @@ async def delete_organization(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.post("/invites", response_model=InviteResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/invites", response_model=InviteResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_invite(
     data: CreateInviteRequest,
     db: AsyncSession = Depends(get_db),

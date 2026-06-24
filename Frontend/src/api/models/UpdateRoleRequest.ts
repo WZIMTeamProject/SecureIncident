@@ -67,4 +67,3 @@ export function UpdateRoleRequestToJSON(value?: UpdateRoleRequest | null): any {
         'permissions': RolePermissionsToJSON(value['permissions']),
     };
 }
-

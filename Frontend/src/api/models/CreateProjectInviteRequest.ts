@@ -73,4 +73,3 @@ export function CreateProjectInviteRequestToJSON(value?: CreateProjectInviteRequ
         'max_uses': value['maxUses'],
     };
 }
-

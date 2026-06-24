@@ -1,16 +1,15 @@
-import pytest
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-
-from db.models.organization_invite import OrganizationInvite
-from db.models.user_project import UserProject
-from db.models.user import User
-from db.models.organization import Organization
+import pytest
 from core import security
+from db.models.organization import Organization
+from db.models.organization_invite import OrganizationInvite
+from db.models.user import User
+from db.models.user_project import UserProject
+from httpx import AsyncClient
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @pytest.fixture(scope="function")
@@ -58,7 +57,9 @@ async def org_invite(db: AsyncSession, test_org: Organization, org_owner_user: U
 
 
 @pytest.fixture(scope="function")
-async def expired_org_invite(db: AsyncSession, test_org: Organization, org_owner_user: User):
+async def expired_org_invite(
+    db: AsyncSession, test_org: Organization, org_owner_user: User
+):
     """Expired org-scoped invite. Returns (invite, raw_token)."""
     raw_token = security.generate_token()
     token_hash = security.hash_token(raw_token)
@@ -68,7 +69,7 @@ async def expired_org_invite(db: AsyncSession, test_org: Organization, org_owner
         project_id=None,
         created_by_id=org_owner_user.id,
         token=token_hash,
-        expires_at=datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=1),
+        expires_at=datetime.now(UTC).replace(tzinfo=None) - timedelta(days=1),
     )
     db.add(invite)
     await db.flush()
@@ -76,7 +77,6 @@ async def expired_org_invite(db: AsyncSession, test_org: Organization, org_owner
 
 
 class TestOrgInviteCreation:
-
     async def test_create_org_invite_returns_201_when_org_owner_requests(
         self,
         client: AsyncClient,
@@ -113,7 +113,6 @@ class TestOrgInviteCreation:
 
 
 class TestOrgJoin:
-
     async def test_join_org_returns_204_with_valid_org_invite_token(
         self,
         client: AsyncClient,
@@ -211,7 +210,6 @@ class TestOrgJoin:
 
 
 class TestTwoTierInvariants:
-
     async def test_accepting_org_invite_creates_no_user_project_rows(
         self,
         client: AsyncClient,
@@ -330,7 +328,6 @@ class TestTwoTierInvariants:
 
 
 class TestRevokeInvite:
-
     async def test_revoke_invite_returns_204_when_creator_revokes(
         self,
         client: AsyncClient,

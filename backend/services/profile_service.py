@@ -1,12 +1,15 @@
 import logging
 
+from api.schemas.profile.request import UpdateProfileRequest
+from api.schemas.profile.response import (
+    ProfileResponse,
+    UserSearchResponse,
+    UserSearchResult,
+)
+from db.models.user import User
+from db.repositories import user_repo
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from db.models.user import User
-from api.schemas.profile.request import UpdateProfileRequest
-from api.schemas.profile.response import ProfileResponse, UserSearchResult, UserSearchResponse
-from db.repositories import user_repo
 
 logger = logging.getLogger(__name__)
 

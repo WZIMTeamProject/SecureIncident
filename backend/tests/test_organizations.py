@@ -1,10 +1,10 @@
 import uuid
-from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
 from db.models.organization import Organization
 from db.models.user import User
+from httpx import AsyncClient
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestCreateOrganization:

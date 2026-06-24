@@ -1,12 +1,6 @@
 import logging
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 from uuid import UUID
-
-from fastapi import HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-
-logger = logging.getLogger(__name__)
 
 from api.schemas.common.base import CreatedIdResponse
 from api.schemas.common.enums import IncidentLogType, IncidentPriority, IncidentStatus
@@ -34,6 +28,10 @@ from db.models.incident_helper import IncidentHelper
 from db.models.incident_log import IncidentLog
 from db.models.user import User
 from db.models.user_project import UserProject
+from fastapi import HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 
 async def _get_incident_or_404(db: AsyncSession, incident_id: UUID) -> Incident:
@@ -43,7 +41,9 @@ async def _get_incident_or_404(db: AsyncSession, incident_id: UUID) -> Incident:
     return inc
 
 
-async def _get_membership_or_403(db: AsyncSession, project_id: UUID, user_id: UUID) -> UserProject:
+async def _get_membership_or_403(
+    db: AsyncSession, project_id: UUID, user_id: UUID
+) -> UserProject:
     m = await repositories.project_repo.get_user_project(db, user_id, project_id)
     if m is None:
         logger.warning(
@@ -78,17 +78,26 @@ async def create_incident(
                 project_id,
                 current_user.id,
             )
-            raise HTTPException(status_code=404, detail="Category not found in this project")
+            raise HTTPException(
+                status_code=404, detail="Category not found in this project"
+            )
 
     if data.primary_assignee_id is not None:
-        if await repositories.project_repo.get_user_project(db, data.primary_assignee_id, project_id) is None:
+        if (
+            await repositories.project_repo.get_user_project(
+                db, data.primary_assignee_id, project_id
+            )
+            is None
+        ):
             logger.warning(
                 "Incident create failed: assignee not project member assignee_id=%s project_id=%s user_id=%s",
                 data.primary_assignee_id,
                 project_id,
                 current_user.id,
             )
-            raise HTTPException(status_code=422, detail="Assignee is not a project member")
+            raise HTTPException(
+                status_code=422, detail="Assignee is not a project member"
+            )
 
     incident = Incident(
         reporter_id=current_user.id,
@@ -110,7 +119,12 @@ async def create_incident(
     await repositories.incident_repo.create_log(db, log)
     await db.commit()
     await db.refresh(incident)
-    logger.info("Incident created incident_id=%s project_id=%s user_id=%s", incident.id, project_id, current_user.id)
+    logger.info(
+        "Incident created incident_id=%s project_id=%s user_id=%s",
+        incident.id,
+        project_id,
+        current_user.id,
+    )
     return CreatedIdResponse(id=incident.id)
 
 
@@ -121,13 +135,19 @@ async def list_incidents(
     *,
     offset: int = 0,
     limit: int = 20,
-    status: Optional[str] = None,
-    priority: Optional[str] = None,
-    assignee_id: Optional[UUID] = None,
+    status: str | None = None,
+    priority: str | None = None,
+    assignee_id: UUID | None = None,
 ) -> IncidentListResponse:
     await _get_membership_or_403(db, project_id, current_user.id)
     incidents, total = await repositories.incident_repo.get_incidents_by_project(
-        db, project_id, offset=offset, limit=limit, status=status, priority=priority, assignee_id=assignee_id
+        db,
+        project_id,
+        offset=offset,
+        limit=limit,
+        status=status,
+        priority=priority,
+        assignee_id=assignee_id,
     )
     items = [
         IncidentSummary(
@@ -151,7 +171,9 @@ async def get_incident_detail(
 ) -> IncidentDetailsResponse:
     incident = await _get_incident_or_404(db, incident_id)
     await _get_membership_or_403(db, incident.project_id, current_user.id)
-    helpers = [HelperResponse(user_id=h.user_id, added_at=h.added_at) for h in incident.helpers]
+    helpers = [
+        HelperResponse(user_id=h.user_id, added_at=h.added_at) for h in incident.helpers
+    ]
     return IncidentDetailsResponse(
         id=incident.id,
         title=incident.title,
@@ -234,7 +256,9 @@ async def update_status(
             incident_id,
             current_user.id,
         )
-        raise HTTPException(status_code=409, detail="Cannot change status of a closed incident")
+        raise HTTPException(
+            status_code=409, detail="Cannot change status of a closed incident"
+        )
 
     old_status = incident.status
     incident.status = data.status.value
@@ -303,14 +327,21 @@ async def update_assignee(
     _require_flag(membership, "can_assign_help")
 
     if data.primary_assignee_id is not None:
-        if await repositories.project_repo.get_user_project(db, data.primary_assignee_id, incident.project_id) is None:
+        if (
+            await repositories.project_repo.get_user_project(
+                db, data.primary_assignee_id, incident.project_id
+            )
+            is None
+        ):
             logger.warning(
                 "Incident assignee update failed: assignee not project member assignee_id=%s incident_id=%s user_id=%s",
                 data.primary_assignee_id,
                 incident_id,
                 current_user.id,
             )
-            raise HTTPException(status_code=422, detail="Assignee is not a project member")
+            raise HTTPException(
+                status_code=422, detail="Assignee is not a project member"
+            )
 
     incident.primary_assignee_id = data.primary_assignee_id
     await repositories.incident_repo.update(db, incident)
@@ -319,11 +350,18 @@ async def update_assignee(
         incident_id=incident_id,
         person_id=current_user.id,
         type=IncidentLogType.ASSIGNEE_CHANGED.value,
-        new_value=str(data.primary_assignee_id) if data.primary_assignee_id is not None else "",
+        new_value=str(data.primary_assignee_id)
+        if data.primary_assignee_id is not None
+        else "",
     )
     await repositories.incident_repo.create_log(db, log)
     await db.commit()
-    logger.info("Incident assignee changed incident_id=%s new_assignee_id=%s user_id=%s", incident_id, data.primary_assignee_id, current_user.id)
+    logger.info(
+        "Incident assignee changed incident_id=%s new_assignee_id=%s user_id=%s",
+        incident_id,
+        data.primary_assignee_id,
+        current_user.id,
+    )
 
 
 async def update_category(
@@ -344,7 +382,9 @@ async def update_category(
             incident_id,
             current_user.id,
         )
-        raise HTTPException(status_code=404, detail="Category not found in this project")
+        raise HTTPException(
+            status_code=404, detail="Category not found in this project"
+        )
 
     incident.category_id = data.category_id
     await repositories.incident_repo.update(db, incident)
@@ -357,7 +397,12 @@ async def update_category(
     )
     await repositories.incident_repo.create_log(db, log)
     await db.commit()
-    logger.info("Incident category changed incident_id=%s category_id=%s user_id=%s", incident_id, data.category_id, current_user.id)
+    logger.info(
+        "Incident category changed incident_id=%s category_id=%s user_id=%s",
+        incident_id,
+        data.category_id,
+        current_user.id,
+    )
 
 
 async def close_incident(
@@ -379,7 +424,7 @@ async def close_incident(
 
     incident.status = IncidentStatus.CLOSED.value
     # Use datetime.now(timezone.utc).replace(tzinfo=None) — NOT utcnow() which is deprecated
-    incident.closing_date = datetime.now(timezone.utc).replace(tzinfo=None)
+    incident.closing_date = datetime.now(UTC).replace(tzinfo=None)
     await repositories.incident_repo.update(db, incident)
 
     log = IncidentLog(
@@ -389,7 +434,9 @@ async def close_incident(
     )
     await repositories.incident_repo.create_log(db, log)
     await db.commit()
-    logger.info("Incident closed incident_id=%s user_id=%s", incident_id, current_user.id)
+    logger.info(
+        "Incident closed incident_id=%s user_id=%s", incident_id, current_user.id
+    )
 
 
 async def request_reassignment(
@@ -401,7 +448,9 @@ async def request_reassignment(
     membership = await _get_membership_or_403(db, incident.project_id, current_user.id)
     _require_flag(membership, "can_help")
 
-    existing = await repositories.incident_repo.get_helper(db, incident_id, current_user.id)
+    existing = await repositories.incident_repo.get_helper(
+        db, incident_id, current_user.id
+    )
     if existing is not None:
         logger.warning(
             "Reassignment request failed: already a helper incident_id=%s user_id=%s",
@@ -421,7 +470,9 @@ async def request_reassignment(
     )
     await repositories.incident_repo.create_log(db, log)
     await db.commit()
-    logger.info("Helper self-added incident_id=%s user_id=%s", incident_id, current_user.id)
+    logger.info(
+        "Helper self-added incident_id=%s user_id=%s", incident_id, current_user.id
+    )
 
 
 async def add_helper(
@@ -434,16 +485,25 @@ async def add_helper(
     membership = await _get_membership_or_403(db, incident.project_id, current_user.id)
     _require_flag(membership, "can_assign_help")
 
-    if await repositories.project_repo.get_user_project(db, data.user_id, incident.project_id) is None:
+    if (
+        await repositories.project_repo.get_user_project(
+            db, data.user_id, incident.project_id
+        )
+        is None
+    ):
         logger.warning(
             "Add helper failed: target user not project member target_user_id=%s incident_id=%s user_id=%s",
             data.user_id,
             incident_id,
             current_user.id,
         )
-        raise HTTPException(status_code=422, detail="Target user is not a project member")
+        raise HTTPException(
+            status_code=422, detail="Target user is not a project member"
+        )
 
-    existing = await repositories.incident_repo.get_helper(db, incident_id, data.user_id)
+    existing = await repositories.incident_repo.get_helper(
+        db, incident_id, data.user_id
+    )
     if existing is not None:
         logger.warning(
             "Add helper failed: user already a helper target_user_id=%s incident_id=%s user_id=%s",
@@ -451,7 +511,9 @@ async def add_helper(
             incident_id,
             current_user.id,
         )
-        raise HTTPException(status_code=409, detail="User is already a helper on this incident")
+        raise HTTPException(
+            status_code=409, detail="User is already a helper on this incident"
+        )
 
     helper = IncidentHelper(incident_id=incident_id, user_id=data.user_id)
     await repositories.incident_repo.create_helper(db, helper)
@@ -464,7 +526,12 @@ async def add_helper(
     )
     await repositories.incident_repo.create_log(db, log)
     await db.commit()
-    logger.info("Helper added incident_id=%s helper_id=%s user_id=%s", incident_id, data.user_id, current_user.id)
+    logger.info(
+        "Helper added incident_id=%s helper_id=%s user_id=%s",
+        incident_id,
+        data.user_id,
+        current_user.id,
+    )
 
 
 async def remove_helper(
@@ -497,7 +564,12 @@ async def remove_helper(
     )
     await repositories.incident_repo.create_log(db, log)
     await db.commit()
-    logger.info("Helper removed incident_id=%s helper_id=%s user_id=%s", incident_id, helper_id, current_user.id)
+    logger.info(
+        "Helper removed incident_id=%s helper_id=%s user_id=%s",
+        incident_id,
+        helper_id,
+        current_user.id,
+    )
 
 
 async def get_comments(
@@ -508,15 +580,23 @@ async def get_comments(
     incident = await _get_incident_or_404(db, incident_id)
     await _get_membership_or_403(db, incident.project_id, current_user.id)
 
-    if incident.reporter_id != current_user.id and incident.primary_assignee_id != current_user.id:
+    if (
+        incident.reporter_id != current_user.id
+        and incident.primary_assignee_id != current_user.id
+    ):
         logger.warning(
             "Get comments denied: user not reporter or assignee incident_id=%s user_id=%s",
             incident_id,
             current_user.id,
         )
-        raise HTTPException(status_code=403, detail="Only the reporter or primary assignee can view comments")
+        raise HTTPException(
+            status_code=403,
+            detail="Only the reporter or primary assignee can view comments",
+        )
 
-    comments = await repositories.incident_repo.get_comments_by_incident(db, incident_id)
+    comments = await repositories.incident_repo.get_comments_by_incident(
+        db, incident_id
+    )
     items = [
         CommentResponse(
             id=c.id,
@@ -539,15 +619,23 @@ async def add_comment(
     incident = await _get_incident_or_404(db, incident_id)
     await _get_membership_or_403(db, incident.project_id, current_user.id)
 
-    if incident.reporter_id != current_user.id and incident.primary_assignee_id != current_user.id:
+    if (
+        incident.reporter_id != current_user.id
+        and incident.primary_assignee_id != current_user.id
+    ):
         logger.warning(
             "Add comment denied: user not reporter or assignee incident_id=%s user_id=%s",
             incident_id,
             current_user.id,
         )
-        raise HTTPException(status_code=403, detail="Only the reporter or primary assignee can add comments")
+        raise HTTPException(
+            status_code=403,
+            detail="Only the reporter or primary assignee can add comments",
+        )
 
-    comment = Comment(incident_id=incident_id, author_id=current_user.id, content=data.content)
+    comment = Comment(
+        incident_id=incident_id, author_id=current_user.id, content=data.content
+    )
     await repositories.incident_repo.create_comment(db, comment)
 
     log = IncidentLog(
@@ -559,7 +647,12 @@ async def add_comment(
     await repositories.incident_repo.create_log(db, log)
     await db.commit()
     await db.refresh(comment)
-    logger.info("Comment added incident_id=%s comment_id=%s user_id=%s", incident_id, comment.id, current_user.id)
+    logger.info(
+        "Comment added incident_id=%s comment_id=%s user_id=%s",
+        incident_id,
+        comment.id,
+        current_user.id,
+    )
     return CreatedIdResponse(id=comment.id)
 
 
@@ -574,7 +667,9 @@ async def get_logs(
     incident = await _get_incident_or_404(db, incident_id)
     membership = await _get_membership_or_403(db, incident.project_id, current_user.id)
 
-    is_admin = getattr(membership.role, "can_assign_help", False) or getattr(membership.role, "can_change_status", False)
+    is_admin = getattr(membership.role, "can_assign_help", False) or getattr(
+        membership.role, "can_change_status", False
+    )
     if is_admin:
         type_filter = None
     else:
@@ -609,13 +704,18 @@ async def get_history(
     db: AsyncSession,
     current_user: User,
     *,
-    project_id: Optional[UUID] = None,
-    log_type: Optional[str] = None,
+    project_id: UUID | None = None,
+    log_type: str | None = None,
     offset: int = 0,
     limit: int = 20,
 ) -> IncidentLogListResponse:
     logs, total = await repositories.incident_repo.get_logs_by_user(
-        db, current_user.id, project_id=project_id, log_type=log_type, offset=offset, limit=limit
+        db,
+        current_user.id,
+        project_id=project_id,
+        log_type=log_type,
+        offset=offset,
+        limit=limit,
     )
     items = [
         IncidentLogEntry(

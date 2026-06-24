@@ -87,4 +87,3 @@ export function IncidentLogListResponseToJSON(value?: IncidentLogListResponse | 
         'limit': value['limit'],
     };
 }
-

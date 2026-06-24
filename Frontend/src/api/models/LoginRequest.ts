@@ -74,4 +74,3 @@ export function LoginRequestToJSON(value?: LoginRequest | null): any {
         'remember_user': value['rememberUser'],
     };
 }
-

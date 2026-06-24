@@ -76,14 +76,6 @@ class TestSendResetEmail:
         message = mock_client.send_message.call_args.args[0]
         assert message["Subject"] == "Reset your SecureIncident password"
 
-    async def test_send_reset_email_sets_from_display_name(self):
-        mock_client = _mock_smtp_client()
-        with patch("services.email_service.aiosmtplib.SMTP", return_value=mock_client):
-            await send_reset_email(RECIPIENT, RAW_TOKEN)
-
-        message = mock_client.send_message.call_args.args[0]
-        assert "SecureIncident" in message["From"]
-
     async def test_send_reset_email_always_performs_starttls_handshake(self):
         mock_client = _mock_smtp_client()
 

@@ -1,16 +1,18 @@
-﻿from fastapi import BackgroundTasks, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+import datetime
+import logging
 
 from api.schemas.auth.request import LoginRequest, RegisterRequest
 from core import security
 from core.config import settings
-from db.models.user import User
 from db import repositories
+from db.models.user import User
+from fastapi import BackgroundTasks, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from services import email_service
-import datetime
-import logging
 
 logger = logging.getLogger(__name__)
+
 
 async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
     """Register a new user."""
@@ -41,18 +43,23 @@ async def login_user(db: AsyncSession, data: LoginRequest) -> tuple[User, str]:
     if user is None or not security.verify_password(data.password, user.password):
         logger.warning("Login failed: invalid credentials")
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication credentials"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
         )
     if not user.is_active:
         logger.warning("Login failed: inactive account user_id=%s", user.id)
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is inactive")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Account is inactive"
+        )
 
     token = security.create_access_token(str(user.id), remember_user=data.remember_user)
     logger.info("User logged in user_id=%s", user.id)
     return user, token
 
 
-async def request_password_reset(db: AsyncSession, email_or_username: str, background_tasks: BackgroundTasks) -> None:
+async def request_password_reset(
+    db: AsyncSession, email_or_username: str, background_tasks: BackgroundTasks
+) -> None:
     """Generate password reset token (do not reveal whether user exists)."""
     user = await repositories.user_repo.get_user_by_email_or_username(
         db, email_or_username.strip()
@@ -63,14 +70,11 @@ async def request_password_reset(db: AsyncSession, email_or_username: str, backg
     await repositories.user_repo.delete_pending_reset_tokens(db, user.id)
     raw_token = security.generate_token()
     token_hash = security.hash_token(raw_token)
-    expires_at = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) + datetime.timedelta(
-        minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES
-    )
+    expires_at = datetime.datetime.now(datetime.UTC).replace(
+        tzinfo=None
+    ) + datetime.timedelta(minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES)
     await repositories.user_repo.create_password_reset_token(
-        db,
-        user_id=user.id,
-        token_hash=token_hash,
-        expires_at=expires_at
+        db, user_id=user.id, token_hash=token_hash, expires_at=expires_at
     )
     await db.commit()
     background_tasks.add_task(email_service.send_reset_email, user.email, raw_token)
@@ -80,10 +84,14 @@ async def request_password_reset(db: AsyncSession, email_or_username: str, backg
 async def reset_password(db: AsyncSession, raw_token: str, new_password: str) -> None:
     """Reset password using a valid reset token."""
     token_hash = security.hash_token(raw_token)
-    token_record = await repositories.user_repo.get_valid_password_reset_token(db, token_hash)
+    token_record = await repositories.user_repo.get_valid_password_reset_token(
+        db, token_hash
+    )
     if token_record is None:
         logger.warning("Password reset failed: invalid or expired token")
-        raise HTTPException(status_code=400, detail="Invalid or expired password reset token")
+        raise HTTPException(
+            status_code=400, detail="Invalid or expired password reset token"
+        )
 
     hashed = security.hash_password(new_password)
     await repositories.user_repo.update_user_password(db, token_record.user_id, hashed)
@@ -101,11 +109,16 @@ async def change_password(
 ) -> None:
     """Change the authenticated user's password (verifies the current one)."""
     if not security.verify_password(current_password, current_user.password):
-        logger.warning("Password change failed: wrong current password user_id=%s", current_user.id)
+        logger.warning(
+            "Password change failed: wrong current password user_id=%s", current_user.id
+        )
         raise HTTPException(status_code=400, detail="Current password is incorrect")
 
     if security.verify_password(new_password, current_user.password):
-        logger.warning("Password change failed: new password equals current user_id=%s", current_user.id)
+        logger.warning(
+            "Password change failed: new password equals current user_id=%s",
+            current_user.id,
+        )
         raise HTTPException(
             status_code=400,
             detail="New password must be different from the current password",

@@ -1,16 +1,16 @@
-from pydantic import BaseModel
-from typing import Optional, List
-from uuid import UUID
 from datetime import datetime
+from uuid import UUID
+
+from pydantic import BaseModel
 
 
 class CommentResponse(BaseModel):
     id: UUID
     author_id: UUID
-    author_username: Optional[str] = None
+    author_username: str | None = None
     content: str
     created_at: datetime
 
 
 class CommentListResponse(BaseModel):
-    comments: List[CommentResponse]
+    comments: list[CommentResponse]

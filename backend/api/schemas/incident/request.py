@@ -1,7 +1,7 @@
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-from typing import Optional
 from uuid import UUID
+
 from api.schemas.common.enums import IncidentPriority, IncidentStatus
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class CreateIncidentRequest(BaseModel):
@@ -9,9 +9,9 @@ class CreateIncidentRequest(BaseModel):
 
     title: str = Field(min_length=1, max_length=200)
     description: str = Field(min_length=1, max_length=2000)
-    category_id: Optional[UUID] = None
-    priority: Optional[IncidentPriority] = None
-    primary_assignee_id: Optional[UUID] = None
+    category_id: UUID | None = None
+    priority: IncidentPriority | None = None
+    primary_assignee_id: UUID | None = None
 
 
 class UpdateIncidentStatusRequest(BaseModel):
@@ -26,7 +26,7 @@ class UpdateIncidentStatusRequest(BaseModel):
 
 
 class UpdateIncidentAssigneeRequest(BaseModel):
-    primary_assignee_id: Optional[UUID] = None
+    primary_assignee_id: UUID | None = None
 
 
 class UpdateIncidentPriorityRequest(BaseModel):

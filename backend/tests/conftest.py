@@ -1,27 +1,27 @@
-﻿import asyncio
+import asyncio
 import os
 import uuid
+from collections.abc import AsyncGenerator
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from sqlalchemy import text
-from typing import AsyncGenerator
-import pytest
-from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.pool import NullPool
-from alembic.config import Config as AlembicConfig
-from alembic import command as alembic_command
 
-from datetime import datetime, timedelta, timezone
-from db.models import User, Project, Organization, Role
+import pytest
+from alembic import command as alembic_command
+from alembic.config import Config as AlembicConfig
+from core.config import settings
+from core.security import create_access_token, generate_token, hash_password, hash_token
+from db.models import Organization, Project, Role, User
+from db.models.incident import Incident
 from db.models.organization_invite import OrganizationInvite
 from db.models.user_project import UserProject
-from db.models.incident import Incident
-from core.security import create_access_token, generate_token, hash_token
-from core.config import settings
-from core.security import hash_password
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.pool import NullPool
 
 TEST_DATABASE_URL: str = settings.DATABASE_URL
 BACKEND_DIR = Path(__file__).parent.parent
+
 
 @pytest.fixture(scope="session")
 def db_engine():
@@ -32,6 +32,7 @@ def db_engine():
             await conn.execute(text("DROP SCHEMA public CASCADE;"))
             await conn.execute(text("CREATE SCHEMA public;"))
             from db.base import Base
+
             await conn.run_sync(Base.metadata.create_all)
 
     asyncio.run(setup_schema())
@@ -50,38 +51,43 @@ def db_engine():
 
     asyncio.run(teardown_engine())
 
+
 @pytest.fixture(scope="function")
-async def db(db_engine) -> AsyncGenerator[AsyncSession, None]:
+async def db(db_engine) -> AsyncGenerator[AsyncSession]:
     """
     Asynchronous database fixture for each test (scope='function').
     Works seamlessly with pytest-asyncio default event loop.
     """
     async with db_engine.connect() as connection:
         transaction = await connection.begin()
-        
+
         async_session = AsyncSession(
             bind=connection,
             expire_on_commit=False,
-            join_transaction_mode="create_savepoint"  # Captures and isolates internal application commits
+            join_transaction_mode="create_savepoint",  # Captures and isolates internal application commits
         )
-        
+
         yield async_session
-        
+
         await async_session.close()
         await transaction.rollback()  # Clean rollback after each test
 
+
 @pytest.fixture(scope="function")
-async def client(db: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+async def client(db: AsyncSession) -> AsyncGenerator[AsyncClient]:
     """HTTPX AsyncClient for testing FastAPI endpoints."""
+    from api.dependencies.db import get_db
     from main import app as fastapi_app
-    from api.dependencies.db import get_db 
-    
+
     fastapi_app.dependency_overrides[get_db] = lambda: db
-    
-    async with AsyncClient(transport=ASGITransport(app=fastapi_app), base_url="http://test") as ac:
+
+    async with AsyncClient(
+        transport=ASGITransport(app=fastapi_app), base_url="http://test"
+    ) as ac:
         yield ac
-        
+
     fastapi_app.dependency_overrides.clear()
+
 
 @pytest.fixture(scope="function")
 async def test_org(db: AsyncSession) -> Organization:
@@ -96,7 +102,7 @@ async def test_org(db: AsyncSession) -> Organization:
         last_name="Owner",
         password=hash_password("TestPassword123!"),
         is_active=True,
-        organization_id=None  # No organization yet
+        organization_id=None,  # No organization yet
     )
     db.add(owner)
     await db.flush()  # Generate the owner's id in the database
@@ -107,7 +113,7 @@ async def test_org(db: AsyncSession) -> Organization:
         name="Test Acme Corp",
         description="Test organization for pytest",
         join_code=f"JOIN_{uuid.uuid4().hex[:6]}",  # Unique join code
-        org_owner_id=owner.id  # Assign the user we just created
+        org_owner_id=owner.id,  # Assign the user we just created
     )
     db.add(org)
     await db.flush()  # Generate the organization's id
@@ -120,10 +126,11 @@ async def test_org(db: AsyncSession) -> Organization:
     # 4. Pass the object to tests and other fixtures
     yield org
 
+
 @pytest.fixture(scope="function")
 async def test_user(db: AsyncSession, test_org: Organization) -> User:
     """Create regular user assigned to organization from test_org fixture."""
-    
+
     user = User(
         username="testuser",
         email="testuser@example.com",
@@ -131,12 +138,13 @@ async def test_user(db: AsyncSession, test_org: Organization) -> User:
         last_name="Kowalski",
         password=hash_password("TestPassword123!"),
         is_active=True,
-        organization_id=test_org.id  # <--- Here test_org will not be None!
+        organization_id=test_org.id,  # <--- Here test_org will not be None!
     )
     db.add(user)
     await db.flush()
-    
+
     yield user
+
 
 @pytest.fixture(scope="function")
 async def inactive_user(db: AsyncSession, test_org: Organization) -> User:
@@ -146,14 +154,15 @@ async def inactive_user(db: AsyncSession, test_org: Organization) -> User:
         email="inactive@example.com",
         first_name="Test",
         last_name="Inactive",
-        password=hash_password("TestPassword123!"), #
-        is_active=False,                               
-        organization_id=test_org.id
+        password=hash_password("TestPassword123!"),  #
+        is_active=False,
+        organization_id=test_org.id,
     )
     db.add(user)
     await db.flush()
     await db.refresh(user)
     yield user
+
 
 @pytest.fixture(scope="function")
 def auth_headers(test_user: User) -> dict[str, str]:
@@ -162,8 +171,11 @@ def auth_headers(test_user: User) -> dict[str, str]:
     token = create_access_token(test_user.id)
     return {"Authorization": f"Bearer {token}"}
 
+
 @pytest.fixture(scope="function")
-async def test_project(db: AsyncSession, test_org: Organization, test_user: User) -> Project:
+async def test_project(
+    db: AsyncSession, test_org: Organization, test_user: User
+) -> Project:
     """Pre-created Project row."""
     project = Project(
         name="Alpha Project",
@@ -189,7 +201,9 @@ async def test_role(db: AsyncSession, test_project: Project) -> Role:
 
 
 @pytest.fixture(scope="function")
-async def test_invite(db: AsyncSession, test_project: Project, test_user: User, test_role: Role):
+async def test_invite(
+    db: AsyncSession, test_project: Project, test_user: User, test_role: Role
+):
     """Valid project invite fixture. Returns (invite, raw_token)."""
     raw_token = generate_token()
     token_hash = hash_token(raw_token)
@@ -207,7 +221,9 @@ async def test_invite(db: AsyncSession, test_project: Project, test_user: User, 
 
 
 @pytest.fixture(scope="function")
-async def expired_invite(db: AsyncSession, test_project: Project, test_user: User, test_role: Role):
+async def expired_invite(
+    db: AsyncSession, test_project: Project, test_user: User, test_role: Role
+):
     """Expired project invite (expires_at in the past). Returns (invite, raw_token)."""
     raw_token = generate_token()
     token_hash = hash_token(raw_token)
@@ -218,7 +234,7 @@ async def expired_invite(db: AsyncSession, test_project: Project, test_user: Use
         created_by_id=test_user.id,
         token=token_hash,
         organization_id=None,
-        expires_at=datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=1),
+        expires_at=datetime.now(UTC).replace(tzinfo=None) - timedelta(days=1),
     )
     db.add(invite)
     await db.flush()
@@ -226,7 +242,9 @@ async def expired_invite(db: AsyncSession, test_project: Project, test_user: Use
 
 
 @pytest.fixture(scope="function")
-async def exhausted_invite(db: AsyncSession, test_project: Project, test_user: User, test_role: Role):
+async def exhausted_invite(
+    db: AsyncSession, test_project: Project, test_user: User, test_role: Role
+):
     """Exhausted project invite (max_uses=1, use_count=1). Returns (invite, raw_token)."""
     raw_token = generate_token()
     token_hash = hash_token(raw_token)
@@ -263,7 +281,9 @@ async def test_role_full(db: AsyncSession, test_project: Project) -> Role:
 
 
 @pytest.fixture(scope="function")
-async def test_membership(db: AsyncSession, test_project: Project, test_user: User, test_role_full: Role) -> UserProject:
+async def test_membership(
+    db: AsyncSession, test_project: Project, test_user: User, test_role_full: Role
+) -> UserProject:
     """UserProject linking test_user to test_project with full-permission role."""
     membership = UserProject(
         user_id=test_user.id,
@@ -276,7 +296,9 @@ async def test_membership(db: AsyncSession, test_project: Project, test_user: Us
 
 
 @pytest.fixture(scope="function")
-async def test_incident(db: AsyncSession, test_project: Project, test_user: User, test_membership) -> Incident:
+async def test_incident(
+    db: AsyncSession, test_project: Project, test_user: User, test_membership
+) -> Incident:
     """Incident created directly (bypasses service — no CREATED log written)."""
     incident = Incident(
         reporter_id=test_user.id,
@@ -352,7 +374,12 @@ def limited_headers(limited_user: User) -> dict[str, str]:
 
 
 @pytest.fixture(scope="function")
-async def limited_membership(db: AsyncSession, test_project: Project, limited_user: User, no_permission_role: Role) -> UserProject:
+async def limited_membership(
+    db: AsyncSession,
+    test_project: Project,
+    limited_user: User,
+    no_permission_role: Role,
+) -> UserProject:
     """UserProject linking limited_user to test_project with no-permission role."""
     membership = UserProject(
         user_id=limited_user.id,

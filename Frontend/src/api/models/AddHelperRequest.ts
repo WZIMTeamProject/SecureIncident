@@ -57,4 +57,3 @@ export function AddHelperRequestToJSON(value?: AddHelperRequest | null): any {
         'user_id': value['userId'],
     };
 }
-

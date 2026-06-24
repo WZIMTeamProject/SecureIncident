@@ -46,4 +46,3 @@ export function ProjectScopeFromJSONTyped(json: any, ignoreDiscriminator: boolea
 export function ProjectScopeToJSON(value?: ProjectScope | null): any {
     return value as any;
 }
-

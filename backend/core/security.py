@@ -1,10 +1,11 @@
-﻿import hashlib
+import hashlib
 import secrets
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
-import jwt
 import bcrypt
+import jwt
+
 from core.config import settings
 
 ALGORITHM = settings.ALGORITHM
@@ -13,6 +14,7 @@ ALGORITHM = settings.ALGORITHM
 def hash_password(password: str) -> str:
     """Hash password using bcrypt."""
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify password against hash."""
@@ -29,12 +31,12 @@ def create_access_token(user_id: str, remember_user: bool = False) -> str:
     else:
         expire_minutes = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
-    expire = datetime.now(timezone.utc) + timedelta(minutes=expire_minutes)
+    expire = datetime.now(UTC) + timedelta(minutes=expire_minutes)
 
     payload = {
         "sub": str(user_id),
         "exp": expire,
-        "iat": datetime.now(timezone.utc),
+        "iat": datetime.now(UTC),
         "jti": str(uuid.uuid4()),
     }
 
@@ -48,7 +50,7 @@ def decode_token(token: str) -> dict:
         token,
         settings.SECRET_KEY,
         algorithms=[ALGORITHM],
-        options={"require": ["exp", "sub", "jti"]}
+        options={"require": ["exp", "sub", "jti"]},
     )
 
 
@@ -73,6 +75,6 @@ def validate_password_strength(v: str) -> str:
         raise ValueError("Password must contain at least one uppercase letter")
     if not any(c.isdigit() for c in v):
         raise ValueError("Password must contain at least one digit")
-    if not any(c in '!@#$%^&*()_+-=[]{}|;:,.<>?/~`\'"\\' for c in v):
+    if not any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?/~`'\"\\" for c in v):
         raise ValueError("Password must contain at least one special character")
     return v

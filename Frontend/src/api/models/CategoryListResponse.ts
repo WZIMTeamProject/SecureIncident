@@ -87,4 +87,3 @@ export function CategoryListResponseToJSON(value?: CategoryListResponse | null):
         'limit': value['limit'],
     };
 }
-
