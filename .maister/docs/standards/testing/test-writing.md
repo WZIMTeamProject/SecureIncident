@@ -51,6 +51,13 @@ async def test_user(db: AsyncSession) -> User:
 
 All db-touching fixtures have `scope='function'` and use `yield` (not `return`) so teardown runs.
 
+### Running Against the Shared Dev Database
+
+The backend test suite runs against the **same `secure_incident` database used for development** — there is no separate test DB. Each test runs inside a transaction that is rolled back afterward, so no data persists.
+
+- The database container **must be running** before tests: `docker compose up -d`.
+- Run the suite with `uv run pytest` (or activate the repo-root `.venv` and run `pytest`).
+
 ## Auth Headers Fixture
 
 Authentication for test HTTP requests always uses a fixture returning `{'Authorization': 'Bearer <token>'}`:

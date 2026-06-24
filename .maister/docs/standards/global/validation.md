@@ -28,6 +28,19 @@ class CreateIncidentRequest(BaseModel):
 
 FastAPI returns HTTP 422 with field-level errors automatically — don't duplicate this with manual checks unless business logic requires it.
 
+## Whitespace Stripping via ConfigDict
+
+Pydantic v2 request schemas set `model_config = ConfigDict(str_strip_whitespace=True)` so all string inputs are trimmed automatically — this is the concrete mechanism behind the "strip/trim string inputs" rule in the Security section below. Pair it with `Field()` constraints and `@field_validator` + `@classmethod` for business validation.
+
+```python
+from pydantic import BaseModel, ConfigDict, Field
+
+class CreateProjectRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    name: str = Field(min_length=1, max_length=120)
+```
+
 ## Business Rule Validation
 
 Validate business constraints in the route handler or a service function, raising `HTTPException` with an appropriate status code. Examples:
