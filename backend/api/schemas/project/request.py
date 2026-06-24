@@ -1,10 +1,10 @@
-from enum import Enum
+from enum import StrEnum
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class ProjectScope(str, Enum):
+class ProjectScope(StrEnum):
     PRIVATE = "PRIVATE"
     ORGANIZATION = "ORGANIZATION"
 
