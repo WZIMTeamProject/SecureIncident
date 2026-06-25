@@ -3,14 +3,21 @@ import {useContext, useEffect, useRef, useState} from "react";
 import type {Organization, Project} from "../data/project.ts";
 import {Popup} from "../components/Popup.tsx";
 import {
-    FORM_ACTION, FORM_ACTION_CREATE_ORGANIZATION, FORM_ACTION_DELETE_ORGANIZATION, FORM_ACTION_INVITE_USER,
+    FORM_ACTION,
+    FORM_ACTION_CREATE_ORGANIZATION,
+    FORM_ACTION_DELETE_ORGANIZATION,
+    FORM_ACTION_INVITE_USER,
     FORM_ACTION_JOIN_ORGANIZATION,
-    FORM_ACTION_NEW_PROJECT, FORM_INVITE_COUNT, FORM_INVITE_TOKEN,
-    FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
+    FORM_ACTION_NEW_PROJECT,
+    FORM_INVITE_COUNT,
+    FORM_INVITE_TOKEN,
+    FORM_ORGANIZATION_DESCRIPTION,
+    FORM_ORGANIZATION_NAME,
     FORM_PROJECT_DESCRIPTION,
     FORM_PROJECT_NAME
 } from "./forms.ts";
 import {useFetcher} from "react-router";
+import {IconCheck, IconClipboard} from "../components/icons.tsx";
 
 export function SIOrganization() {
     const auth = useContext(AuthUserContext)!;
@@ -246,8 +253,18 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
     const fetcher = useFetcher();
     const busy = fetcher.state != "idle";
 
+    const [copiedToken, setCopiedToken] = useState<boolean>(false);
+    const [copiedLink, setCopiedLink] = useState<boolean>(false);
+
     const inviteCountRef = useRef<HTMLInputElement>(null);
+
     const inviteToken = fetcher.data?.ok ? fetcher.data.token : null;
+    const inviteLink = fetcher.data?.ok ? fetcher.data.inviteUrl : null;
+
+    if (!show && (copiedToken || copiedLink)) {
+        setCopiedLink(false);
+        setCopiedToken(false);
+    }
 
     return (
         <Popup show={show} className={"w-full max-w-xl"}>
@@ -281,13 +298,65 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                     </div>
                 </div>
 
-                <div
-                    hidden={!inviteToken}
-                    className="flex items-center gap-3 mb-3
+                <div hidden={!inviteToken} className="flex flex-col gap-1.5">
+                    <span className="text-sm font-medium text-(--color-si-label)">Token do dołączenia:</span>
+                    <div
+                        className="flex items-center gap-3 mb-3
                                 border border-(--color-si-input-border)
-                                rounded-lg px-3 py-2.5
+                                rounded-lg px-2.5 py-2
                                 bg-(--color-si-input-bg) transition-colors">
-                    {inviteToken}
+
+                        <button
+                            form=""
+                            title="Skopiuj token"
+                            onClick={() => {
+                                navigator.clipboard.writeText(inviteToken)
+                                    .then(() => {
+                                        setCopiedToken(true);
+                                        setCopiedLink(false);
+                                    });
+                            }}
+                            className="p-2
+                                    bg-(--color-si-btn)
+                                    hover:bg-(--color-si-btn-hover)
+                                    disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                            {copiedToken ? <IconCheck/> : <IconClipboard/>}
+                        </button>
+                        <span className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)">
+                            {inviteToken}
+                        </span>
+                    </div>
+                </div>
+
+                <div hidden={!inviteLink} className="flex flex-col gap-1.5">
+                    <span className="text-sm font-medium text-(--color-si-label)">Link do dołączenia:</span>
+                    <div
+                        className="flex items-center gap-3 mb-3
+                                border border-(--color-si-input-border)
+                                rounded-lg px-2.5 py-2
+                                bg-(--color-si-input-bg) transition-colors">
+
+                        <button
+                            form=""
+                            title="Skopiuj link"
+                            onClick={() => {
+                                navigator.clipboard.writeText(inviteToken)
+                                    .then(() => {
+                                        setCopiedToken(false);
+                                        setCopiedLink(true);
+                                    });
+                            }}
+                            className="p-2
+                                    bg-(--color-si-btn)
+                                    hover:bg-(--color-si-btn-hover)
+                                    disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                            {copiedLink ? <IconCheck/> : <IconClipboard/>}
+                        </button>
+
+                        <span className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)">
+                            {inviteLink}
+                        </span>
+                    </div>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -305,6 +374,10 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
 
                     <input
                         type="submit"
+                        onSubmit={() => {
+                            setCopiedToken(false);
+                            setCopiedLink(false);
+                        }}
                         value={busy ? "Generowanie..." : "Wygeneruj"}
                         disabled={busy}
                         className="px-6 py-2
@@ -385,7 +458,7 @@ function CreateOrganizationPopup({show, onHide}: PopupProps) {
     }
 
     return (
-        <Popup show={show} className={"w-full max-w-xl"} >
+        <Popup show={show} className={"w-full max-w-xl"}>
             <fetcher.Form method="POST" onSubmit={() => setPendingHide(true)}>
                 <h1 className="text-3xl font-bold text-(--color-si-label)">
                     Utwórz nową organizację
@@ -473,7 +546,7 @@ function JoinOrganizationPopup({show, onHide}: PopupProps) {
     }
 
     return (
-        <Popup show={show} className={"w-full max-w-xl"} >
+        <Popup show={show} className={"w-full max-w-xl"}>
             <fetcher.Form method="POST" onSubmit={() => setPendingHide(true)}>
                 <h1 className="text-3xl font-bold text-(--color-si-label)">
                     Podaj token z zaproszenia by dołączyć do organizacji:
