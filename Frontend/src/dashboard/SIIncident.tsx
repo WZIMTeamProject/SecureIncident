@@ -9,9 +9,17 @@ import {FORM_ACTION, FORM_ACTION_INVITE_USER, FORM_INVITE_NAME} from "./forms.ts
 
 export function SIIncident() {
     const urlParams = useParams();
+    const [incident, setIncident] = useState<Incident | null>();
+
     const incidentId = urlParams["incidentId"];
 
-    const [incident, setIncident] = useState<Incident | null>();
+    if (incident && incident.id !== incidentId) {
+        if (incidentId) {
+            setIncident(undefined);
+        } else {
+            setIncident(null);
+        }
+    }
 
     useEffect(() => {
         if (incidentId) {
@@ -53,7 +61,7 @@ function LoadingMessage() {
 
 type IncidentPopupType = "add_to_incident" | null;
 
-function IncidentView({incident}: { incident: Incident }) {
+function IncidentView({incident, disableButtons}: { incident: Incident, disableButtons?: boolean }) {
     const [logs, setLogs] = useState<IncidentLogEntry[] | undefined>(undefined);
     const [shownPopup, setShownPopup] = useState<IncidentPopupType>(null);
 
@@ -117,6 +125,7 @@ function IncidentView({incident}: { incident: Incident }) {
 
                 <div className="flex flex-col justify-center gap-3">
                     <button
+                        disabled={disableButtons}
                         className={`px-6 py-2
                             bg-(--color-si-btn)
                             hover:bg-(--color-si-btn-hover) shadow-lg rounded-lg
@@ -125,6 +134,7 @@ function IncidentView({incident}: { incident: Incident }) {
                     </button>
 
                     <button
+                        disabled={disableButtons}
                         onClick={() => setShownPopup("add_to_incident")}
                         className={`px-6 py-2
                             bg-(--color-si-btn)
@@ -134,6 +144,7 @@ function IncidentView({incident}: { incident: Incident }) {
                     </button>
 
                     <button
+                        disabled={disableButtons}
                         className={`px-6 py-2
                             bg-(--color-si-btn)
                             hover:bg-(--color-si-btn-hover) shadow-lg rounded-lg
