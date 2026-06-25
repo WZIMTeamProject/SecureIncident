@@ -1,15 +1,14 @@
-﻿from httpx import AsyncClient
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 
-from db.models.user import User
-from db.models.password_reset_token import PasswordResetToken
 from core import security
-from sqlalchemy.ext.asyncio import AsyncSession
+from db.models.password_reset_token import PasswordResetToken
+from db.models.user import User
+from httpx import AsyncClient
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestRequestPasswordReset:
-
     async def test_request_password_reset_returns_204_when_email_exists(
         self, client: AsyncClient, test_user: User
     ):
@@ -77,19 +76,20 @@ class TestRequestPasswordReset:
         token_record = result.scalar_one_or_none()
 
         assert token_record is not None
-        now = datetime.now(timezone.utc).replace(tzinfo=None) # naive — matches DB column type (TIMESTAMP WITHOUT TIME ZONE)
+        now = datetime.now(UTC).replace(
+            tzinfo=None
+        )  # naive — matches DB column type (TIMESTAMP WITHOUT TIME ZONE)
         ttl_minutes = (token_record.expires_at - now).total_seconds() / 60
         assert 25 < ttl_minutes < 35
 
 
 class TestResetPassword:
-
     async def test_reset_password_returns_204_with_valid_token(
         self, client: AsyncClient, test_user: User, db: AsyncSession
     ):
         raw_token = security.generate_token()
         token_hash = security.hash_token(raw_token)
-        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)
+        expires_at = datetime.now(UTC).replace(tzinfo=None) + timedelta(hours=1)
 
         token_record = PasswordResetToken(
             user_id=test_user.id,
@@ -112,7 +112,7 @@ class TestResetPassword:
 
         raw_token = security.generate_token()
         token_hash = security.hash_token(raw_token)
-        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)
+        expires_at = datetime.now(UTC).replace(tzinfo=None) + timedelta(hours=1)
 
         token_record = PasswordResetToken(
             user_id=test_user.id,
@@ -135,7 +135,7 @@ class TestResetPassword:
     ):
         raw_token = security.generate_token()
         token_hash = security.hash_token(raw_token)
-        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)
+        expires_at = datetime.now(UTC).replace(tzinfo=None) + timedelta(hours=1)
 
         token_record = PasswordResetToken(
             user_id=test_user.id,
@@ -158,7 +158,7 @@ class TestResetPassword:
     ):
         raw_token = security.generate_token()
         token_hash = security.hash_token(raw_token)
-        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)
+        expires_at = datetime.now(UTC).replace(tzinfo=None) + timedelta(hours=1)
 
         token_record = PasswordResetToken(
             user_id=test_user.id,
@@ -197,7 +197,7 @@ class TestResetPassword:
     ):
         raw_token = security.generate_token()
         token_hash = security.hash_token(raw_token)
-        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=1)
+        expires_at = datetime.now(UTC).replace(tzinfo=None) - timedelta(hours=1)
 
         token_record = PasswordResetToken(
             user_id=test_user.id,
@@ -218,13 +218,13 @@ class TestResetPassword:
     ):
         raw_token = security.generate_token()
         token_hash = security.hash_token(raw_token)
-        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)
+        expires_at = datetime.now(UTC).replace(tzinfo=None) + timedelta(hours=1)
 
         token_record = PasswordResetToken(
             user_id=test_user.id,
             token=token_hash,
             expires_at=expires_at,
-            used_at=datetime.now(timezone.utc).replace(tzinfo=None),
+            used_at=datetime.now(UTC).replace(tzinfo=None),
         )
         db.add(token_record)
         await db.commit()
@@ -240,7 +240,7 @@ class TestResetPassword:
     ):
         raw_token = security.generate_token()
         token_hash = security.hash_token(raw_token)
-        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)
+        expires_at = datetime.now(UTC).replace(tzinfo=None) + timedelta(hours=1)
 
         token_record = PasswordResetToken(
             user_id=test_user.id,

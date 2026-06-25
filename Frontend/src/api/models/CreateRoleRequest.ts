@@ -69,4 +69,3 @@ export function CreateRoleRequestToJSON(value?: CreateRoleRequest | null): any {
         'permissions': RolePermissionsToJSON(value['permissions']),
     };
 }
-

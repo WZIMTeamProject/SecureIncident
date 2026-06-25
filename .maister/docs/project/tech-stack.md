@@ -8,7 +8,9 @@ This document describes the technology choices and rationale for SecureIncident.
 ### TypeScript (~6.0.2)
 - **Usage**: 100% of frontend codebase
 - **Rationale**: Type safety and IDE support reduce errors across a 3-person frontend team
-- **Key Features Used**: Strict mode, ES2023 target, TSX for React components, `noUnusedLocals`, `noUnusedParameters`
+- **Configuration**: Bundler mode (`moduleResolution=bundler`, `target=ES2023`, `verbatimModuleSyntax`), TSX for React components.
+  - **Important**: `strict` / `noImplicitAny` are **NOT** enabled in `tsconfig.app.json`, and `noUnusedLocals` / `noUnusedParameters` are explicitly `false` for app code. Only `tsconfig.node.json` (build tooling) enables them. `noFallthroughCasesInSwitch` is on.
+  - The tsconfig files are the authoritative source for compiler behavior — do not assume strict mode.
 
 ### Python (3.14+)
 - **Usage**: 100% of backend codebase
@@ -67,10 +69,12 @@ This document describes the technology choices and rationale for SecureIncident.
 ## Infrastructure
 
 ### Containerization
-- Docker + Docker Compose — Planned (not yet configured); needed for AWS deployment
+- **Docker + Docker Compose — implemented.** Multi-stage backend image (`python:3.14-slim`, runs as non-root `appuser`) and multi-stage frontend image (`node:26` builder + `nginx:1.27-alpine` runtime).
+- Two compose files: `docker-compose.local.yml` (builds locally, includes Postgres 16 + a Mailpit email sink for development) and `docker-compose.yml` (production — pulls prebuilt GHCR images).
+- A `Makefile` provides convenience targets (`make up/down/db/logs/ps`).
 
 ### CI/CD
-- GitHub Actions — Planned for automated test → build → deploy pipeline
+- **GitHub Actions — implemented.** Working CI/CD pipelines (`backend.yml`, `frontend.yml`) run security scanning, tests, and image builds, and deploy to EC2. See `standards/infrastructure/ci-cd.md`.
 
 ### Hosting
 - **AWS** — Target deployment platform (EC2 + RDS), managed by 3-person DevOps team
@@ -81,7 +85,7 @@ This document describes the technology choices and rationale for SecureIncident.
 - **ESLint 9.39.4** (frontend) — Flat config format; plugins: `typescript-eslint`, `react-hooks`, `react-refresh`
 
 ### Type Checking
-- **TypeScript** strict mode — Frontend static analysis
+- **TypeScript** (bundler mode; `strict` not enabled — see Languages › TypeScript) — Frontend static analysis
 - **Pydantic v2** + Python type hints — Backend runtime and static validation
 
 ## Key Dependencies
@@ -105,6 +109,11 @@ This document describes the technology choices and rationale for SecureIncident.
 ## Version Management
 - Frontend: Semantic versioning in `package.json` with committed npm lock file
 - Backend: Minimum-version constraints in `pyproject.toml`, managed with `uv`
+
+## Pinned Runtimes
+- **Backend**: Python **3.14+** (`.python-version` = 3.14, ruff `target-version = py314`, `requires-python = ">=3.14"`).
+- **Database**: PostgreSQL **16**.
+- **Frontend Node.js**: ⚠️ **inconsistent across config** — `Frontend/mise.toml` = 24, `Frontend/Dockerfile` = `node:26`, `README` = 20+. These should be reconciled to a single pinned version.
 
 ---
 *Last Updated*: 2026-06-09

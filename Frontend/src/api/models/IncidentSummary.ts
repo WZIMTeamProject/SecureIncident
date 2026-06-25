@@ -114,4 +114,3 @@ export function IncidentSummaryToJSON(value?: IncidentSummary | null): any {
         'report_date': ((value['reportDate']).toISOString()),
     };
 }
-

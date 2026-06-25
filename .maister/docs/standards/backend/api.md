@@ -115,6 +115,21 @@ class PaginatedResponse(BaseModel, Generic[T]):
 
 Default limit: 20. Maximum limit: 100.
 
+## API Base Path & Auth Scheme
+
+All application routes are served under the `/api` base path (OpenAPI `servers=[{url: "/api"}]`), e.g. `/api/auth/login`, `/api/organization`. Authentication uses the `bearerAuth` HTTP scheme (`scheme=bearer`, `bearerFormat=JWT`). The frontend reads the backend URL from `VITE_API_URL` / `VITE_API_BASE_URL` — never hardcoded.
+
+## Documented Mutation Status Contracts
+
+Concrete examples reinforcing the status conventions above:
+
+| Endpoint | Success | Error cases |
+|----------|---------|-------------|
+| `POST /api/auth/register` | `201` `{id}` | `409` on duplicate username/email |
+| `POST /api/auth/login` | `200` | — |
+| `POST /api/auth/change-password` | `204` | `400` "Current password is incorrect"; `400` "New password must be different from the current password"; `422` on weak password |
+| `DELETE /api/organization` | `204` | nulls the owner's `organization_id`; subsequent `GET`/`DELETE` → `404` |
+
 ## Error Response Format
 
 Stick to FastAPI's default validation error format (422) for schema errors. For application errors use:

@@ -53,4 +53,3 @@ export function IncidentLogTypeFromJSONTyped(json: any, ignoreDiscriminator: boo
 export function IncidentLogTypeToJSON(value?: IncidentLogType | null): any {
     return value as any;
 }
-

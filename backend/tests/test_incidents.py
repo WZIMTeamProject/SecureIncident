@@ -1,30 +1,31 @@
-from uuid import uuid4, UUID
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from uuid import UUID, uuid4
 
 import pytest
-from fastapi import HTTPException
-from pydantic import ValidationError
-from httpx import AsyncClient
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from db.models.incident import Incident
 from db.models.incident_log import IncidentLog
 from db.models.project import Project
-from db.models.incident import Incident
 from db.models.role import Role
 from db.models.user import User
 from db.models.user_project import UserProject
+from fastapi import HTTPException
+from httpx import AsyncClient
+from pydantic import ValidationError
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestSchemaFixes:
     def test_update_category_request_rejects_null_category_id(self):
         from api.schemas.incident.request import UpdateIncidentCategoryRequest
+
         with pytest.raises(ValidationError):
             UpdateIncidentCategoryRequest(category_id=None)
 
     def test_incident_detail_response_includes_closing_date_field(self):
-        from api.schemas.incident.response import IncidentDetailsResponse
         from api.schemas.common.enums import IncidentPriority, IncidentStatus
+        from api.schemas.incident.response import IncidentDetailsResponse
+
         incident = IncidentDetailsResponse(
             id=uuid4(),
             project_id=uuid4(),
@@ -33,14 +34,15 @@ class TestSchemaFixes:
             priority=IncidentPriority.LOW,
             status=IncidentStatus.NEW,
             reporter_id=uuid4(),
-            report_date=datetime.now(timezone.utc),
+            report_date=datetime.now(UTC),
         )
         assert "closing_date" in IncidentDetailsResponse.model_fields
         assert incident.closing_date is None
 
     def test_incident_detail_response_includes_helpers_list(self):
-        from api.schemas.incident.response import IncidentDetailsResponse
         from api.schemas.common.enums import IncidentPriority, IncidentStatus
+        from api.schemas.incident.response import IncidentDetailsResponse
+
         incident = IncidentDetailsResponse(
             id=uuid4(),
             project_id=uuid4(),
@@ -49,14 +51,16 @@ class TestSchemaFixes:
             priority=IncidentPriority.LOW,
             status=IncidentStatus.NEW,
             reporter_id=uuid4(),
-            report_date=datetime.now(timezone.utc),
+            report_date=datetime.now(UTC),
         )
         assert "helpers" in IncidentDetailsResponse.model_fields
         assert isinstance(incident.helpers, list)
 
 
 class TestIncidentHelperModel:
-    async def test_incident_helper_model_has_composite_pk(self, db: AsyncSession, test_project: Project, test_user: User):
+    async def test_incident_helper_model_has_composite_pk(
+        self, db: AsyncSession, test_project: Project, test_user: User
+    ):
         from db.models.incident_helper import IncidentHelper
         from sqlalchemy import inspect
 
@@ -78,7 +82,9 @@ class TestIncidentHelperModel:
         assert "incident_id" in pk_columns
         assert "user_id" in pk_columns
 
-    async def test_incident_helper_added_at_has_server_default(self, db: AsyncSession, test_project: Project, test_user: User):
+    async def test_incident_helper_added_at_has_server_default(
+        self, db: AsyncSession, test_project: Project, test_user: User
+    ):
         from db.models.incident_helper import IncidentHelper
 
         incident = Incident(
@@ -97,7 +103,9 @@ class TestIncidentHelperModel:
 
         assert helper.added_at is not None
 
-    async def test_incident_helper_cascade_delete_from_incident(self, db: AsyncSession, test_project: Project, test_user: User):
+    async def test_incident_helper_cascade_delete_from_incident(
+        self, db: AsyncSession, test_project: Project, test_user: User
+    ):
         from db.models.incident_helper import IncidentHelper
         from sqlalchemy import select
 
@@ -124,7 +132,9 @@ class TestIncidentHelperModel:
         remaining = result.scalars().all()
         assert remaining == []
 
-    async def test_incident_helper_back_populates_on_incident(self, db: AsyncSession, test_project: Project, test_user: User):
+    async def test_incident_helper_back_populates_on_incident(
+        self, db: AsyncSession, test_project: Project, test_user: User
+    ):
         from db.models.incident_helper import IncidentHelper
 
         incident = Incident(
@@ -201,10 +211,12 @@ class TestServiceLayer:
     async def test_create_incident_service_raises_403_when_not_member(
         self, db: AsyncSession, test_project: Project, test_user: User
     ):
-        from services import incident_service
         from api.schemas.incident.request import CreateIncidentRequest
+        from services import incident_service
 
-        data = CreateIncidentRequest(title="Test Incident", description="Test description")
+        data = CreateIncidentRequest(
+            title="Test Incident", description="Test description"
+        )
         with pytest.raises(HTTPException) as exc_info:
             await incident_service.create_incident(db, test_project.id, data, test_user)
         assert exc_info.value.status_code == 403
@@ -212,17 +224,23 @@ class TestServiceLayer:
     async def test_create_incident_service_raises_403_when_no_write_tickets_permission(
         self, db: AsyncSession, test_project: Project, test_user: User
     ):
-        from services import incident_service
         from api.schemas.incident.request import CreateIncidentRequest
+        from services import incident_service
 
-        role = Role(project_id=test_project.id, name="ReadOnly", can_write_tickets=False)
+        role = Role(
+            project_id=test_project.id, name="ReadOnly", can_write_tickets=False
+        )
         db.add(role)
         await db.flush()
-        membership = UserProject(user_id=test_user.id, project_id=test_project.id, role_id=role.id)
+        membership = UserProject(
+            user_id=test_user.id, project_id=test_project.id, role_id=role.id
+        )
         db.add(membership)
         await db.flush()
 
-        data = CreateIncidentRequest(title="Test Incident", description="Test description")
+        data = CreateIncidentRequest(
+            title="Test Incident", description="Test description"
+        )
         with pytest.raises(HTTPException) as exc_info:
             await incident_service.create_incident(db, test_project.id, data, test_user)
         assert exc_info.value.status_code == 403
@@ -230,9 +248,9 @@ class TestServiceLayer:
     async def test_create_incident_service_returns_created_id_response(
         self, db: AsyncSession, test_project: Project, test_user: User
     ):
-        from services import incident_service
-        from api.schemas.incident.request import CreateIncidentRequest
         from api.schemas.common.base import CreatedIdResponse
+        from api.schemas.incident.request import CreateIncidentRequest
+        from services import incident_service
 
         role = Role(
             project_id=test_project.id,
@@ -247,12 +265,18 @@ class TestServiceLayer:
         )
         db.add(role)
         await db.flush()
-        membership = UserProject(user_id=test_user.id, project_id=test_project.id, role_id=role.id)
+        membership = UserProject(
+            user_id=test_user.id, project_id=test_project.id, role_id=role.id
+        )
         db.add(membership)
         await db.flush()
 
-        data = CreateIncidentRequest(title="Test Incident", description="Test description")
-        result = await incident_service.create_incident(db, test_project.id, data, test_user)
+        data = CreateIncidentRequest(
+            title="Test Incident", description="Test description"
+        )
+        result = await incident_service.create_incident(
+            db, test_project.id, data, test_user
+        )
         assert isinstance(result, CreatedIdResponse)
         assert result.id is not None
 
@@ -268,13 +292,17 @@ class TestServiceLayer:
     async def test_create_category_service_raises_403_when_no_make_roles(
         self, db: AsyncSession, test_project: Project, test_user: User
     ):
-        from services import category_service
         from api.schemas.category.request import CreateCategoryRequest
+        from services import category_service
 
-        role = Role(project_id=test_project.id, name="NoMakeRoles", can_make_roles=False)
+        role = Role(
+            project_id=test_project.id, name="NoMakeRoles", can_make_roles=False
+        )
         db.add(role)
         await db.flush()
-        membership = UserProject(user_id=test_user.id, project_id=test_project.id, role_id=role.id)
+        membership = UserProject(
+            user_id=test_user.id, project_id=test_project.id, role_id=role.id
+        )
         db.add(membership)
         await db.flush()
 
@@ -286,7 +314,12 @@ class TestServiceLayer:
 
 class TestRouteWiring:
     async def test_routes_create_incident_calls_service(
-        self, client: AsyncClient, db: AsyncSession, test_project: Project, test_user: User, auth_headers: dict
+        self,
+        client: AsyncClient,
+        db: AsyncSession,
+        test_project: Project,
+        test_user: User,
+        auth_headers: dict,
     ):
         role = Role(
             project_id=test_project.id,
@@ -300,7 +333,10 @@ class TestRouteWiring:
         db.add(role)
         await db.flush()
         from db.models.user_project import UserProject
-        membership = UserProject(user_id=test_user.id, project_id=test_project.id, role_id=role.id)
+
+        membership = UserProject(
+            user_id=test_user.id, project_id=test_project.id, role_id=role.id
+        )
         db.add(membership)
         await db.flush()
 
@@ -313,7 +349,12 @@ class TestRouteWiring:
         assert "id" in response.json()
 
     async def test_routes_get_incident_returns_real_data(
-        self, client: AsyncClient, db: AsyncSession, test_project: Project, test_user: User, auth_headers: dict
+        self,
+        client: AsyncClient,
+        db: AsyncSession,
+        test_project: Project,
+        test_user: User,
+        auth_headers: dict,
     ):
         role = Role(
             project_id=test_project.id,
@@ -327,7 +368,10 @@ class TestRouteWiring:
         db.add(role)
         await db.flush()
         from db.models.user_project import UserProject
-        membership = UserProject(user_id=test_user.id, project_id=test_project.id, role_id=role.id)
+
+        membership = UserProject(
+            user_id=test_user.id, project_id=test_project.id, role_id=role.id
+        )
         db.add(membership)
         await db.flush()
 
@@ -347,7 +391,12 @@ class TestRouteWiring:
         assert get_resp.json()["title"] == "Real Data Incident"
 
     async def test_routes_list_categories_returns_empty_for_new_project(
-        self, client: AsyncClient, db: AsyncSession, test_project: Project, test_user: User, auth_headers: dict
+        self,
+        client: AsyncClient,
+        db: AsyncSession,
+        test_project: Project,
+        test_user: User,
+        auth_headers: dict,
     ):
         role = Role(
             project_id=test_project.id,
@@ -361,7 +410,10 @@ class TestRouteWiring:
         db.add(role)
         await db.flush()
         from db.models.user_project import UserProject
-        membership = UserProject(user_id=test_user.id, project_id=test_project.id, role_id=role.id)
+
+        membership = UserProject(
+            user_id=test_user.id, project_id=test_project.id, role_id=role.id
+        )
         db.add(membership)
         await db.flush()
 
@@ -380,12 +432,19 @@ class TestFixtures:
         self, db: AsyncSession, test_project: Project, test_user: User, test_membership
     ):
         from db import repositories
-        membership = await repositories.project_repo.get_user_project(db, test_user.id, test_project.id)
+
+        membership = await repositories.project_repo.get_user_project(
+            db, test_user.id, test_project.id
+        )
         assert membership is not None
         assert membership.user_id == test_user.id
 
     async def test_limited_headers_fixture_is_blocked_by_permission_check(
-        self, client: AsyncClient, test_project: Project, limited_headers: dict, limited_membership
+        self,
+        client: AsyncClient,
+        test_project: Project,
+        limited_headers: dict,
+        limited_membership,
     ):
         response = await client.post(
             f"/api/projects/{test_project.id}/incidents",
@@ -448,8 +507,8 @@ class TestIncidentRepo:
     async def test_category_repo_create_and_list(
         self, db: AsyncSession, test_project: Project
     ):
-        from db.repositories import category_repo
         from db.models.category import Category
+        from db.repositories import category_repo
 
         category = Category(
             project_id=test_project.id,
@@ -522,13 +581,23 @@ class TestCreateIncident:
         fake_cat_id = str(uuid4())
         r = await client.post(
             f"/api/projects/{test_project.id}/incidents",
-            json={"title": "Cat Test", "description": "details", "category_id": fake_cat_id},
+            json={
+                "title": "Cat Test",
+                "description": "details",
+                "category_id": fake_cat_id,
+            },
             headers=auth_headers,
         )
         assert r.status_code == 404
 
     async def test_create_incident_persists_incident_row_in_db(
-        self, client: AsyncClient, test_project, auth_headers, test_membership, test_user, db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_project,
+        auth_headers,
+        test_membership,
+        test_user,
+        db: AsyncSession,
     ):
         r = await client.post(
             f"/api/projects/{test_project.id}/incidents",
@@ -546,7 +615,12 @@ class TestCreateIncident:
         assert incident.reporter_id == test_user.id
 
     async def test_create_incident_creates_created_log_entry(
-        self, client: AsyncClient, test_project, auth_headers, test_membership, db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_project,
+        auth_headers,
+        test_membership,
+        db: AsyncSession,
     ):
         r = await client.post(
             f"/api/projects/{test_project.id}/incidents",
@@ -594,7 +668,12 @@ class TestListIncidents:
         assert data["items"] == []
 
     async def test_list_incidents_returns_incidents_for_project(
-        self, client: AsyncClient, test_project, auth_headers, test_membership, test_incident
+        self,
+        client: AsyncClient,
+        test_project,
+        auth_headers,
+        test_membership,
+        test_incident,
     ):
         r = await client.get(
             f"/api/projects/{test_project.id}/incidents",
@@ -651,7 +730,12 @@ class TestUpdateStatus:
         assert r.status_code == 401
 
     async def test_update_status_returns_403_when_no_permission(
-        self, client: AsyncClient, test_incident, test_membership, limited_headers, limited_membership
+        self,
+        client: AsyncClient,
+        test_incident,
+        test_membership,
+        limited_headers,
+        limited_membership,
     ):
         r = await client.patch(
             f"/api/incidents/{test_incident.id}/status",
@@ -679,11 +763,18 @@ class TestUpdateStatus:
             headers=auth_headers,
         )
         assert r.status_code == 204
-        detail = await client.get(f"/api/incidents/{test_incident.id}", headers=auth_headers)
+        detail = await client.get(
+            f"/api/incidents/{test_incident.id}", headers=auth_headers
+        )
         assert detail.json()["status"] == "RESOLVED"
 
     async def test_update_status_returns_409_when_incident_is_closed(
-        self, client: AsyncClient, test_incident, auth_headers, test_membership, db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_incident,
+        auth_headers,
+        test_membership,
+        db: AsyncSession,
     ):
         test_incident.status = "CLOSED"
         await db.flush()
@@ -709,7 +800,12 @@ class TestCloseIncident:
         assert r.status_code == 404
 
     async def test_close_incident_returns_403_when_no_permission(
-        self, client: AsyncClient, test_incident, test_membership, limited_headers, limited_membership
+        self,
+        client: AsyncClient,
+        test_incident,
+        test_membership,
+        limited_headers,
+        limited_membership,
     ):
         r = await client.post(
             f"/api/incidents/{test_incident.id}/close",
@@ -725,7 +821,9 @@ class TestCloseIncident:
             headers=auth_headers,
         )
         assert r.status_code == 204
-        detail = await client.get(f"/api/incidents/{test_incident.id}", headers=auth_headers)
+        detail = await client.get(
+            f"/api/incidents/{test_incident.id}", headers=auth_headers
+        )
         data = detail.json()
         assert data["status"] == "CLOSED"
         assert data["closing_date"] is not None
@@ -733,8 +831,12 @@ class TestCloseIncident:
     async def test_close_incident_returns_409_when_already_closed(
         self, client: AsyncClient, test_incident, auth_headers, test_membership
     ):
-        await client.post(f"/api/incidents/{test_incident.id}/close", headers=auth_headers)
-        r = await client.post(f"/api/incidents/{test_incident.id}/close", headers=auth_headers)
+        await client.post(
+            f"/api/incidents/{test_incident.id}/close", headers=auth_headers
+        )
+        r = await client.post(
+            f"/api/incidents/{test_incident.id}/close", headers=auth_headers
+        )
         assert r.status_code == 409
 
 
@@ -748,7 +850,9 @@ class TestUpdatePriority:
             headers=auth_headers,
         )
         assert r.status_code == 204
-        detail = await client.get(f"/api/incidents/{test_incident.id}", headers=auth_headers)
+        detail = await client.get(
+            f"/api/incidents/{test_incident.id}", headers=auth_headers
+        )
         assert detail.json()["priority"] == "HIGH"
 
     async def test_update_priority_returns_401_when_not_authenticated(
@@ -761,7 +865,12 @@ class TestUpdatePriority:
         assert r.status_code == 401
 
     async def test_update_priority_returns_403_when_no_permission(
-        self, client: AsyncClient, test_incident, test_membership, limited_headers, limited_membership
+        self,
+        client: AsyncClient,
+        test_incident,
+        test_membership,
+        limited_headers,
+        limited_membership,
     ):
         r = await client.patch(
             f"/api/incidents/{test_incident.id}/priority",
@@ -783,7 +892,12 @@ class TestUpdatePriority:
 
 class TestUpdateAssignee:
     async def test_update_assignee_returns_204_and_persists(
-        self, client: AsyncClient, test_incident, auth_headers, test_membership, test_user
+        self,
+        client: AsyncClient,
+        test_incident,
+        auth_headers,
+        test_membership,
+        test_user,
     ):
         r = await client.patch(
             f"/api/incidents/{test_incident.id}/assignee",
@@ -791,7 +905,9 @@ class TestUpdateAssignee:
             headers=auth_headers,
         )
         assert r.status_code == 204
-        detail = await client.get(f"/api/incidents/{test_incident.id}", headers=auth_headers)
+        detail = await client.get(
+            f"/api/incidents/{test_incident.id}", headers=auth_headers
+        )
         assert detail.json()["primary_assignee_id"] == str(test_user.id)
 
     async def test_update_assignee_returns_401_when_not_authenticated(
@@ -804,7 +920,12 @@ class TestUpdateAssignee:
         assert r.status_code == 401
 
     async def test_update_assignee_returns_403_when_no_permission(
-        self, client: AsyncClient, test_incident, test_membership, limited_headers, limited_membership
+        self,
+        client: AsyncClient,
+        test_incident,
+        test_membership,
+        limited_headers,
+        limited_membership,
     ):
         r = await client.patch(
             f"/api/incidents/{test_incident.id}/assignee",
@@ -826,10 +947,17 @@ class TestUpdateAssignee:
 
 class TestUpdateCategory:
     async def test_update_category_with_cross_project_category_returns_404(
-        self, client: AsyncClient, db, test_incident, auth_headers, test_membership, test_org, test_user
+        self,
+        client: AsyncClient,
+        db,
+        test_incident,
+        auth_headers,
+        test_membership,
+        test_org,
+        test_user,
     ):
-        from db.models.project import Project
         from db.models.category import Category
+        from db.models.project import Project
         from db.models.role import Role
         from db.models.user_project import UserProject
 
@@ -842,11 +970,18 @@ class TestUpdateCategory:
         db.add(other_project)
         await db.flush()
 
-        other_role = Role(project_id=other_project.id, name="Admin", can_write_tickets=True, can_help=True)
+        other_role = Role(
+            project_id=other_project.id,
+            name="Admin",
+            can_write_tickets=True,
+            can_help=True,
+        )
         db.add(other_role)
         await db.flush()
 
-        other_membership = UserProject(user_id=test_user.id, project_id=other_project.id, role_id=other_role.id)
+        other_membership = UserProject(
+            user_id=test_user.id, project_id=other_project.id, role_id=other_role.id
+        )
         db.add(other_membership)
         await db.flush()
 
@@ -866,7 +1001,13 @@ class TestUpdateCategory:
         assert r.status_code == 404
 
     async def test_update_category_returns_204_and_persists(
-        self, client: AsyncClient, test_incident, auth_headers, test_membership, db: AsyncSession, test_project
+        self,
+        client: AsyncClient,
+        test_incident,
+        auth_headers,
+        test_membership,
+        db: AsyncSession,
+        test_project,
     ):
         from db.models.category import Category
 
@@ -879,7 +1020,9 @@ class TestUpdateCategory:
             headers=auth_headers,
         )
         assert r.status_code == 204
-        detail = await client.get(f"/api/incidents/{test_incident.id}", headers=auth_headers)
+        detail = await client.get(
+            f"/api/incidents/{test_incident.id}", headers=auth_headers
+        )
         data = detail.json()
         assert data["category_id"] == str(cat.id)
 
@@ -893,7 +1036,12 @@ class TestUpdateCategory:
         assert r.status_code == 401
 
     async def test_update_category_returns_403_when_no_permission(
-        self, client: AsyncClient, test_incident, test_membership, limited_headers, limited_membership
+        self,
+        client: AsyncClient,
+        test_incident,
+        test_membership,
+        limited_headers,
+        limited_membership,
     ):
         r = await client.patch(
             f"/api/incidents/{test_incident.id}/category",

@@ -13,6 +13,8 @@ The project uses the `pre-commit` framework. All hooks run automatically on `git
 | `ruff --fix` | `backend/` Python | Linting (E, F, I, UP rules) with auto-fix |
 | `ruff-format` | `backend/` Python | Formatting (double quotes, 88-char lines) |
 | `vulture` | `backend/` | Dead code at ≥80% confidence |
+| `bandit` | `^backend/` Python | SAST security scan (`-c pyproject.toml`) |
+| `pip-audit` | `backend/requirements.txt` | Dependency CVE audit (`-r backend/requirements.txt --no-deps --disable-pip`) |
 | `eslint --fix` | `Frontend/src/` TS/TSX | ESLint with auto-fix |
 
 Auto-fixable violations are corrected in-place; unfixable violations block the commit and must be resolved manually.
@@ -48,6 +50,32 @@ ESLint runs on all `Frontend/src/` TypeScript/JSX files using:
 
 - Use `npm ci` (not `npm install`) in CI pipelines — ensures reproducible installs from `package-lock.json`
 - Use `docker compose --build` after pulling commits that include new migration files, changed `requirements.txt`, or modified Dockerfiles — without it Docker uses the cached image
+
+## uv Toolchain
+
+Python dependencies are managed with **uv** via `pyproject.toml` + a committed `uv.lock`.
+
+- Install / sync from the repo root: `uv sync`
+- Run tests: `uv run pytest`
+- Build production dependencies from a frozen, dev-free export:
+  ```bash
+  uv export --frozen --no-dev -o backend/requirements.txt
+  ```
+- CI and local dev pin **Python 3.14** via `setup-uv` (CI) and `.python-version` (local).
+
+## Docker `--build` Discipline
+
+Always pass `--build` (e.g. `make up`, or `docker compose -f docker-compose.local.yml up --build`) after pulling a commit that:
+
+- adds a migration,
+- changes `requirements.txt`, or
+- modifies a `Dockerfile`.
+
+Otherwise Docker reuses the cached image and new code is silently excluded. Before opening a PR that touches a `Dockerfile`, `requirements.txt`, `package.json`, or `package-lock.json`, verify the affected service builds:
+
+```bash
+docker compose -f docker-compose.local.yml build <service>
+```
 
 ## Running Migrations
 

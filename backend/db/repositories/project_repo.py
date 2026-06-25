@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 from uuid import UUID
 
 from sqlalchemy import select
@@ -10,13 +10,13 @@ from db.models.user import User
 from db.models.user_project import UserProject
 
 
-async def get_project_by_id(db: AsyncSession, project_id: UUID) -> Optional[Project]:
+async def get_project_by_id(db: AsyncSession, project_id: UUID) -> Project | None:
     """Get project by ID."""
     result = await db.execute(select(Project).where(Project.id == project_id))
     return result.scalar_one_or_none()
 
 
-async def get_role_by_id(db: AsyncSession, role_id: UUID) -> Optional[Role]:
+async def get_role_by_id(db: AsyncSession, role_id: UUID) -> Role | None:
     """Get role by ID."""
     result = await db.execute(select(Role).where(Role.id == role_id))
     return result.scalar_one_or_none()
@@ -26,10 +26,10 @@ async def create_project(
     db: AsyncSession,
     *,
     name: str,
-    description: Optional[str],
+    description: str | None,
     scope: str,
     owner_id: UUID,
-    organization_id: Optional[UUID],
+    organization_id: UUID | None,
 ) -> Project:
     """Create project (flush only — commit in service)."""
     project = Project(
@@ -63,7 +63,7 @@ async def create_role(
 
 async def get_user_project(
     db: AsyncSession, user_id: UUID, project_id: UUID
-) -> Optional[UserProject]:
+) -> UserProject | None:
     """Get user project membership (or None)."""
     result = await db.execute(
         select(UserProject).where(
@@ -96,7 +96,7 @@ async def list_projects_for_user(
     db: AsyncSession,
     *,
     user_id: UUID,
-    scope: Optional[str] = None,
+    scope: str | None = None,
 ) -> Sequence[Project]:
     """List projects the user is a member of (optional scope filter)."""
     stmt = (
@@ -135,13 +135,9 @@ async def update_user_project_role(
     await db.flush()
 
 
-async def list_roles_for_project(
-    db: AsyncSession, project_id: UUID
-) -> Sequence[Role]:
+async def list_roles_for_project(db: AsyncSession, project_id: UUID) -> Sequence[Role]:
     """List all roles defined in the project."""
-    result = await db.execute(
-        select(Role).where(Role.project_id == project_id)
-    )
+    result = await db.execute(select(Role).where(Role.project_id == project_id))
     return result.scalars().all()
 
 
@@ -149,8 +145,8 @@ async def update_role(
     db: AsyncSession,
     *,
     role: Role,
-    name: Optional[str] = None,
-    permissions: Optional[dict] = None,
+    name: str | None = None,
+    permissions: dict | None = None,
 ) -> None:
     """Update a role's name and/or permissions (flush only — caller commits)."""
     if name is not None:

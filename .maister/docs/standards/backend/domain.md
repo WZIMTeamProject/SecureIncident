@@ -7,6 +7,7 @@ These rules come from the product specification and must be enforced at the API/
 - A user has **exactly one role per project** — one `UserProject` row per `(user_id, project_id)` pair
 - A user can have different roles in different projects
 - Roles are project-scoped, never global
+- **Single-organization membership**: a user can belong to many projects, but only within **one** organization (or in private projects). This invariant is stated in the published OpenAPI contract description.
 
 ## Incidents
 

@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+    ChangePasswordRequest,
     CreatedIdResponse,
     CurrentUserResponse,
     LoginRequest,
@@ -24,6 +25,7 @@ import type {
     RegisterRequest,
 } from '../models/index';
 import {
+    ChangePasswordRequestToJSON,
     CreatedIdResponseFromJSON,
     CurrentUserResponseFromJSON,
     LoginRequestToJSON,
@@ -32,6 +34,10 @@ import {
     PasswordResetRequestToJSON,
     RegisterRequestToJSON,
 } from '../models/index';
+
+export interface AuthChangePasswordPostRequest {
+    changePasswordRequest: ChangePasswordRequest;
+}
 
 export interface AuthLoginPostRequest {
     loginRequest: LoginRequest;
@@ -53,6 +59,49 @@ export interface AuthResetPasswordPostRequest {
  *
  */
 export class AuthApi extends runtime.BaseAPI {
+
+    /**
+     * Change password of current user
+     */
+    async authChangePasswordPostRaw(requestParameters: AuthChangePasswordPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['changePasswordRequest'] == null) {
+            throw new runtime.RequiredError(
+                'changePasswordRequest',
+                'Required parameter "changePasswordRequest" was null or undefined when calling authChangePasswordPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/auth/change-password`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ChangePasswordRequestToJSON(requestParameters['changePasswordRequest']),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Change password of current user
+     */
+    async authChangePasswordPost(requestParameters: AuthChangePasswordPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.authChangePasswordPostRaw(requestParameters, initOverrides);
+    }
 
     /**
      * Log in user and return JWT token

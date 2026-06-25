@@ -1,18 +1,17 @@
-import logging.config
 import asyncio
+import logging.config
 import os
-from pathlib import Path
 from contextlib import asynccontextmanager
+from pathlib import Path
 
+from alembic import command
+from alembic.config import Config
+from core.config import settings
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from alembic.config import Config
-from alembic import command
-
-from core.config import settings
 from middleware.logging_middleware import LoggingMiddleware
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 BASE_DIR = Path(__file__).resolve().parent
 logger = logging.getLogger(__name__)
@@ -88,16 +87,13 @@ async def lifespan(app: FastAPI):
     try:
         await asyncio.to_thread(run_migrations)
         logger.info("Database migrations completed successfully.")
-    except Exception as e:
+    except Exception:
         logger.exception("Database migration failed")
         raise
     yield
 
 
-app = FastAPI(
-    title="Secure Incident API",
-    lifespan=lifespan
-)
+app = FastAPI(title="Secure Incident API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -106,7 +102,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(LoggingMiddleware)  # Added LAST = outermost = sees all requests including CORS preflight
+app.add_middleware(
+    LoggingMiddleware
+)  # Added LAST = outermost = sees all requests including CORS preflight
 
 err_logger = logging.getLogger("backend.errors")
 
@@ -143,30 +141,38 @@ async def health():
     return {"status": "ok"}
 
 
-
 from api.routes import auth
+
 app.include_router(auth.router, prefix="/api")
 
 from api.routes import organization
+
 app.include_router(organization.router, prefix="/api")
 
 from api.routes import projects
+
 app.include_router(projects.router, prefix="/api")
 
 from api.routes import incidents
+
 app.include_router(incidents.router, prefix="/api")
 
 from api.routes import categories
+
 app.include_router(categories.router, prefix="/api")
 
 from api.routes import roles
+
 app.include_router(roles.router, prefix="/api")
 
 from api.routes import invitations
+
 app.include_router(invitations.router, prefix="/api")
 
 from api.routes import profiles
+
 app.include_router(profiles.router, prefix="/api")
 
 from api.routes import users
+
 app.include_router(users.router, prefix="/api")

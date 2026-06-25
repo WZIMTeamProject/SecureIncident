@@ -60,4 +60,3 @@ export function UserSearchResponseToJSON(value?: UserSearchResponse | null): any
         'users': ((value['users'] as Array<any>).map(UserSearchResultToJSON)),
     };
 }
-

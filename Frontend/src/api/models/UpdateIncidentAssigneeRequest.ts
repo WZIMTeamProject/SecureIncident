@@ -56,4 +56,3 @@ export function UpdateIncidentAssigneeRequestToJSON(value?: UpdateIncidentAssign
         'primary_assignee_id': value['primaryAssigneeId'],
     };
 }
-

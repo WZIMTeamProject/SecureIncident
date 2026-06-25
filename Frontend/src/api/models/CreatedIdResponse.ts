@@ -57,4 +57,3 @@ export function CreatedIdResponseToJSON(value?: CreatedIdResponse | null): any {
         'id': value['id'],
     };
 }
-

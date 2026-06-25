@@ -1,17 +1,16 @@
-from httpx import AsyncClient
-from uuid import uuid4, UUID
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from uuid import UUID, uuid4
 
-from db.models.user import User
+from core.security import create_access_token, hash_password
 from db.models.project import Project
-from db.models.user_project import UserProject
 from db.models.role import Role
-from core.security import hash_password, create_access_token
+from db.models.user import User
+from db.models.user_project import UserProject
+from httpx import AsyncClient
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestCreateProject:
-
     async def test_create_project_returns_201_when_org_member_creates_org_scope(
         self, client: AsyncClient, auth_headers: dict
     ):
@@ -160,9 +159,12 @@ class TestCreateProject:
 
 
 class TestListProjects:
-
     async def test_list_projects_returns_200_with_member_projects(
-        self, client: AsyncClient, auth_headers: dict, test_project: Project, test_membership
+        self,
+        client: AsyncClient,
+        auth_headers: dict,
+        test_project: Project,
+        test_membership,
     ):
         response = await client.get("/api/projects", headers=auth_headers)
         assert response.status_code == 200
@@ -178,9 +180,12 @@ class TestListProjects:
 
 
 class TestGetProject:
-
     async def test_get_project_returns_200_when_member_requests(
-        self, client: AsyncClient, auth_headers: dict, test_project: Project, test_membership
+        self,
+        client: AsyncClient,
+        auth_headers: dict,
+        test_project: Project,
+        test_membership,
     ):
         response = await client.get(
             f"/api/projects/{test_project.id}", headers=auth_headers
@@ -207,14 +212,11 @@ class TestGetProject:
     async def test_get_project_returns_404_when_project_not_found(
         self, client: AsyncClient, auth_headers: dict
     ):
-        response = await client.get(
-            f"/api/projects/{uuid4()}", headers=auth_headers
-        )
+        response = await client.get(f"/api/projects/{uuid4()}", headers=auth_headers)
         assert response.status_code == 404
 
 
 class TestUpdateProject:
-
     async def test_update_project_returns_204_when_owner_updates_name(
         self, client: AsyncClient, auth_headers: dict, test_project: Project
     ):
@@ -226,7 +228,11 @@ class TestUpdateProject:
         assert response.status_code == 204
 
     async def test_update_project_persists_name_change_in_db(
-        self, client: AsyncClient, auth_headers: dict, test_project: Project, db: AsyncSession
+        self,
+        client: AsyncClient,
+        auth_headers: dict,
+        test_project: Project,
+        db: AsyncSession,
     ):
         response = await client.patch(
             f"/api/projects/{test_project.id}",
@@ -247,7 +253,11 @@ class TestUpdateProject:
         assert response.status_code == 401
 
     async def test_update_project_returns_403_when_not_owner(
-        self, client: AsyncClient, test_project: Project, limited_headers: dict, limited_membership
+        self,
+        client: AsyncClient,
+        test_project: Project,
+        limited_headers: dict,
+        limited_membership,
     ):
         response = await client.patch(
             f"/api/projects/{test_project.id}",
@@ -278,9 +288,12 @@ class TestUpdateProject:
 
 
 class TestListMembers:
-
     async def test_list_members_returns_200_when_member_requests(
-        self, client: AsyncClient, auth_headers: dict, test_project: Project, test_membership
+        self,
+        client: AsyncClient,
+        auth_headers: dict,
+        test_project: Project,
+        test_membership,
     ):
         response = await client.get(
             f"/api/projects/{test_project.id}/members", headers=auth_headers
@@ -318,7 +331,6 @@ class TestListMembers:
 
 
 class TestAddMember:
-
     async def test_add_member_returns_204_when_owner_adds_valid_user(
         self,
         client: AsyncClient,
@@ -359,7 +371,11 @@ class TestAddMember:
         assert membership is not None
 
     async def test_add_member_returns_401_when_unauthenticated(
-        self, client: AsyncClient, test_project: Project, non_member_user: User, test_role
+        self,
+        client: AsyncClient,
+        test_project: Project,
+        non_member_user: User,
+        test_role,
     ):
         response = await client.post(
             f"/api/projects/{test_project.id}/members",
@@ -404,7 +420,11 @@ class TestAddMember:
         assert response.status_code == 404
 
     async def test_add_member_returns_404_when_role_not_in_project(
-        self, client: AsyncClient, auth_headers: dict, test_project: Project, non_member_user: User
+        self,
+        client: AsyncClient,
+        auth_headers: dict,
+        test_project: Project,
+        non_member_user: User,
     ):
         response = await client.post(
             f"/api/projects/{test_project.id}/members",
@@ -431,7 +451,6 @@ class TestAddMember:
 
 
 class TestChangeMemberRole:
-
     async def test_change_member_role_returns_204_when_owner_reassigns(
         self,
         client: AsyncClient,

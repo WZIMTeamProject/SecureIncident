@@ -74,4 +74,3 @@ export function CategoryResponseToJSON(value?: CategoryResponse | null): any {
         'description': value['description'],
     };
 }
-

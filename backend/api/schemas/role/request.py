@@ -1,5 +1,4 @@
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Optional
 
 
 class RolePermissions(BaseModel):
@@ -22,5 +21,5 @@ class CreateRoleRequest(BaseModel):
 class UpdateRoleRequest(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    name: Optional[str] = Field(None, min_length=1, max_length=50)
-    permissions: Optional[RolePermissions] = None
+    name: str | None = Field(None, min_length=1, max_length=50)
+    permissions: RolePermissions | None = None

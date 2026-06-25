@@ -23,6 +23,16 @@ Use descriptive names that reveal intent. Avoid abbreviations unless universally
 - Private helpers: single leading underscore (`_build_query`)
 - File names: `snake_case` (`incident_service.py`, `auth_router.py`)
 
+### Python — UTC Timestamps
+
+Use `datetime.now(UTC)` for the current UTC time — never the deprecated `datetime.utcnow()`. The naive-storage pattern in use is:
+
+```python
+from datetime import UTC, datetime
+
+now = datetime.now(UTC).replace(tzinfo=None)
+```
+
 ## File Organization
 
 - One primary export per file — one component per `.tsx` file, one SQLAlchemy model per `.py` file.

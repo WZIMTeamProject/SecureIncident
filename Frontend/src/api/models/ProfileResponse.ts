@@ -82,4 +82,3 @@ export function ProfileResponseToJSON(value?: ProfileResponse | null): any {
         'profile_picture_url': value['profilePictureUrl'],
     };
 }
-

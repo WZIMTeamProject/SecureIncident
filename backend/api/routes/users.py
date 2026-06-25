@@ -1,11 +1,11 @@
+from db.models.user import User
 from fastapi import APIRouter, Depends, Query
+from services import profile_service
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.models.user import User
-from api.dependencies.db import get_db
 from api.dependencies.auth import get_current_user
+from api.dependencies.db import get_db
 from api.schemas.profile.response import UserSearchResponse
-from services import profile_service
 
 router = APIRouter(prefix="/users", tags=["Users"])
 

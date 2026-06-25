@@ -1,11 +1,9 @@
-﻿from httpx import AsyncClient
-
-from db.models.user import User
 from core import security
+from db.models.user import User
+from httpx import AsyncClient
 
 
 class TestGetMe:
-
     async def test_get_me_returns_200_with_valid_token(
         self, client: AsyncClient, test_user: User, auth_headers: dict
     ):
@@ -31,12 +29,17 @@ class TestGetMe:
         )
         assert response.status_code == 401
 
-    async def test_get_me_returns_401_with_expired_token(self, client: AsyncClient, test_user: User):
-        expired_token = security.create_access_token(str(test_user.id), remember_user=False)
+    async def test_get_me_returns_401_with_expired_token(
+        self, client: AsyncClient, test_user: User
+    ):
+        expired_token = security.create_access_token(
+            str(test_user.id), remember_user=False
+        )
         payload = security.decode_token(expired_token)
         payload["exp"] = payload["exp"] - 3600
         import jwt
         from core.config import settings
+
         expired_token_str = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
         response = await client.get(

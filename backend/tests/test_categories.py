@@ -1,8 +1,8 @@
-import pytest
 from uuid import uuid4
-from httpx import AsyncClient
 
+import pytest
 from db.models.project import Project
+from httpx import AsyncClient
 
 pytestmark = pytest.mark.asyncio
 

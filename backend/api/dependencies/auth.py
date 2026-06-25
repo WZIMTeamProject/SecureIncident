@@ -1,17 +1,16 @@
-﻿from typing import Annotated
+import logging
+from typing import Annotated
 from uuid import UUID
 
+from core.security import decode_token
+from db import repositories
+from db.models.user import User
 from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies.db import get_db
-from core.security import decode_token
-from db.models.user import User
-from db import repositories
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +73,9 @@ async def get_current_user(
     try:
         user_id = UUID(user_id_str)
     except ValueError:
-        logger.warning("Token validation failed: sub claim is not a valid UUID raw=%s", user_id_str)
+        logger.warning(
+            "Token validation failed: sub claim is not a valid UUID raw=%s", user_id_str
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token payload",
@@ -84,7 +85,9 @@ async def get_current_user(
     user = await repositories.user_repo.get_user_by_id(db, user_id)
 
     if user is None:
-        logger.warning("Token validation failed: user not found for user_id=%s", user_id)
+        logger.warning(
+            "Token validation failed: user not found for user_id=%s", user_id
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found",

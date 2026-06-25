@@ -49,3 +49,15 @@ System-level events that must be logged:
 ## Non-Root Container
 
 The backend Docker container runs as a dedicated non-root user (`appuser`). Do not change this — running as root in a container is a security risk.
+
+## Automated Security Scanning
+
+Backend code is scanned by **bandit** (SAST, configured via `[tool.bandit]` in `pyproject.toml`, excluding `backend/tests`) and dependencies are audited by **pip-audit**. Both run as **pre-commit hooks** and in **CI** (alongside the existing vulture dead-code detection). Findings must be resolved before merge.
+
+## Password Reset Behavioral Contract
+
+The password-reset request and confirm endpoints **always return 204**, regardless of whether the account exists or whether the email was actually sent — this prevents account enumeration. The email is dispatched via an async background task so the request stays non-blocking.
+
+- Reset tokens expire after **30 minutes**.
+- Requesting a new reset **invalidates any pending token** for that account.
+- Change-password and reset-password deliberately **do NOT invalidate active sessions** — an already-issued JWT keeps working until it expires.

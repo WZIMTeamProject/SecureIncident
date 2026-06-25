@@ -64,4 +64,3 @@ export function UpdateProjectRequestToJSON(value?: UpdateProjectRequest | null):
         'description': value['description'],
     };
 }
-

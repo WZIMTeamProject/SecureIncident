@@ -94,4 +94,3 @@ export function ProjectResponseToJSON(value?: ProjectResponse | null): any {
         'scope': ProjectScopeToJSON(value['scope']),
     };
 }
-

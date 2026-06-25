@@ -57,4 +57,3 @@ export function PasswordResetRequestToJSON(value?: PasswordResetRequest | null):
         'email_or_username': value['emailOrUsername'],
     };
 }
-

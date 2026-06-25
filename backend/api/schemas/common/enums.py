@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class IncidentStatus(str, Enum):
+class IncidentStatus(StrEnum):
     NEW = "NEW"
     PROBLEM_IS_BEING_SOLVED = "PROBLEM_IS_BEING_SOLVED"
     RESOLVED = "RESOLVED"
@@ -9,17 +9,19 @@ class IncidentStatus(str, Enum):
     REJECTED = "REJECTED"
 
 
-class IncidentPriority(str, Enum):
+class IncidentPriority(StrEnum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
     CRITICAL = "CRITICAL"
 
-class InviteScope(str, Enum):
+
+class InviteScope(StrEnum):
     ORGANIZATION = "ORGANIZATION"
     PROJECT = "PROJECT"
 
-class IncidentLogType(str, Enum):
+
+class IncidentLogType(StrEnum):
     COMMENT = "COMMENT"
     STATUS_CHANGED = "STATUS_CHANGED"
     ASSIGNEE_CHANGED = "ASSIGNEE_CHANGED"

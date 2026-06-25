@@ -93,4 +93,3 @@ export function RegisterRequestToJSON(value?: RegisterRequest | null): any {
         'password': value['password'],
     };
 }
-

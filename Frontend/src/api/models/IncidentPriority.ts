@@ -48,4 +48,3 @@ export function IncidentPriorityFromJSONTyped(json: any, ignoreDiscriminator: bo
 export function IncidentPriorityToJSON(value?: IncidentPriority | null): any {
     return value as any;
 }
-

@@ -56,4 +56,3 @@ export function UpdateCategoryRequestToJSON(value?: UpdateCategoryRequest | null
         'name': value['name'],
     };
 }
-

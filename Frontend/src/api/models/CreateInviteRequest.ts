@@ -65,4 +65,3 @@ export function CreateInviteRequestToJSON(value?: CreateInviteRequest | null): a
         'max_uses': value['maxUses'],
     };
 }
-

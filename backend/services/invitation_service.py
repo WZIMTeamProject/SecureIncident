@@ -1,16 +1,15 @@
-﻿import logging
+import logging
+from datetime import UTC, datetime
 from uuid import UUID
-from datetime import datetime, timezone
-
-from fastapi import HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.schemas.invitation.request import CreateInviteRequest
 from api.schemas.invitation.response import InvitePreviewResponse
 from core import security
+from db import repositories
 from db.models.organization_invite import OrganizationInvite
 from db.models.user import User
-from db import repositories
+from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +58,9 @@ async def create_project_invite(
             data.role_id,
             project_id,
         )
-        raise HTTPException(status_code=400, detail="This role does not exist in this project")
+        raise HTTPException(
+            status_code=400, detail="This role does not exist in this project"
+        )
 
     # 4. Generate token
     raw_token = security.generate_token()
@@ -97,7 +98,9 @@ async def get_invite_preview(db: AsyncSession, raw_token: str) -> InvitePreviewR
 
     is_valid = _is_invite_valid(invite)
     target_name = (
-        invite.project.name if invite.scope == "PROJECT" and invite.project else invite.organization.name
+        invite.project.name
+        if invite.scope == "PROJECT" and invite.project
+        else invite.organization.name
     )
 
     return InvitePreviewResponse(
@@ -121,7 +124,9 @@ async def join_project_by_invite(
     # This prevents a cross-org user from draining limited-use invites with repeated 403s.
     pre_check = await repositories.invite_repo.get_invite_by_hash(db, token_hash)
     if pre_check is None:
-        logger.warning("Project join failed: invitation not found user_id=%s", current_user.id)
+        logger.warning(
+            "Project join failed: invitation not found user_id=%s", current_user.id
+        )
         raise HTTPException(status_code=400, detail="Invalid or expired invitation")
 
     if pre_check.scope != "PROJECT":
@@ -130,7 +135,9 @@ async def join_project_by_invite(
             pre_check.scope,
             current_user.id,
         )
-        raise HTTPException(status_code=400, detail="This invitation is not for a project")
+        raise HTTPException(
+            status_code=400, detail="This invitation is not for a project"
+        )
 
     if pre_check.project is not None and pre_check.project.organization_id is not None:
         if current_user.organization_id != pre_check.project.organization_id:
@@ -142,7 +149,7 @@ async def join_project_by_invite(
             )
             raise HTTPException(
                 status_code=403,
-                detail="You must be a member of this organization to join its projects"
+                detail="You must be a member of this organization to join its projects",
             )
 
     # Atomic increment — only after scope and auth checks pass
@@ -164,7 +171,9 @@ async def join_project_by_invite(
             current_user.id,
             invite.project_id,
         )
-        raise HTTPException(status_code=409, detail="You are already a member of this project")
+        raise HTTPException(
+            status_code=409, detail="You are already a member of this project"
+        )
 
     # Create membership
     await repositories.project_repo.create_user_project(
@@ -193,14 +202,27 @@ async def revoke_invite(
     invite = await repositories.invite_repo.get_invite_by_hash(db, token_hash)
     if invite is None:
         logger.warning("Invite revoke failed: not found user_id=%s", current_user.id)
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invite not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Invite not found"
+        )
 
     is_creator = invite.created_by_id == current_user.id
-    is_project_owner = invite.project is not None and invite.project.project_owner_id == current_user.id
-    is_org_owner = invite.organization is not None and invite.organization.org_owner_id == current_user.id
+    is_project_owner = (
+        invite.project is not None
+        and invite.project.project_owner_id == current_user.id
+    )
+    is_org_owner = (
+        invite.organization is not None
+        and invite.organization.org_owner_id == current_user.id
+    )
     if not (is_creator or is_project_owner or is_org_owner):
-        logger.warning("Invite revoke denied: permission denied user_id=%s", current_user.id)
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to revoke this invite")
+        logger.warning(
+            "Invite revoke denied: permission denied user_id=%s", current_user.id
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to revoke this invite",
+        )
 
     await repositories.invite_repo.delete_invite_by_hash(db, token_hash)
     await db.commit()
@@ -210,7 +232,7 @@ async def revoke_invite(
 def _is_invite_valid(invite: OrganizationInvite) -> bool:
     """Helper: check if invitation is valid (not expired, not exhausted)."""
     if invite.expires_at is not None:
-        if datetime.now(timezone.utc).replace(tzinfo=None) > invite.expires_at:
+        if datetime.now(UTC).replace(tzinfo=None) > invite.expires_at:
             return False
     if invite.max_uses is not None:
         if invite.use_count >= invite.max_uses:

@@ -1,12 +1,11 @@
-﻿from httpx import AsyncClient
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from core import security
 from db.models.user import User
+from httpx import AsyncClient
 
 
 class TestLogin:
-
     async def test_login_returns_200_with_valid_credentials(
         self, client: AsyncClient, test_user: User
     ):
@@ -52,7 +51,9 @@ class TestLogin:
         )
         assert response.status_code == 401
 
-    async def test_login_returns_401_with_nonexistent_username(self, client: AsyncClient):
+    async def test_login_returns_401_with_nonexistent_username(
+        self, client: AsyncClient
+    ):
         response = await client.post(
             "/api/auth/login",
             json={
@@ -96,7 +97,9 @@ class TestLogin:
             },
         )
         assert response_wrong_pw.status_code == response_wrong_user.status_code == 401
-        assert response_wrong_pw.json()["detail"] == response_wrong_user.json()["detail"]
+        assert (
+            response_wrong_pw.json()["detail"] == response_wrong_user.json()["detail"]
+        )
 
     async def test_login_remember_me_false_token_expires_in_30_minutes(
         self, client: AsyncClient, test_user: User
@@ -111,8 +114,8 @@ class TestLogin:
         )
         token = response.json()["access_token"]
         payload = security.decode_token(token)
-        exp = datetime.fromtimestamp(payload["exp"], tz=timezone.utc)
-        now = datetime.now(timezone.utc)
+        exp = datetime.fromtimestamp(payload["exp"], tz=UTC)
+        now = datetime.now(UTC)
         ttl_minutes = (exp - now).total_seconds() / 60
         assert 25 < ttl_minutes < 35
 
@@ -129,12 +132,14 @@ class TestLogin:
         )
         token = response.json()["access_token"]
         payload = security.decode_token(token)
-        exp = datetime.fromtimestamp(payload["exp"], tz=timezone.utc)
-        now = datetime.now(timezone.utc)
+        exp = datetime.fromtimestamp(payload["exp"], tz=UTC)
+        now = datetime.now(UTC)
         ttl_minutes = (exp - now).total_seconds() / 60
         assert 10000 < ttl_minutes < 10100
 
-    async def test_login_returns_422_when_username_exceeds_50_chars(self, client: AsyncClient):
+    async def test_login_returns_422_when_username_exceeds_50_chars(
+        self, client: AsyncClient
+    ):
         response = await client.post(
             "/api/auth/login",
             json={
@@ -145,7 +150,9 @@ class TestLogin:
         )
         assert response.status_code == 422
 
-    async def test_login_returns_422_when_password_exceeds_72_chars(self, client: AsyncClient):
+    async def test_login_returns_422_when_password_exceeds_72_chars(
+        self, client: AsyncClient
+    ):
         response = await client.post(
             "/api/auth/login",
             json={

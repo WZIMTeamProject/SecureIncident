@@ -96,6 +96,26 @@ incidents = (await db.execute(
 )).scalars().all()
 ```
 
+## SQL None / Boolean Comparisons in Repositories
+
+In repository query filters, use `== None` / `== True` (**not** `is None` / `is True`) for SQLAlchemy column comparisons. `is None` short-circuits to a plain Python `bool` instead of building a SQL expression, so the filter would be wrong.
+
+```python
+# Correct — builds `WHERE incidents.closing_date IS NULL`
+select(Incident).where(Incident.closing_date == None)
+
+# Wrong — evaluates to a Python bool, not a SQL expression
+select(Incident).where(Incident.closing_date is None)
+```
+
+This is why repository files carry per-file Ruff ignores for `E711`/`E712`:
+
+```toml
+# pyproject.toml
+[tool.ruff.lint.per-file-ignores]
+"backend/db/repositories/*.py" = ["E711", "E712"]
+```
+
 ## Parameterized Queries
 
 Never interpolate user input into SQL strings. SQLAlchemy's ORM and `text()` with `bindparam` are always safe:

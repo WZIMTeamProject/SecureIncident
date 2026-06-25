@@ -160,4 +160,3 @@ export function IncidentDetailsResponseToJSON(value?: IncidentDetailsResponse | 
         'helpers': ((value['helpers'] as Array<any>).map(HelperResponseToJSON)),
     };
 }
-

@@ -1,20 +1,24 @@
 from uuid import UUID
 
+from core.config import settings
+from db.models.user import User
 from fastapi import APIRouter, Depends, Response, status
+from services import invitation_service
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.dependencies.db import get_db
 from api.dependencies.auth import get_current_user
+from api.dependencies.db import get_db
 from api.schemas.invitation.request import CreateInviteRequest, JoinByInviteRequest
-from api.schemas.invitation.response import InviteResponse, InvitePreviewResponse
-from db.models.user import User
-from services import invitation_service
-from core.config import settings
+from api.schemas.invitation.response import InvitePreviewResponse, InviteResponse
 
 router = APIRouter(tags=["Invitations"])
 
 
-@router.post("/projects/{project_id}/invites", response_model=InviteResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/projects/{project_id}/invites",
+    response_model=InviteResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_project_invite(
     project_id: UUID,
     body: CreateInviteRequest,
@@ -25,8 +29,7 @@ async def create_project_invite(
         db, project_id=project_id, created_by=current_user, data=body
     )
     return InviteResponse(
-        token=raw_token,
-        invite_url=f"{settings.FRONTEND_URL}/invites/{raw_token}"
+        token=raw_token, invite_url=f"{settings.FRONTEND_URL}/invites/{raw_token}"
     )
 
 
@@ -56,5 +59,7 @@ async def revoke_invite(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    await invitation_service.revoke_invite(db, raw_token=token, current_user=current_user)
+    await invitation_service.revoke_invite(
+        db, raw_token=token, current_user=current_user
+    )
     return Response(status_code=204)

@@ -1,42 +1,44 @@
-﻿import datetime
-from datetime import timezone
-from typing import Optional
+import datetime
 from uuid import UUID
-from sqlalchemy import select, or_, delete
+
+from api.schemas.profile.request import UpdateProfileRequest
+from sqlalchemy import delete, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from db.models.password_reset_token import PasswordResetToken
 from db.models.user import User
 from db.models.user_project import UserProject
-from db.models.password_reset_token import PasswordResetToken
-from api.schemas.profile.request import UpdateProfileRequest
 
-async def get_user_by_id(db: AsyncSession, user_id: UUID) -> Optional[User]:
+
+async def get_user_by_id(db: AsyncSession, user_id: UUID) -> User | None:
     """Get user by ID."""
     result = await db.execute(select(User).where(User.id == user_id))
     return result.scalar_one_or_none()
 
 
-async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User]:
+async def get_user_by_username(db: AsyncSession, username: str) -> User | None:
     """Get user by username."""
     result = await db.execute(select(User).where(User.username == username))
     return result.scalar_one_or_none()
 
 
-async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
+async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     """Get user by email."""
     result = await db.execute(select(User).where(User.email == email))
     return result.scalar_one_or_none()
 
 
-async def get_user_by_email_or_username(db: AsyncSession, value: str) -> Optional[User]:
+async def get_user_by_email_or_username(db: AsyncSession, value: str) -> User | None:
     """Get user by email or username."""
     result = await db.execute(
         select(User).where(or_(User.email == value, User.username == value))
     )
     return result.scalar_one_or_none()
 
+
 async def get_valid_password_reset_token(db: AsyncSession, token: str):
-    now_naive = datetime.datetime.now(timezone.utc).replace(tzinfo=None)
-    
+    now_naive = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
+
     result = await db.execute(
         select(PasswordResetToken).where(
             PasswordResetToken.token == token,
@@ -45,6 +47,7 @@ async def get_valid_password_reset_token(db: AsyncSession, token: str):
         )
     )
     return result.scalar_one_or_none()
+
 
 async def create_user(
     db: AsyncSession,
@@ -68,7 +71,9 @@ async def create_user(
     return user
 
 
-async def update_user_password(db: AsyncSession, user_id: UUID, hashed_password: str) -> None:
+async def update_user_password(
+    db: AsyncSession, user_id: UUID, hashed_password: str
+) -> None:
     """Update user password."""
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
@@ -102,15 +107,17 @@ async def delete_pending_reset_tokens(db: AsyncSession, user_id: UUID) -> None:
             PasswordResetToken.used_at == None,
         )
     )
-    await db.flush()  # visible to subsequent queries in same transaction; caller commits
+    await (
+        db.flush()
+    )  # visible to subsequent queries in same transaction; caller commits
 
 
 async def mark_password_reset_token_used(
     db: AsyncSession, token: PasswordResetToken
 ) -> None:
     """Mark password reset token as used."""
-    token.used_at = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
-    
+    token.used_at = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
+
     db.add(token)
     await db.flush()
 
@@ -129,19 +136,16 @@ async def update_user_profile(
 async def search_users_by_username(
     db: AsyncSession,
     query: str,
-    organization_id: Optional[UUID],
+    organization_id: UUID | None,
     user_id: UUID,
     limit: int = 20,
 ) -> list[User]:
     # Users in same org OR sharing at least one project with the current user
-    shared_project_users = (
-        select(UserProject.user_id)
-        .where(
-            UserProject.project_id.in_(
-                select(UserProject.project_id).where(UserProject.user_id == user_id)
-            ),
-            UserProject.user_id != user_id,
-        )
+    shared_project_users = select(UserProject.user_id).where(
+        UserProject.project_id.in_(
+            select(UserProject.project_id).where(UserProject.user_id == user_id)
+        ),
+        UserProject.user_id != user_id,
     )
 
     scope_clauses = [User.id.in_(shared_project_users)]

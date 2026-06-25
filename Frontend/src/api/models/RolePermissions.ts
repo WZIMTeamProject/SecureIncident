@@ -111,4 +111,3 @@ export function RolePermissionsToJSON(value?: RolePermissions | null): any {
         'can_assign_people_to_project': value['canAssignPeopleToProject'],
     };
 }
-

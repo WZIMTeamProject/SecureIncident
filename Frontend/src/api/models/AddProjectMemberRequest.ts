@@ -66,4 +66,3 @@ export function AddProjectMemberRequestToJSON(value?: AddProjectMemberRequest | 
         'role_id': value['roleId'],
     };
 }
-

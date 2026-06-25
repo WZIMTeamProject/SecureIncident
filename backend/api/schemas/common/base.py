@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 from uuid import UUID
+
+from pydantic import BaseModel
 
 
 class CreatedIdResponse(BaseModel):
@@ -12,5 +13,5 @@ class ErrorResponse(BaseModel):
 
 class DetailResponse(BaseModel):
     """Standard error body returned by FastAPI's HTTPException ({"detail": "..."})."""
+
     detail: str
- 

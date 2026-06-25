@@ -1,9 +1,8 @@
-﻿from httpx import AsyncClient
 from db.models.user import User
- 
- 
+from httpx import AsyncClient
+
+
 class TestRegister:
- 
     async def test_register_returns_201_with_valid_data(self, client: AsyncClient):
         response = await client.post(
             "/api/auth/register",
@@ -18,11 +17,11 @@ class TestRegister:
         assert response.status_code == 201
         data = response.json()
         assert "id" in data
- 
+
     async def test_register_returns_409_when_username_already_exists(
         self, client: AsyncClient, test_user: User
     ):
-        
+
         response = await client.post(
             "/api/auth/register",
             json={
@@ -34,7 +33,7 @@ class TestRegister:
             },
         )
         assert response.status_code == 409
- 
+
     async def test_register_returns_409_when_email_already_exists(
         self, client: AsyncClient, test_user: User
     ):
@@ -49,8 +48,10 @@ class TestRegister:
             },
         )
         assert response.status_code == 409
- 
-    async def test_register_returns_422_when_password_too_short(self, client: AsyncClient):
+
+    async def test_register_returns_422_when_password_too_short(
+        self, client: AsyncClient
+    ):
         response = await client.post(
             "/api/auth/register",
             json={
@@ -62,8 +63,10 @@ class TestRegister:
             },
         )
         assert response.status_code == 422
- 
-    async def test_register_returns_422_when_password_no_uppercase(self, client: AsyncClient):
+
+    async def test_register_returns_422_when_password_no_uppercase(
+        self, client: AsyncClient
+    ):
         response = await client.post(
             "/api/auth/register",
             json={
@@ -75,8 +78,10 @@ class TestRegister:
             },
         )
         assert response.status_code == 422
- 
-    async def test_register_returns_422_when_password_no_digit(self, client: AsyncClient):
+
+    async def test_register_returns_422_when_password_no_digit(
+        self, client: AsyncClient
+    ):
         response = await client.post(
             "/api/auth/register",
             json={
@@ -88,8 +93,10 @@ class TestRegister:
             },
         )
         assert response.status_code == 422
- 
-    async def test_register_returns_422_when_password_over_72_chars(self, client: AsyncClient):
+
+    async def test_register_returns_422_when_password_over_72_chars(
+        self, client: AsyncClient
+    ):
         response = await client.post(
             "/api/auth/register",
             json={
@@ -101,7 +108,7 @@ class TestRegister:
             },
         )
         assert response.status_code == 422
- 
+
     async def test_register_returns_422_when_email_invalid(self, client: AsyncClient):
         response = await client.post(
             "/api/auth/register",
@@ -114,8 +121,10 @@ class TestRegister:
             },
         )
         assert response.status_code == 422
- 
-    async def test_register_returns_422_when_username_too_short(self, client: AsyncClient):
+
+    async def test_register_returns_422_when_username_too_short(
+        self, client: AsyncClient
+    ):
         response = await client.post(
             "/api/auth/register",
             json={
@@ -128,7 +137,9 @@ class TestRegister:
         )
         assert response.status_code == 422
 
-    async def test_register_returns_422_when_first_name_is_empty(self, client: AsyncClient):
+    async def test_register_returns_422_when_first_name_is_empty(
+        self, client: AsyncClient
+    ):
         response = await client.post(
             "/api/auth/register",
             json={
@@ -141,7 +152,9 @@ class TestRegister:
         )
         assert response.status_code == 422
 
-    async def test_register_returns_422_when_last_name_is_empty(self, client: AsyncClient):
+    async def test_register_returns_422_when_last_name_is_empty(
+        self, client: AsyncClient
+    ):
         response = await client.post(
             "/api/auth/register",
             json={
@@ -154,7 +167,9 @@ class TestRegister:
         )
         assert response.status_code == 422
 
-    async def test_register_returns_422_when_first_name_exceeds_50_chars(self, client: AsyncClient):
+    async def test_register_returns_422_when_first_name_exceeds_50_chars(
+        self, client: AsyncClient
+    ):
         response = await client.post(
             "/api/auth/register",
             json={
@@ -167,7 +182,9 @@ class TestRegister:
         )
         assert response.status_code == 422
 
-    async def test_register_returns_422_when_last_name_exceeds_50_chars(self, client: AsyncClient):
+    async def test_register_returns_422_when_last_name_exceeds_50_chars(
+        self, client: AsyncClient
+    ):
         response = await client.post(
             "/api/auth/register",
             json={
@@ -180,7 +197,9 @@ class TestRegister:
         )
         assert response.status_code == 422
 
-    async def test_register_returns_422_when_username_exceeds_50_chars(self, client: AsyncClient):
+    async def test_register_returns_422_when_username_exceeds_50_chars(
+        self, client: AsyncClient
+    ):
         response = await client.post(
             "/api/auth/register",
             json={

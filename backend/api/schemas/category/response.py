@@ -1,13 +1,13 @@
-from pydantic import BaseModel
-from typing import Optional
 from uuid import UUID
+
 from api.schemas.common.pagination import PaginatedResponse
+from pydantic import BaseModel
 
 
 class CategoryResponse(BaseModel):
     id: UUID
     name: str
-    description: Optional[str] = None
+    description: str | None = None
 
 
 CategoryListResponse = PaginatedResponse[CategoryResponse]

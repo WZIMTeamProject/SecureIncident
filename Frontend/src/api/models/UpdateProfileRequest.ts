@@ -72,4 +72,3 @@ export function UpdateProfileRequestToJSON(value?: UpdateProfileRequest | null):
         'profile_picture_url': value['profilePictureUrl'],
     };
 }
-

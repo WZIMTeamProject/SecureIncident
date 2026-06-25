@@ -78,4 +78,3 @@ export function RoleResponseToJSON(value?: RoleResponse | null): any {
         'permissions': RolePermissionsToJSON(value['permissions']),
     };
 }
-

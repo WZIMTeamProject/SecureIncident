@@ -1,10 +1,12 @@
-from datetime import datetime
-from sqlalchemy import Text, ForeignKey, DateTime, Index
-from sqlalchemy.orm import relationship, Mapped, mapped_column
-from sqlalchemy.sql import func
-from db.base import Base
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
+from datetime import datetime
+
+from sqlalchemy import DateTime, ForeignKey, Index, Text
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import func
+
+from db.base import Base
 
 
 class Comment(Base):
@@ -14,20 +16,29 @@ class Comment(Base):
         Index("ix_comments_author_id", "author_id"),
     )
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
     incident_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("incidents.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True),
+        ForeignKey("incidents.id", ondelete="CASCADE"),
+        nullable=False,
     )
     author_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
-
-    incident: Mapped["Incident"] = relationship(
-        "Incident", back_populates="comments", foreign_keys=[incident_id], lazy="selectin"
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now()
     )
-    author: Mapped["User"] = relationship(
+
+    incident: Mapped[Incident] = relationship(
+        "Incident",
+        back_populates="comments",
+        foreign_keys=[incident_id],
+        lazy="selectin",
+    )
+    author: Mapped[User] = relationship(
         "User", back_populates="comments", foreign_keys=[author_id], lazy="selectin"
     )

@@ -57,4 +57,3 @@ export function AddCommentRequestToJSON(value?: AddCommentRequest | null): any {
         'content': value['content'],
     };
 }
-

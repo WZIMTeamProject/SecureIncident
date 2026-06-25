@@ -1,0 +1,105 @@
+name: Frontend CI/CD
+on:
+  push:
+    paths: [Frontend/**]
+  pull_request:
+    branches: [main]
+    paths: [Frontend/**]
+  workflow_dispatch:
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+
+      - name: Install dependencies
+        working-directory: Frontend
+        run: npm ci
+
+      - name: Audit dependencies
+        working-directory: Frontend
+        run: npm audit --audit-level=high
+
+  build:
+    needs: security-scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build frontend image (Dry-run)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Frontend
+          push: false
+          build-args: VITE_API_BASE_URL=http://localhost:8000
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Frontend
+          push: true
+          build-args: VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL }}
+          tags: |
+            ghcr.io/wzimteamproject/secureincident-frontend:latest
+            ghcr.io/wzimteamproject/secureincident-frontend:${{ github.sha }}
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.EC2_HOST }}
+          username: ${{ vars.EC2_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/secureincident
+            docker compose pull frontend
+            docker compose up -d --force-recreate frontend
+
+  pr-conflict-check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check merge conflicts and staleness against main
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          MERGE_BASE=$(git merge-base HEAD origin/main)
+          if git merge-tree "$MERGE_BASE" HEAD origin/main | grep -q '^<<<<<<<'; then
+            echo "Merge conflicts detected with main" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No merge conflicts with main" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          BEHIND_COUNT=$(git rev-list --count HEAD..origin/main)
+          echo "Branch is $BEHIND_COUNT commit(s) behind main" >> "$GITHUB_STEP_SUMMARY"
