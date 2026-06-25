@@ -464,8 +464,9 @@ export async function attemptRegistration(
     }
 }
 
-export const organizationJoinLoader: LoaderFunction = async ({params}) => {
-    const token = params["token"];
+export const organizationJoinLoader: LoaderFunction = async ({request}) => {
+    const urlParams = (new URL(request.url)).searchParams;
+    const token = urlParams.get("token");
 
     if (token) {
         const joinedSuccessfully = await Api.organization.organizationJoinPost({
@@ -478,10 +479,12 @@ export const organizationJoinLoader: LoaderFunction = async ({params}) => {
         );
 
         if (joinedSuccessfully) {
-            return redirect("/dashboard");
+            return redirect("/dashboard?join");
+        } else {
+            return redirect("/dashboard?invalid_invite=invalid");
         }
     }
 
-    return redirect("/dashboard?invalid_invite=true");
+    return redirect("/dashboard?invalid_invite=empty");
 };
 

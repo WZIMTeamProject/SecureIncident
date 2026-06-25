@@ -353,7 +353,7 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                             form=""
                             title="Skopiuj link"
                             onClick={() => {
-                                navigator.clipboard.writeText(inviteToken)
+                                navigator.clipboard.writeText(inviteLink)
                                     .then(() => {
                                         setCopiedToken(false);
                                         setCopiedLink(true);
