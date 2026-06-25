@@ -16,7 +16,7 @@ import {
     FORM_PROJECT_DESCRIPTION,
     FORM_PROJECT_NAME
 } from "./forms.ts";
-import {useFetcher} from "react-router";
+import {Link, useFetcher} from "react-router";
 import {IconCheck, IconClipboard} from "../components/icons.tsx";
 
 export function SIOrganization() {
@@ -118,7 +118,11 @@ function OrganizationView({organization}: { organization: Organization }) {
                     rounded-2xl shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll text-(--color-si-input-text)">
                 {
                     projects?.map((project) => {
-                        return <h1>{project.name} - {project.id}</h1>;
+                        return <p>
+                            <Link to={`/dashboard/project/${project.id}`} className={"hover:underline"}>
+                                {project.name} - {project.id}
+                            </Link>
+                        </p>;
                     }) ?? <h1>Ładowanie...</h1>
                 }
             </div>
@@ -223,9 +227,9 @@ function NewProjectPopup({show, onHide}: PopupProps) {
                             onHide();
                         }}
                         className="px-6 py-2
-                                bg-(--color-si-btn-error)
-                                hover:bg-(--color-si-btn-error-hover) shadow-lg
-                                text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                            bg-(--color-si-btn-error)
+                            hover:bg-(--color-si-btn-error-hover) shadow-lg
+                            disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                         Anuluj
                     </button>
 
@@ -234,9 +238,9 @@ function NewProjectPopup({show, onHide}: PopupProps) {
                         value={busy ? "Zapisywanie..." : "Zapisz"}
                         disabled={busy}
                         className="px-6 py-2
-                                    bg-(--color-si-btn)
-                                    hover:bg-(--color-si-btn-hover) shadow-lg
-                                    disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
+                            bg-(--color-si-btn)
+                            hover:bg-(--color-si-btn-hover) shadow-lg
+                            disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                     />
                 </div>
 
@@ -290,9 +294,10 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                     </span>
 
                     <div className="flex items-center gap-3
-                                border border-(--color-si-input-border)
-                                rounded-lg px-3 py-2.5
-                                bg-(--color-si-input-bg) transition-colors">
+                            border border-(--color-si-input-border)
+                            rounded-lg px-3 py-2.5
+                            bg-(--color-si-input-bg) transition-colors">
+
                         <input
                             ref={inviteCountRef}
                             id={FORM_INVITE_COUNT}
@@ -310,9 +315,9 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                     <span className="text-sm font-medium text-(--color-si-label)">Token do dołączenia:</span>
                     <div
                         className="flex items-center gap-3 mb-3
-                                border border-(--color-si-input-border)
-                                rounded-lg px-2.5 py-2
-                                bg-(--color-si-input-bg) transition-colors">
+                            border border-(--color-si-input-border)
+                            rounded-lg px-2.5 py-2
+                            bg-(--color-si-input-bg) transition-colors">
 
                         <button
                             form=""
@@ -325,9 +330,9 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                                     });
                             }}
                             className="p-2
-                                    bg-(--color-si-btn)
-                                    hover:bg-(--color-si-btn-hover)
-                                    disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                                bg-(--color-si-btn)
+                                hover:bg-(--color-si-btn-hover)
+                                disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                             {copiedToken ? <IconCheck/> : <IconClipboard/>}
                         </button>
                         <span className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)">
@@ -340,9 +345,9 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                     <span className="text-sm font-medium text-(--color-si-label)">Link do dołączenia:</span>
                     <div
                         className="flex items-center gap-3 mb-3
-                                border border-(--color-si-input-border)
-                                rounded-lg px-2.5 py-2
-                                bg-(--color-si-input-bg) transition-colors">
+                            border border-(--color-si-input-border)
+                            rounded-lg px-2.5 py-2
+                            bg-(--color-si-input-bg) transition-colors">
 
                         <button
                             form=""
@@ -355,9 +360,9 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                                     });
                             }}
                             className="p-2
-                                    bg-(--color-si-btn)
-                                    hover:bg-(--color-si-btn-hover)
-                                    disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                                bg-(--color-si-btn)
+                                hover:bg-(--color-si-btn-hover)
+                                disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                             {copiedLink ? <IconCheck/> : <IconClipboard/>}
                         </button>
 
@@ -374,9 +379,9 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                             onHide();
                         }}
                         className="px-6 py-2
-                                bg-(--color-si-btn-error)
-                                hover:bg-(--color-si-btn-error-hover) shadow-lg
-                                text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                            bg-(--color-si-btn-error)
+                            hover:bg-(--color-si-btn-error-hover) shadow-lg
+                            disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                         Zamknij
                     </button>
 
@@ -389,9 +394,9 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                         value={busy ? "Generowanie..." : "Wygeneruj"}
                         disabled={busy}
                         className="px-6 py-2
-                                    bg-(--color-si-btn)
-                                    hover:bg-(--color-si-btn-hover) shadow-lg
-                                    disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
+                            bg-(--color-si-btn)
+                            hover:bg-(--color-si-btn-hover) shadow-lg
+                            disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                     />
                 </div>
 

@@ -115,12 +115,14 @@ function ProjectView({project}: { project?: Project }) {
 
             <div className="w-full h-96
                     border-5 border-(--color-si-card-border)
-                    rounded-2xl shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll">
+                    rounded-2xl shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll text-(--color-si-input-text)">
                 {
                     incidents?.map((incident) => {
-                        return <Link to={`/dashboard/incident/${incident.id}`}>
-                            {incident.title} - {incident.id}
-                        </Link>;
+                        return <p>
+                            <Link to={`/dashboard/incident/${incident.id}`} className={"hover:underline"}>
+                                {incident.title} - {incident.id}
+                            </Link>
+                        </p>;
                     }) ?? <h1>Ładowanie...</h1>
                 }
             </div>
@@ -132,7 +134,7 @@ function ProjectView({project}: { project?: Project }) {
                     className="px-6 py-2
                         bg-(--color-si-btn)
                         hover:bg-(--color-si-btn-hover) shadow-lg
-                        text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                        disabled:opacity-60 text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                     Zgłoś nowy incydent
                 </button>
 
@@ -141,7 +143,7 @@ function ProjectView({project}: { project?: Project }) {
                     className="px-6 py-2
                         bg-(--color-si-btn)
                         hover:bg-(--color-si-btn-hover) shadow-lg
-                        text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                        disabled:opacity-60 text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                     Dodaj użytkownika do projektu
                 </button>
             </div>
@@ -277,9 +279,9 @@ function NewIncidentPopup({show, onHide, project}: { show: boolean, onHide: () =
                         value={busy ? "Dodawanie..." : "Dodaj Incydent"}
                         disabled={busy}
                         className="px-6 py-2
-                                    bg-(--color-si-btn)
-                                    hover:bg-(--color-si-btn-hover) shadow-lg
-                                    disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
+                            bg-(--color-si-btn)
+                            hover:bg-(--color-si-btn-hover) shadow-lg
+                            disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                     />
                 </div>
 

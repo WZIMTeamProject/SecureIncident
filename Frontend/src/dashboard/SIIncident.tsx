@@ -138,7 +138,7 @@ function IncidentView({incident}: { incident?: Incident }) {
                         className={`px-6 py-2
                             bg-(--color-si-btn)
                             hover:bg-(--color-si-btn-hover) shadow-lg rounded-lg
-                            text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>
+                            disabled:opacity-60 text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>
                         Zmień status
                     </button>
 
@@ -148,7 +148,7 @@ function IncidentView({incident}: { incident?: Incident }) {
                         className={`px-6 py-2
                             bg-(--color-si-btn)
                             hover:bg-(--color-si-btn-hover) shadow-lg rounded-lg
-                            text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>
+                            disabled:opacity-60  text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>
                         Dodaj użytkownika
                     </button>
 
@@ -157,7 +157,7 @@ function IncidentView({incident}: { incident?: Incident }) {
                         className={`px-6 py-2
                             bg-(--color-si-btn)
                             hover:bg-(--color-si-btn-hover) shadow-lg rounded-lg
-                            text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>
+                            disabled:opacity-60  text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>
                         Dodaj komentarz
                     </button>
                 </div>
@@ -316,6 +316,7 @@ function AddToIncidentPopup({incident, show, onHide}: { incident: Incident, show
 
                 <div className="flex items-center justify-between">
                     <button
+                        disabled={busy}
                         onClick={() => {
                             usernameRef.current = null;
                             onHide();
@@ -323,7 +324,7 @@ function AddToIncidentPopup({incident, show, onHide}: { incident: Incident, show
                         className="px-6 py-2
                                 bg-(--color-si-btn-error)
                                 hover:bg-(--color-si-btn-error-hover) shadow-lg
-                                text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                                disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                         Anuluj
                     </button>
 
