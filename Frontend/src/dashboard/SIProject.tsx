@@ -1,6 +1,6 @@
 import * as React from "react";
-import {useEffect, useRef, useState} from "react";
-import type {Incident, Project} from "../data/project.ts";
+import {useContext, useEffect, useRef, useState} from "react";
+import type {Project} from "../data/project.ts";
 import {Link, useFetcher, useParams} from "react-router";
 import Api from "../data/Api.ts";
 import {
@@ -23,7 +23,8 @@ import {
     PERM_WRITE_TICKETS,
 } from "./forms.ts";
 import {Popup} from "../components/Popup.tsx";
-import type {ProjectMemberResponse, RoleResponse} from "../api";
+import type {IncidentSummary, ProjectMemberResponse, RoleResponse} from "../api";
+import {AuthUserContext} from "../data/auth.ts";
 
 export function SIProject() {
     const urlParams = useParams();
@@ -65,76 +66,70 @@ export function SIProject() {
     );
 }
 
-function ProjectView({project}: { project?: Project }) {
-    const [incidents, setIncidents] = useState<Incident[] | undefined>(undefined);
-    const [members, setMembers] = useState<ProjectMemberResponse[] | undefined>(undefined);
-    const [roles, setRoles] = useState<RoleResponse[] | undefined>(undefined);
+type ProjectInfo = {
+    incidents: IncidentSummary[];
+    members: ProjectMemberResponse[];
+    roles: RoleResponse[];
+    myRole?: RoleResponse;
+};
 
-    if (project === undefined) {
-        if (incidents !== undefined) {
-            setIncidents(undefined);
-        }
-        if (members !== undefined) {
-            setMembers(undefined);
-        }
-        if (roles !== undefined) {
-            setRoles(undefined);
-        }
+async function fetchProjectInfo(userId: string, projectId: string): Promise<ProjectInfo> {
+    const incidentsPromise = Api.incidents.projectsProjectIdIncidentsGet({
+        projectId: projectId,
+        limit: 10
+    });
+    const membersPromise = Api.projects.projectsProjectIdMembersGet({
+        projectId: projectId
+    });
+    const rolesPromise = Api.roles.projectsProjectIdRolesGet({
+        projectId: projectId,
+    });
+
+    const [incidents, members, roles] = await Promise.all([incidentsPromise, membersPromise, rolesPromise]);
+
+    const meAsMember = members.members.find(
+        (member) => member.userId === userId
+    );
+
+    const projectInfo: ProjectInfo = {
+        incidents: incidents.items,
+        members: members.members,
+        roles: roles.items,
+    };
+
+    if (meAsMember) {
+        const myRoleId = meAsMember.roleId;
+        projectInfo.myRole = roles.items.find((role) => role.id === myRoleId);
+    }
+
+    return projectInfo;
+}
+
+function ProjectView({project}: { project?: Project }) {
+    const auth = useContext(AuthUserContext)!;
+
+    const [projectInfo, setProjectInfo] = useState<ProjectInfo | undefined>(undefined);
+
+    if (project === undefined && projectInfo !== undefined) {
+        setProjectInfo(undefined);
     }
 
     useEffect(() => {
         let ignore = false;
 
         if (project) {
-            Api.incidents.projectsProjectIdIncidentsGet({
-                projectId: project.id,
-                limit: 10
-            }).then(
-                (incidentResponse) => {
-                    const fetchedIncidents: Incident[] = incidentResponse.items.map((value) => {
-                        return {
-                            id: value.id,
-                            status: value.status,
-                            priority: value.priority,
-                            reportDate: value.reportDate,
-                            categoryId: value.categoryId ?? undefined,
-                            primaryAssigneeId: value.primaryAssigneeId ?? undefined,
-                            title: value.title,
-                        };
-                    });
-
+            fetchProjectInfo(auth.id, project.id).then(
+                (projectInfo) => {
                     if (!ignore) {
-                        setIncidents(fetchedIncidents);
+                        setProjectInfo(projectInfo)
                     }
                 },
                 () => {
-                    setIncidents([])
-                }
-            );
-
-            Api.projects.projectsProjectIdMembersGet({
-                projectId: project.id,
-            }).then(
-                (memberResponse) => {
-                    if (!ignore) {
-                        setMembers(memberResponse.members);
-                    }
-                },
-                () => {
-                    setMembers([]);
-                }
-            );
-
-            Api.roles.projectsProjectIdRolesGet({
-                projectId: project.id,
-            }).then(
-                (roleResponse) => {
-                    if (!ignore) {
-                        setRoles(roleResponse.items);
-                    }
-                },
-                () => {
-                    setRoles([]);
+                    setProjectInfo({
+                        incidents: [],
+                        members: [],
+                        roles: [],
+                    })
                 }
             );
         }
@@ -142,7 +137,7 @@ function ProjectView({project}: { project?: Project }) {
         return () => {
             ignore = true
         };
-    }, [project]);
+    }, [project, auth]);
 
     return (
         <div>
@@ -161,7 +156,10 @@ function ProjectView({project}: { project?: Project }) {
                 Incydenty
             </div>
 
-            <IncidentList show={true} project={project} incidents={incidents}/>
+            <IncidentList
+                show={true}
+                project={project}
+                projectInfo={projectInfo}/>
 
             <div className="flex flex-row justify-center gap-3">
                 <div className={"flex-1"}>
@@ -170,7 +168,11 @@ function ProjectView({project}: { project?: Project }) {
                         rounded-t-lg w-fit shadow-lg">
                         Członkowie
                     </div>
-                    <MemberList show={true} project={project} members={members}/>
+
+                    <MemberList
+                        show={true}
+                        project={project}
+                        projectInfo={projectInfo}/>
                 </div>
 
                 <div className={"flex-1"}>
@@ -179,23 +181,30 @@ function ProjectView({project}: { project?: Project }) {
                         rounded-t-lg w-fit shadow-lg">
                         Role
                     </div>
-                    <RoleList show={true} project={project} roles={roles}/>
+
+                    <RoleList
+                        show={true}
+                        project={project}
+                        projectInfo={projectInfo}/>
                 </div>
             </div>
         </div>
     );
 }
 
-function IncidentList({show, project, incidents}: { show: boolean, project?: Project, incidents?: Incident[] }) {
+function IncidentList({show, project, projectInfo}: { show: boolean, project?: Project, projectInfo?: ProjectInfo }) {
     const [shownPopup, setShownPopup] = useState<ShownPopup>(null);
     const hidePopup = () => setShownPopup(null);
 
     const disableButtons: boolean = project === undefined;
+    const incidents = projectInfo?.incidents;
+
+    const canCreateIncidents = projectInfo?.myRole?.permissions.canWriteTickets ?? false;
 
     return (
         <div hidden={!show}>
             {
-                project
+                project && canCreateIncidents
                     ? <NewIncidentPopup show={shownPopup == "new_incident"} onHide={hidePopup} project={project}/>
                     : undefined
             }
@@ -212,7 +221,8 @@ function IncidentList({show, project, incidents}: { show: boolean, project?: Pro
 
             <div className="w-full flex gap-3 p-3 justify-end">
                 <button
-                    disabled={disableButtons}
+                    disabled={disableButtons || !canCreateIncidents}
+                    title={canCreateIncidents ? undefined : "Nie masz uprawnień do wykonania tej czynności"}
                     onClick={() => setShownPopup("new_incident")}
                     className="px-6 py-2
                         bg-(--color-si-btn)
@@ -225,7 +235,7 @@ function IncidentList({show, project, incidents}: { show: boolean, project?: Pro
     );
 }
 
-function IncidentEntry({incident}: { incident: Incident }) {
+function IncidentEntry({incident}: { incident: IncidentSummary }) {
     return <div>
         <Link to={`/dashboard/incident/${incident.id}`} className={"hover:underline"}>
             {incident.title} - {incident.id}
@@ -233,8 +243,11 @@ function IncidentEntry({incident}: { incident: Incident }) {
     </div>
 }
 
-function MemberList({show, project, members}: { show: boolean, project?: Project, members?: ProjectMemberResponse[] }) {
+function MemberList({show, project, projectInfo}: { show: boolean, project?: Project, projectInfo?: ProjectInfo }) {
     const disableButtons: boolean = project === undefined;
+    const members = projectInfo?.members;
+
+    const canAddUsers = projectInfo?.myRole?.permissions.canAssignPeopleToProject ?? false;
 
     return (
         <div hidden={!show} className={"flex-1"}>
@@ -252,7 +265,8 @@ function MemberList({show, project, members}: { show: boolean, project?: Project
 
             <div className="w-full flex gap-3 p-3 justify-end">
                 <button
-                    disabled={disableButtons}
+                    disabled={disableButtons || !canAddUsers}
+                    title={canAddUsers ? undefined : "Nie masz uprawnień do wykonania tej czynności"}
                     className="px-6 py-2
                         bg-(--color-si-btn)
                         hover:bg-(--color-si-btn-hover) shadow-lg
@@ -264,16 +278,19 @@ function MemberList({show, project, members}: { show: boolean, project?: Project
     )
 }
 
-function RoleList({show, project, roles}: { show: boolean, project?: Project, roles?: RoleResponse[] }) {
+function RoleList({show, project, projectInfo}: { show: boolean, project?: Project, projectInfo?: ProjectInfo}) {
     const [showPopup, setShowPopup] = useState<boolean>(false);
     const hidePopup = () => setShowPopup(false);
 
     const disableButtons: boolean = project === undefined;
+    const roles = projectInfo?.roles;
+
+    const canCreateRoles = projectInfo?.myRole?.permissions.canMakeRoles ?? false;
 
     return (
         <div hidden={!show} className={"flex-1"}>
             {
-                project
+                project && canCreateRoles
                     ? <NewRolePopup show={showPopup} onHide={hidePopup} project={project}/>
                     : undefined
             }
@@ -293,7 +310,8 @@ function RoleList({show, project, roles}: { show: boolean, project?: Project, ro
             <div className="w-full flex gap-3 p-3 justify-end">
                 <button
                     onClick={() => setShowPopup(true)}
-                    disabled={disableButtons}
+                    disabled={disableButtons || !canCreateRoles}
+                    title={canCreateRoles ? undefined : "Nie masz uprawnień do wykonania tej czynności"}
                     className="px-6 py-2
                         bg-(--color-si-btn)
                         hover:bg-(--color-si-btn-hover) shadow-lg
