@@ -39,7 +39,13 @@ export function SIOrganization() {
 }
 
 function LoadingMessage() {
-    return <h1>Wczytywanie...</h1>;
+    return (
+        <div>
+            <div className="p-3">
+                <h1 className="text-2xl font-bold text-(--color-si-label)">Wczytywanie...</h1>
+            </div>
+        </div>
+    );
 }
 
 function CreateOrganizationWidget() {

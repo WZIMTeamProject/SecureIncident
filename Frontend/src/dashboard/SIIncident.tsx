@@ -44,10 +44,6 @@ export function SIIncident() {
         }
     }, [incidentId]);
 
-    if (incident === undefined) {
-        return <LoadingMessage/>;
-    }
-
     return (
         <div>
             {incident === null ? "ERROR" : <IncidentView incident={incident}/>}
@@ -61,36 +57,45 @@ function LoadingMessage() {
 
 type IncidentPopupType = "add_to_incident" | null;
 
-function IncidentView({incident, disableButtons}: { incident: Incident, disableButtons?: boolean }) {
+function IncidentView({incident}: { incident?: Incident }) {
     const [logs, setLogs] = useState<IncidentLogEntry[] | undefined>(undefined);
     const [shownPopup, setShownPopup] = useState<IncidentPopupType>(null);
+    const hidePopup = () => setShownPopup(null);
 
     useEffect(() => {
-        Api.incidents.incidentsIncidentIdLogsGet({
-            incidentId: incident.id,
-            limit: undefined
-        }).then(
-            (incidentLogs) => setLogs(incidentLogs.items),
-            () => setLogs([]),
-        );
+        if (incident) {
+            Api.incidents.incidentsIncidentIdLogsGet({
+                incidentId: incident.id,
+                limit: undefined
+            }).then(
+                (incidentLogs) => setLogs(incidentLogs.items),
+                () => setLogs([]),
+            );
+        }
     }, [incident]);
+
+    const disableButtons: boolean = incident === undefined;
 
     return (
         <div className={"flex flex-col gap-3"}>
-            <AddToIncidentPopup
-                incident={incident}
-                show={shownPopup == "add_to_incident"}
-                onHide={() => setShownPopup(null)}/>
+            {
+                incident
+                    ? <AddToIncidentPopup
+                        incident={incident}
+                        show={shownPopup == "add_to_incident"}
+                        onHide={hidePopup}/>
+                    : undefined
+            }
 
             <div className={"flex gap-3"}>
                 <div className="bg-(--color-si-card-bg) border-5 border-(--color-si-card-border) w-fit
                     rounded-2xl shadow-lg p-4 transition-colors duration-300">
 
                     <h1 className="text-2xl font-bold text-(--color-si-label)">
-                        {incident.title}
+                        {incident?.title ?? "Wczytywanie..."}
                     </h1>
                     <h3 className="text-md italic text-(--color-si-input-text)">
-                        {incident.id}
+                        {incident?.id ?? "-"}
                     </h3>
 
                     <hr className="my-2"/>
@@ -98,26 +103,26 @@ function IncidentView({incident, disableButtons}: { incident: Incident, disableB
                     <p>
                         <span className="text-(--color-si-label)">Przypisani: </span>
                         <span className="text-(--color-si-input-text)">
-                        {incident.primaryAssigneeId ?? "- Brak -"}
+                        {incident ? (incident.primaryAssigneeId ?? "- Brak -") : "..."}
                     </span>
                     </p>
                     <p>
                         <span className="text-(--color-si-label)">Priorytet: </span>
                         <span className="text-(--color-si-input-text)">
-                        {incident.priority}
+                        {incident?.priority ?? "..."}
                     </span>
                     </p>
                     <p>
                         <span className="text-(--color-si-label)">Status: </span>
                         <span className="text-(--color-si-input-text)">
-                        {incident.status}
+                        {incident?.status ?? "..."}
                     </span>
                     </p>
                     <p>
                         <span className="text-(--color-si-label)">Zgłoszono: </span>
                         <span className="text-(--color-si-input-text)">
-                        {incident.reportDate.toLocaleString()}
-                    </span>
+                            {incident?.reportDate.toLocaleString() ?? "..."}
+                        </span>
                     </p>
                 </div>
 
@@ -158,7 +163,7 @@ function IncidentView({incident, disableButtons}: { incident: Incident, disableB
                     rounded-2xl shadow-lg p-4 transition-colors duration-300">
                 <span className="text-(--color-si-input-text) italic">Opis:</span><br/>
                 <span className="text-(--color-si-label)">
-                    {incident.description}
+                    {incident?.description ?? "..."}
                 </span>
             </div>
 

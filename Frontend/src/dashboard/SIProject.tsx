@@ -45,10 +45,6 @@ export function SIProject() {
         }
     }, [projectId]);
 
-    if (project === undefined) {
-        return <div><LoadingMessage/></div>;
-    }
-
     return (
         <div>
             {project === null ? "ERROR" : <ProjectView project={project}/>}
@@ -56,58 +52,64 @@ export function SIProject() {
     );
 }
 
-function LoadingMessage() {
-    return <h1>Wczytywanie...</h1>;
-}
-
-function ProjectView({project}: { project: Project }) {
+function ProjectView({project}: { project?: Project }) {
     const [shownPopup, setShownPopup] = useState<ShownPopup>(null);
     const hidePopup = () => setShownPopup(null);
 
     const [incidents, setIncidents] = useState<Incident[] | undefined>(undefined);
 
+    if (incidents !== undefined && project === undefined) {
+        setIncidents(undefined);
+    }
+
     useEffect(() => {
         let ignore = false;
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setIncidents(undefined);
 
-        Api.incidents.projectsProjectIdIncidentsGet({
-            projectId: project.id,
-            limit: 10
-        }).then(
-            (incidentResponse) => {
-                const fetchedIncidents: Incident[] = incidentResponse.items.map((value) => {
-                    return {
-                        id: value.id,
-                        status: value.status,
-                        priority: value.priority,
-                        reportDate: value.reportDate,
-                        categoryId: value.categoryId ?? undefined,
-                        primaryAssigneeId: value.primaryAssigneeId ?? undefined,
-                        title: value.title,
-                    };
-                });
+        if (project) {
+            Api.incidents.projectsProjectIdIncidentsGet({
+                projectId: project.id,
+                limit: 10
+            }).then(
+                (incidentResponse) => {
+                    const fetchedIncidents: Incident[] = incidentResponse.items.map((value) => {
+                        return {
+                            id: value.id,
+                            status: value.status,
+                            priority: value.priority,
+                            reportDate: value.reportDate,
+                            categoryId: value.categoryId ?? undefined,
+                            primaryAssigneeId: value.primaryAssigneeId ?? undefined,
+                            title: value.title,
+                        };
+                    });
 
-                if (!ignore) {
-                    setIncidents(fetchedIncidents);
-                }
-            },
-            () => {setIncidents([])}
-        );
+                    if (!ignore) {
+                        setIncidents(fetchedIncidents);
+                    }
+                },
+                () => {setIncidents([])}
+            );
+        }
 
         return () => {ignore = true};
     }, [project]);
 
+    const disableButtons: boolean = project === undefined;
+
     return (
         <div>
-            <NewIncidentPopup show={shownPopup == "new_incident"} onHide={hidePopup} project={project}/>
+            {
+                project
+                    ? <NewIncidentPopup show={shownPopup == "new_incident"} onHide={hidePopup} project={project}/>
+                    : undefined
+            }
 
             <div className="p-3">
                 <h1 className="text-2xl font-bold text-(--color-si-label)">
-                    {project.name}
+                    {project?.name ?? "Wczytywanie..."}
                 </h1>
                 <p className="text-md text-(--color-si-input-text) italic font-normal">
-                    {project.description ?? "Brak opisu"}
+                    {project ? (project.description || "Brak opisu") : "..."}
                 </p>
             </div>
 
@@ -125,6 +127,7 @@ function ProjectView({project}: { project: Project }) {
 
             <div className="w-full flex gap-3 p-3 justify-end">
                 <button
+                    disabled={disableButtons}
                     onClick={() => setShownPopup("new_incident")}
                     className="px-6 py-2
                         bg-(--color-si-btn)
@@ -134,6 +137,7 @@ function ProjectView({project}: { project: Project }) {
                 </button>
 
                 <button
+                    disabled={disableButtons}
                     className="px-6 py-2
                         bg-(--color-si-btn)
                         hover:bg-(--color-si-btn-hover) shadow-lg
