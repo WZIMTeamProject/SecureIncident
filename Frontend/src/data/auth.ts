@@ -463,3 +463,28 @@ export async function attemptRegistration(
         }
     }
 }
+
+export const organizationJoinLoader: LoaderFunction = async ({request}) => {
+    const urlParams = (new URL(request.url)).searchParams;
+    const token = urlParams.get("token");
+
+    if (token) {
+        const joinedSuccessfully = await Api.organization.organizationJoinPost({
+            joinByInviteRequest: {
+                token: token
+            }
+        }).then(
+            () => true,
+            () => false
+        );
+
+        if (joinedSuccessfully) {
+            return redirect("/dashboard?join");
+        } else {
+            return redirect("/dashboard?invalid_invite=invalid");
+        }
+    }
+
+    return redirect("/dashboard?invalid_invite=empty");
+};
+

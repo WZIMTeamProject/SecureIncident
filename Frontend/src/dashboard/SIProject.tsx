@@ -1,22 +1,44 @@
-import {useEffect, useRef, useState} from "react";
-import type {Incident, Project} from "../data/project.ts";
+import * as React from "react";
+import {useContext, useEffect, useRef, useState} from "react";
+import type {Project} from "../data/project.ts";
 import {Link, useFetcher, useParams} from "react-router";
 import Api from "../data/Api.ts";
 import {
     FORM_ACTION,
     FORM_ACTION_NEW_INCIDENT,
+    FORM_ACTION_NEW_ROLE,
     FORM_INCIDENT_ASSIGNEES,
     FORM_INCIDENT_DESCRIPTION,
     FORM_INCIDENT_NAME,
-    FORM_INCIDENT_PRIORITY, FORM_PROJECT_ID,
+    FORM_INCIDENT_PRIORITY,
+    FORM_PROJECT_ID,
+    FORM_ROLE_NAME,
+    FORM_ROLE_PERMISSION,
+    PERM_ASSIGN_HELP,
+    PERM_ASSIGN_TO_PROJECT,
+    PERM_CHANGE_ROLES,
+    PERM_CHANGE_STATUS,
+    PERM_HELP,
+    PERM_MAKE_ROLES,
+    PERM_WRITE_TICKETS,
 } from "./forms.ts";
 import {Popup} from "../components/Popup.tsx";
+import type {IncidentSummary, ProjectMemberResponse, RoleResponse} from "../api";
+import {AuthUserContext} from "../data/auth.ts";
 
 export function SIProject() {
     const urlParams = useParams();
+    const [project, setProject] = useState<Project | null>();
+
     const projectId = urlParams["projectId"];
 
-    const [project, setProject] = useState<Project | null>();
+    if (project && project.id !== projectId) {
+        if (projectId) {
+            setProject(undefined);
+        } else {
+            setProject(null);
+        }
+    }
 
     useEffect(() => {
         if (projectId) {
@@ -37,10 +59,6 @@ export function SIProject() {
         }
     }, [projectId]);
 
-    if (project === undefined) {
-        return <div><LoadingMessage/></div>;
-    }
-
     return (
         <div>
             {project === null ? "ERROR" : <ProjectView project={project}/>}
@@ -48,93 +66,261 @@ export function SIProject() {
     );
 }
 
-function LoadingMessage() {
-    return <h1>Wczytywanie...</h1>;
+type ProjectInfo = {
+    incidents: IncidentSummary[];
+    members: ProjectMemberResponse[];
+    roles: RoleResponse[];
+    myRole?: RoleResponse;
+};
+
+async function fetchProjectInfo(userId: string, projectId: string): Promise<ProjectInfo> {
+    const incidentsPromise = Api.incidents.projectsProjectIdIncidentsGet({
+        projectId: projectId,
+        limit: 10
+    });
+    const membersPromise = Api.projects.projectsProjectIdMembersGet({
+        projectId: projectId
+    });
+    const rolesPromise = Api.roles.projectsProjectIdRolesGet({
+        projectId: projectId,
+    });
+
+    const [incidents, members, roles] = await Promise.all([incidentsPromise, membersPromise, rolesPromise]);
+
+    const meAsMember = members.members.find(
+        (member) => member.userId === userId
+    );
+
+    const projectInfo: ProjectInfo = {
+        incidents: incidents.items,
+        members: members.members,
+        roles: roles.items,
+    };
+
+    if (meAsMember) {
+        const myRoleId = meAsMember.roleId;
+        projectInfo.myRole = roles.items.find((role) => role.id === myRoleId);
+    }
+
+    return projectInfo;
 }
 
-function ProjectView({project}: { project: Project }) {
-    const [shownPopup, setShownPopup] = useState<ShownPopup>(null);
-    const hidePopup = () => setShownPopup(null);
+function ProjectView({project}: { project?: Project }) {
+    const auth = useContext(AuthUserContext)!;
 
-    const [incidents, setIncidents] = useState<Incident[] | undefined>(undefined);
+    const [projectInfo, setProjectInfo] = useState<ProjectInfo | undefined>(undefined);
+
+    if (project === undefined && projectInfo !== undefined) {
+        setProjectInfo(undefined);
+    }
 
     useEffect(() => {
         let ignore = false;
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setIncidents(undefined);
 
-        Api.incidents.projectsProjectIdIncidentsGet({
-            projectId: project.id,
-            limit: 10
-        }).then(
-            (incidentResponse) => {
-                const fetchedIncidents: Incident[] = incidentResponse.items.map((value) => {
-                    return {
-                        status: value.status,
-                        priority: value.priority,
-                        reportDate: value.reportDate,
-                        categoryId: value.categoryId ?? undefined,
-                        primaryAssigneeId: value.primaryAssigneeId ?? undefined,
-                        id: value.id,
-                        title: value.title,
-                    };
-                });
-
-                if (!ignore) {
-                    setIncidents(fetchedIncidents);
+        if (project) {
+            fetchProjectInfo(auth.id, project.id).then(
+                (projectInfo) => {
+                    if (!ignore) {
+                        setProjectInfo(projectInfo)
+                    }
+                },
+                () => {
+                    setProjectInfo({
+                        incidents: [],
+                        members: [],
+                        roles: [],
+                    })
                 }
-            },
-            () => {setIncidents([])}
-        );
+            );
+        }
 
-        return () => {ignore = true};
-    }, [project]);
+        return () => {
+            ignore = true
+        };
+    }, [project, auth]);
 
     return (
         <div>
-            <NewIncidentPopup show={shownPopup == "new_incident"} onHide={hidePopup} project={project}/>
-
             <div className="p-3">
                 <h1 className="text-2xl font-bold text-(--color-si-label)">
-                    {project.name}
+                    {project?.name ?? "Wczytywanie..."}
                 </h1>
                 <p className="text-md text-(--color-si-input-text) italic font-normal">
-                    {project.description ?? "Brak opisu"}
+                    {project ? (project.description || "Brak opisu") : "..."}
                 </p>
             </div>
 
+            <div className="text-lg font-bold px-6 py-2 transition-colors duration-300
+                bg-(--color-si-card-border) text-(--color-si-card-bg)
+                rounded-t-lg w-fit shadow-lg">
+                Incydenty
+            </div>
+
+            <IncidentList
+                show={true}
+                project={project}
+                projectInfo={projectInfo}/>
+
+            <div className="flex flex-row justify-center gap-3">
+                <div className={"flex-1"}>
+                    <div className="text-lg font-bold px-6 py-2 transition-colors duration-300
+                        bg-(--color-si-card-border) text-(--color-si-card-bg)
+                        rounded-t-lg w-fit shadow-lg">
+                        Członkowie
+                    </div>
+
+                    <MemberList
+                        show={true}
+                        project={project}
+                        projectInfo={projectInfo}/>
+                </div>
+
+                <div className={"flex-1"}>
+                    <div className="text-lg font-bold px-6 py-2 transition-colors duration-300
+                        bg-(--color-si-card-border) text-(--color-si-card-bg)
+                        rounded-t-lg w-fit shadow-lg">
+                        Role
+                    </div>
+
+                    <RoleList
+                        show={true}
+                        project={project}
+                        projectInfo={projectInfo}/>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function IncidentList({show, project, projectInfo}: { show: boolean, project?: Project, projectInfo?: ProjectInfo }) {
+    const [shownPopup, setShownPopup] = useState<ShownPopup>(null);
+    const hidePopup = () => setShownPopup(null);
+
+    const disableButtons: boolean = project === undefined;
+    const incidents = projectInfo?.incidents;
+
+    const canCreateIncidents = projectInfo?.myRole?.permissions.canWriteTickets ?? false;
+
+    return (
+        <div hidden={!show}>
+            {
+                project && canCreateIncidents
+                    ? <NewIncidentPopup show={shownPopup == "new_incident"} onHide={hidePopup} project={project}/>
+                    : undefined
+            }
+
             <div className="w-full h-96
                     border-5 border-(--color-si-card-border)
-                    rounded-2xl shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll">
+                    rounded-2xl rounded-tl-none shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll text-(--color-si-input-text)">
                 {
                     incidents?.map((incident) => {
-                        return <Link to={`/dashboard/incident/${incident.id}`}>
-                            {incident.title} - {incident.id}
-                        </Link>;
+                        return <IncidentEntry incident={incident}/>;
                     }) ?? <h1>Ładowanie...</h1>
                 }
             </div>
 
             <div className="w-full flex gap-3 p-3 justify-end">
                 <button
+                    disabled={disableButtons || !canCreateIncidents}
+                    title={canCreateIncidents ? undefined : "Nie masz uprawnień do wykonania tej czynności"}
                     onClick={() => setShownPopup("new_incident")}
                     className="px-6 py-2
                         bg-(--color-si-btn)
                         hover:bg-(--color-si-btn-hover) shadow-lg
-                        text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                        disabled:opacity-60 text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                     Zgłoś nowy incydent
-                </button>
-
-                <button
-                    className="px-6 py-2
-                        bg-(--color-si-btn)
-                        hover:bg-(--color-si-btn-hover) shadow-lg
-                        text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
-                    Dodaj użytkownika do projektu
                 </button>
             </div>
         </div>
     );
+}
+
+function IncidentEntry({incident}: { incident: IncidentSummary }) {
+    return <div>
+        <Link to={`/dashboard/incident/${incident.id}`} className={"hover:underline"}>
+            {incident.title} - {incident.id}
+        </Link>
+    </div>
+}
+
+function MemberList({show, project, projectInfo}: { show: boolean, project?: Project, projectInfo?: ProjectInfo }) {
+    const disableButtons: boolean = project === undefined;
+    const members = projectInfo?.members;
+
+    const canAddUsers = projectInfo?.myRole?.permissions.canAssignPeopleToProject ?? false;
+
+    return (
+        <div hidden={!show} className={"flex-1"}>
+            <div className="w-full h-96
+                    border-5 border-(--color-si-card-border)
+                    rounded-2xl rounded-tl-none shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll text-(--color-si-input-text)">
+                {
+                    members?.map((member) => {
+                        return <p>
+                            {member.username} - {member.roleName}
+                        </p>;
+                    }) ?? <h1>Ładowanie...</h1>
+                }
+            </div>
+
+            <div className="w-full flex gap-3 p-3 justify-end">
+                <button
+                    disabled={disableButtons || !canAddUsers}
+                    title={canAddUsers ? undefined : "Nie masz uprawnień do wykonania tej czynności"}
+                    className="px-6 py-2
+                        bg-(--color-si-btn)
+                        hover:bg-(--color-si-btn-hover) shadow-lg
+                        disabled:opacity-60 text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                    Dodaj użytkownika do projektu
+                </button>
+            </div>
+        </div>
+    )
+}
+
+function RoleList({show, project, projectInfo}: { show: boolean, project?: Project, projectInfo?: ProjectInfo}) {
+    const [showPopup, setShowPopup] = useState<boolean>(false);
+    const hidePopup = () => setShowPopup(false);
+
+    const disableButtons: boolean = project === undefined;
+    const roles = projectInfo?.roles;
+
+    const canCreateRoles = projectInfo?.myRole?.permissions.canMakeRoles ?? false;
+
+    return (
+        <div hidden={!show} className={"flex-1"}>
+            {
+                project && canCreateRoles
+                    ? <NewRolePopup show={showPopup} onHide={hidePopup} project={project}/>
+                    : undefined
+            }
+
+            <div className="w-full h-96
+                    border-5 border-(--color-si-card-border)
+                    rounded-2xl rounded-tl-none shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll text-(--color-si-input-text)">
+                {
+                    roles?.map((role) => {
+                        return <p>
+                            {role.name}
+                        </p>;
+                    }) ?? <h1>Ładowanie...</h1>
+                }
+            </div>
+
+            <div className="w-full flex gap-3 p-3 justify-end">
+                <button
+                    onClick={() => setShowPopup(true)}
+                    disabled={disableButtons || !canCreateRoles}
+                    title={canCreateRoles ? undefined : "Nie masz uprawnień do wykonania tej czynności"}
+                    className="px-6 py-2
+                        bg-(--color-si-btn)
+                        hover:bg-(--color-si-btn-hover) shadow-lg
+                        disabled:opacity-60 text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                    Utwórz nową rolę
+                </button>
+            </div>
+        </div>
+    )
 }
 
 type ShownPopup = "new_incident" | null;
@@ -265,9 +451,9 @@ function NewIncidentPopup({show, onHide, project}: { show: boolean, onHide: () =
                         value={busy ? "Dodawanie..." : "Dodaj Incydent"}
                         disabled={busy}
                         className="px-6 py-2
-                                    bg-(--color-si-btn)
-                                    hover:bg-(--color-si-btn-hover) shadow-lg
-                                    disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
+                            bg-(--color-si-btn)
+                            hover:bg-(--color-si-btn-hover) shadow-lg
+                            disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                     />
                 </div>
 
@@ -279,6 +465,188 @@ function NewIncidentPopup({show, onHide, project}: { show: boolean, onHide: () =
                     name={FORM_ACTION}
                     type="hidden"
                     value={FORM_ACTION_NEW_INCIDENT}/>
+            </fetcher.Form>
+        </Popup>
+    );
+}
+
+function NewRolePopup({show, onHide, project}: { show: boolean, onHide: () => void, project: Project }) {
+    const fetcher = useFetcher();
+    const busy = fetcher.state != "idle";
+
+    const [pendingHide, setPendingHide] = useState<boolean>(false);
+
+    const roleNameRef = useRef<HTMLInputElement>(null);
+    const rolePermWriteTicketRef = useRef<HTMLInputElement>(null);
+    const rolePermHelpRef = useRef<HTMLInputElement>(null);
+    const rolePermAssignHelpRef = useRef<HTMLInputElement>(null);
+    const rolePermChangeStatusRef = useRef<HTMLInputElement>(null);
+    const rolePermMakeRoleRef = useRef<HTMLInputElement>(null);
+    const rolePermChangeRoleRef = useRef<HTMLInputElement>(null);
+    const rolePermAssignToProjectRef = useRef<HTMLInputElement>(null);
+
+    if (fetcher.state == "idle" && pendingHide) {
+        setPendingHide(false);
+        onHide();
+    }
+
+    return (
+        <Popup show={show} className={"w-full max-w-xl"}>
+            <fetcher.Form method="POST" onSubmit={() => setPendingHide(true)}>
+                <h1 className="text-3xl font-bold text-(--color-si-label)">
+                    Tworzenie nowej roli w projekcie {project.name}.
+                </h1>
+
+                <div className="flex flex-col gap-1.5 my-3">
+                    <label htmlFor={FORM_ROLE_NAME} className="text-sm font-medium text-(--color-si-label)">
+                        Podaj nazwę roli:
+                    </label>
+                    <div className="flex items-center gap-3
+                                border border-(--color-si-input-border)
+                                rounded-lg px-3 py-2.5
+                                bg-(--color-si-input-bg) transition-colors">
+                        <input
+                            ref={roleNameRef}
+                            id={FORM_ROLE_NAME}
+                            type="text"
+                            required={true}
+                            name={FORM_ROLE_NAME}
+                            placeholder="Nazwa"
+                            className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
+                        />
+                    </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5 my-3">
+                    <label htmlFor={FORM_ROLE_PERMISSION} className="text-sm font-medium text-(--color-si-label)">
+                        Pozwolenia:
+                    </label>
+
+                    <div className="flex flex-wrap gap-y-2
+                                text-sm font-medium text-(--color-si-label)
+                                border border-(--color-si-input-border)
+                                rounded-lg px-3 py-2.5
+                                bg-(--color-si-input-bg) transition-colors">
+
+                        <div className="flex gap-1 items-center flex-1/2">
+                            <input
+                                type="checkbox"
+                                ref={rolePermWriteTicketRef}
+                                name={FORM_ROLE_PERMISSION}
+                                value={PERM_WRITE_TICKETS}
+                                className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
+                            />
+                            Tworzenie ticketów
+                        </div>
+
+                        <div className="flex gap-1 items-center flex-1/2">
+                            <input
+                                type="checkbox"
+                                ref={rolePermHelpRef}
+                                name={FORM_ROLE_PERMISSION}
+                                value={PERM_HELP}
+                                className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
+                            />
+                            Pomaganie
+                        </div>
+
+                        <div className="flex gap-1 items-center flex-1/2">
+                            <input
+                                type="checkbox"
+                                ref={rolePermAssignHelpRef}
+                                name={FORM_ROLE_PERMISSION}
+                                value={PERM_ASSIGN_HELP}
+                                className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
+                            />
+                            Przypisywanie pomocników
+                        </div>
+
+                        <div className="flex gap-1 items-center flex-1/2">
+                            <input
+                                type="checkbox"
+                                ref={rolePermChangeStatusRef}
+                                name={FORM_ROLE_PERMISSION}
+                                value={PERM_CHANGE_STATUS}
+                                className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
+                            />
+                            Zmiana statusu
+                        </div>
+
+                        <div className="flex gap-1 items-center flex-1/2">
+                            <input
+                                type="checkbox"
+                                ref={rolePermMakeRoleRef}
+                                name={FORM_ROLE_PERMISSION}
+                                value={PERM_MAKE_ROLES}
+                                className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
+                            />
+                            Tworzenie ról
+                        </div>
+
+                        <div className="flex gap-1 items-center flex-1/2">
+                            <input
+                                type="checkbox"
+                                ref={rolePermChangeRoleRef}
+                                name={FORM_ROLE_PERMISSION}
+                                value={PERM_CHANGE_ROLES}
+                                className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
+                            />
+                            Edytowanie ról
+                        </div>
+
+                        <div className="flex gap-1 items-center flex-1/2">
+                            <input
+                                type="checkbox"
+                                ref={rolePermAssignToProjectRef}
+                                name={FORM_ROLE_PERMISSION}
+                                value={PERM_ASSIGN_TO_PROJECT}
+                                className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
+                            />
+                            Przypisywanie do projektów
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                    <button
+                        disabled={busy}
+                        onClick={() => {
+                            roleNameRef.current = null;
+                            rolePermWriteTicketRef.current = null;
+                            rolePermHelpRef.current = null;
+                            rolePermAssignHelpRef.current = null;
+                            rolePermChangeStatusRef.current = null;
+                            rolePermMakeRoleRef.current = null;
+                            rolePermChangeRoleRef.current = null;
+                            rolePermAssignToProjectRef.current = null;
+                            onHide();
+                        }}
+                        className="px-6 py-2
+                                bg-(--color-si-btn-error)
+                                hover:bg-(--color-si-btn-error-hover) shadow-lg
+                                text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                        Anuluj
+                    </button>
+
+                    <input
+                        type="submit"
+                        value={busy ? "Tworzenie..." : "Utwórz"}
+                        disabled={busy}
+                        className="px-6 py-2
+                            bg-(--color-si-btn)
+                            hover:bg-(--color-si-btn-hover) shadow-lg
+                            disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
+                    />
+                </div>
+
+                <input
+                    name={FORM_PROJECT_ID}
+                    type="hidden"
+                    value={project.id}/>
+                <input
+                    name={FORM_ACTION}
+                    type="hidden"
+                    value={FORM_ACTION_NEW_ROLE}/>
             </fetcher.Form>
         </Popup>
     );

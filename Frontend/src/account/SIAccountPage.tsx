@@ -220,6 +220,7 @@ function ChangePasswordForm() {
                         ref={currentRef}
                         id={FORM_CURRENT_PW}
                         name={FORM_CURRENT_PW}
+                        placeholder="Aktualne hasło"
                         type="password"
                         required={true}
                         className={FIELD_CLASS}
@@ -236,6 +237,7 @@ function ChangePasswordForm() {
                         ref={newRef}
                         id={FORM_NEW_PW}
                         name={FORM_NEW_PW}
+                        placeholder="Nowe hasło"
                         type="password"
                         required={true}
                         minLength={8}
@@ -253,6 +255,7 @@ function ChangePasswordForm() {
                         ref={confirmRef}
                         id={FORM_CONFIRM_PW}
                         name={FORM_CONFIRM_PW}
+                        placeholder="Powtórz nowe hasło"
                         type="password"
                         required={true}
                         className={FIELD_CLASS}

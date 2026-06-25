@@ -1,17 +1,25 @@
 import {useFetcher, useParams} from "react-router";
+import * as React from "react";
 import {useEffect, useMemo, useRef, useState} from "react";
 import type {Incident} from "../data/project.ts";
 import Api from "../data/Api.ts";
-import type {IncidentLogEntry} from "../api";
-import * as React from "react";
+import type {IncidentLogEntry, ProjectMemberResponse} from "../api";
 import {Popup} from "../components/Popup.tsx";
 import {FORM_ACTION, FORM_ACTION_INVITE_USER, FORM_INVITE_NAME} from "./forms.ts";
 
 export function SIIncident() {
     const urlParams = useParams();
+    const [incident, setIncident] = useState<Incident | null>();
+
     const incidentId = urlParams["incidentId"];
 
-    const [incident, setIncident] = useState<Incident | null>();
+    if (incident && incident.id !== incidentId) {
+        if (incidentId) {
+            setIncident(undefined);
+        } else {
+            setIncident(null);
+        }
+    }
 
     useEffect(() => {
         if (incidentId) {
@@ -22,6 +30,7 @@ export function SIIncident() {
                     setIncident({
                         title: incidentResponse.title,
                         id: incidentResponse.id,
+                        projectId: incidentResponse.projectId,
                         primaryAssigneeId: incidentResponse.primaryAssigneeId ?? undefined,
                         categoryId: incidentResponse.categoryId ?? undefined,
                         reportDate: incidentResponse.reportDate,
@@ -34,10 +43,6 @@ export function SIIncident() {
             );
         }
     }, [incidentId]);
-
-    if (incident === undefined) {
-        return <LoadingMessage/>;
-    }
 
     return (
         <div>
@@ -52,33 +57,49 @@ function LoadingMessage() {
 
 type IncidentPopupType = "add_to_incident" | null;
 
-function IncidentView({incident}: { incident: Incident }) {
+function IncidentView({incident}: { incident?: Incident }) {
     const [logs, setLogs] = useState<IncidentLogEntry[] | undefined>(undefined);
     const [shownPopup, setShownPopup] = useState<IncidentPopupType>(null);
+    const hidePopup = () => setShownPopup(null);
+
+    if (logs && incident === undefined) {
+        setLogs(undefined);
+    }
 
     useEffect(() => {
-        Api.incidents.incidentsIncidentIdLogsGet({
-            incidentId: incident.id,
-            limit: undefined
-        }).then(
-            (incidentLogs) => setLogs(incidentLogs.items),
-            () => setLogs([]),
-        );
+        if (incident) {
+            Api.incidents.incidentsIncidentIdLogsGet({
+                incidentId: incident.id,
+                limit: undefined
+            }).then(
+                (incidentLogs) => setLogs(incidentLogs.items),
+                () => setLogs([]),
+            );
+        }
     }, [incident]);
+
+    const disableButtons: boolean = incident === undefined;
 
     return (
         <div className={"flex flex-col gap-3"}>
-            <AddToIncidentPopup show={shownPopup == "add_to_incident"} onHide={() => setShownPopup(null)}/>
+            {
+                incident
+                    ? <AddToIncidentPopup
+                        incident={incident}
+                        show={shownPopup == "add_to_incident"}
+                        onHide={hidePopup}/>
+                    : undefined
+            }
 
             <div className={"flex gap-3"}>
                 <div className="bg-(--color-si-card-bg) border-5 border-(--color-si-card-border) w-fit
                     rounded-2xl shadow-lg p-4 transition-colors duration-300">
 
                     <h1 className="text-2xl font-bold text-(--color-si-label)">
-                        {incident.title}
+                        {incident?.title ?? "Wczytywanie..."}
                     </h1>
                     <h3 className="text-md italic text-(--color-si-input-text)">
-                        {incident.id}
+                        {incident?.id ?? "-"}
                     </h3>
 
                     <hr className="my-2"/>
@@ -86,26 +107,26 @@ function IncidentView({incident}: { incident: Incident }) {
                     <p>
                         <span className="text-(--color-si-label)">Przypisani: </span>
                         <span className="text-(--color-si-input-text)">
-                        {incident.primaryAssigneeId ?? "- Brak -"}
+                        {incident ? (incident.primaryAssigneeId ?? "- Brak -") : "..."}
                     </span>
                     </p>
                     <p>
                         <span className="text-(--color-si-label)">Priorytet: </span>
                         <span className="text-(--color-si-input-text)">
-                        {incident.priority}
+                        {incident?.priority ?? "..."}
                     </span>
                     </p>
                     <p>
                         <span className="text-(--color-si-label)">Status: </span>
                         <span className="text-(--color-si-input-text)">
-                        {incident.status}
+                        {incident?.status ?? "..."}
                     </span>
                     </p>
                     <p>
                         <span className="text-(--color-si-label)">Zgłoszono: </span>
                         <span className="text-(--color-si-input-text)">
-                        {incident.reportDate.toLocaleString()}
-                    </span>
+                            {incident?.reportDate.toLocaleString() ?? "..."}
+                        </span>
                     </p>
                 </div>
 
@@ -113,27 +134,30 @@ function IncidentView({incident}: { incident: Incident }) {
 
                 <div className="flex flex-col justify-center gap-3">
                     <button
+                        disabled={disableButtons}
                         className={`px-6 py-2
                             bg-(--color-si-btn)
                             hover:bg-(--color-si-btn-hover) shadow-lg rounded-lg
-                            text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>
+                            disabled:opacity-60 text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>
                         Zmień status
                     </button>
 
                     <button
+                        disabled={disableButtons}
                         onClick={() => setShownPopup("add_to_incident")}
                         className={`px-6 py-2
                             bg-(--color-si-btn)
                             hover:bg-(--color-si-btn-hover) shadow-lg rounded-lg
-                            text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>
+                            disabled:opacity-60  text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>
                         Dodaj użytkownika
                     </button>
 
                     <button
+                        disabled={disableButtons}
                         className={`px-6 py-2
                             bg-(--color-si-btn)
                             hover:bg-(--color-si-btn-hover) shadow-lg rounded-lg
-                            text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>
+                            disabled:opacity-60  text-white text-md font-semibold cursor-pointer transition-colors duration-200`}>
                         Dodaj komentarz
                     </button>
                 </div>
@@ -143,18 +167,18 @@ function IncidentView({incident}: { incident: Incident }) {
                     rounded-2xl shadow-lg p-4 transition-colors duration-300">
                 <span className="text-(--color-si-input-text) italic">Opis:</span><br/>
                 <span className="text-(--color-si-label)">
-                    {incident.description}
+                    {incident?.description ?? "..."}
                 </span>
             </div>
 
-            <LogHistory logs={logs} />
+            <LogHistory logs={logs}/>
         </div>
     );
 }
 
 function LogHistory({logs}: { logs?: IncidentLogEntry[] }) {
     const logNodes = useMemo(() => {
-        return logs?.map(log => <LogEntry log={log}/>);
+        return logs?.map(log => <LogEntry key={log.id} log={log}/>);
     }, [logs]);
 
     const [isShown, setIsShown] = useState(false);
@@ -183,7 +207,7 @@ function LogHistory({logs}: { logs?: IncidentLogEntry[] }) {
     );
 }
 
-function LogEntry({log} : {log: IncidentLogEntry}){
+function LogEntry({log}: { log: IncidentLogEntry }) {
     let rowContents: string = "";
     const logTime = log.createdAt.toLocaleString();
 
@@ -225,11 +249,34 @@ function LogEntry({log} : {log: IncidentLogEntry}){
     </h1>;
 }
 
-function AddToIncidentPopup({show, onHide}: {show: boolean, onHide: () => void}) {
+function AddToIncidentPopup({incident, show, onHide}: { incident: Incident, show: boolean, onHide: () => void }) {
     const fetcher = useFetcher();
     const busy = fetcher.state != "idle";
 
     const usernameRef = useRef<HTMLInputElement>(null);
+
+    const [projectMembers, setProjectMembers] = useState<ProjectMemberResponse[]>([]);
+
+    useEffect(() => {
+        const projectId = incident.projectId;
+        if (projectId) {
+            Api.projects.projectsProjectIdMembersGet({
+                projectId: projectId,
+            }).then(
+                (members) => setProjectMembers(members.members),
+                () => setProjectMembers([])
+            );
+        }
+    }, [incident]);
+
+    const projectMemberEntries = useMemo(() => {
+        return projectMembers.map((member) => (
+            <div key={member.userId} className={"w-full px-3 py-2.5"}>
+                <p>{member.username} - {member.roleName}</p>
+                <hr/>
+            </div>
+        ));
+    }, [projectMembers]);
 
     return (
         <Popup show={show} className={"w-full max-w-xl"}>
@@ -258,8 +305,18 @@ function AddToIncidentPopup({show, onHide}: {show: boolean, onHide: () => void})
                     </div>
                 </div>
 
+                <div className="flex flex-col gap-1.5 my-3">
+                    <div className="flex items-center gap-3 h-32
+                                border border-(--color-si-input-border)
+                                rounded-lg
+                                bg-(--color-si-input-bg) transition-colors overflow-y-scroll">
+                        {projectMemberEntries}
+                    </div>
+                </div>
+
                 <div className="flex items-center justify-between">
                     <button
+                        disabled={busy}
                         onClick={() => {
                             usernameRef.current = null;
                             onHide();
@@ -267,7 +324,7 @@ function AddToIncidentPopup({show, onHide}: {show: boolean, onHide: () => void})
                         className="px-6 py-2
                                 bg-(--color-si-btn-error)
                                 hover:bg-(--color-si-btn-error-hover) shadow-lg
-                                text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                                disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                         Anuluj
                     </button>
 
@@ -287,7 +344,6 @@ function AddToIncidentPopup({show, onHide}: {show: boolean, onHide: () => void})
                     type="hidden"
                     value={FORM_ACTION_INVITE_USER}/>
             </fetcher.Form>
-
         </Popup>
     );
 }

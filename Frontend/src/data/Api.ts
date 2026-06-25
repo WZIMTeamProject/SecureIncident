@@ -1,4 +1,4 @@
-import {AuthApi, Configuration, IncidentsApi, OrganizationApi, ProfilesApi, ProjectsApi} from "../api";
+import {AuthApi, Configuration, IncidentsApi, OrganizationApi, ProfilesApi, ProjectsApi, RolesApi} from "../api";
 
 export default class Api {
     private static configuration: Configuration = new Configuration({
@@ -18,6 +18,7 @@ export default class Api {
     static organization: OrganizationApi = new OrganizationApi(Api.configuration);
     static profiles: ProfilesApi = new ProfilesApi(Api.configuration);
     static projects: ProjectsApi = new ProjectsApi(Api.configuration);
+    static roles: RolesApi = new RolesApi(Api.configuration);
 
     // add more API's from /api when needed
 }

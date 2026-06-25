@@ -1,16 +1,23 @@
 import {AuthUserContext} from "../data/auth.ts";
-import {useContext, useEffect, useRef, useState} from "react";
+import {useContext, useDeferredValue, useEffect, useRef, useState} from "react";
 import type {Organization, Project} from "../data/project.ts";
 import {Popup} from "../components/Popup.tsx";
 import {
-    FORM_ACTION, FORM_ACTION_CREATE_ORGANIZATION, FORM_ACTION_DELETE_ORGANIZATION, FORM_ACTION_INVITE_USER,
+    FORM_ACTION,
+    FORM_ACTION_CREATE_ORGANIZATION,
+    FORM_ACTION_DELETE_ORGANIZATION,
+    FORM_ACTION_INVITE_USER,
     FORM_ACTION_JOIN_ORGANIZATION,
-    FORM_ACTION_NEW_PROJECT, FORM_INVITE_COUNT, FORM_INVITE_TOKEN,
-    FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
+    FORM_ACTION_NEW_PROJECT,
+    FORM_INVITE_COUNT,
+    FORM_INVITE_TOKEN,
+    FORM_ORGANIZATION_DESCRIPTION,
+    FORM_ORGANIZATION_NAME,
     FORM_PROJECT_DESCRIPTION,
     FORM_PROJECT_NAME
 } from "./forms.ts";
-import {useFetcher} from "react-router";
+import {Link, useFetcher} from "react-router";
+import {IconCheck, IconClipboard} from "../components/icons.tsx";
 
 export function SIOrganization() {
     const auth = useContext(AuthUserContext)!;
@@ -39,7 +46,13 @@ export function SIOrganization() {
 }
 
 function LoadingMessage() {
-    return <h1>Wczytywanie...</h1>;
+    return (
+        <div>
+            <div className="p-3">
+                <h1 className="text-2xl font-bold text-(--color-si-label)">Wczytywanie...</h1>
+            </div>
+        </div>
+    );
 }
 
 function CreateOrganizationWidget() {
@@ -105,7 +118,11 @@ function OrganizationView({organization}: { organization: Organization }) {
                     rounded-2xl shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll text-(--color-si-input-text)">
                 {
                     projects?.map((project) => {
-                        return <h1>{project.name} - {project.id}</h1>;
+                        return <p>
+                            <Link to={`/dashboard/project/${project.id}`} className={"hover:underline"}>
+                                {project.name} - {project.id}
+                            </Link>
+                        </p>;
                     }) ?? <h1>Ładowanie...</h1>
                 }
             </div>
@@ -210,9 +227,9 @@ function NewProjectPopup({show, onHide}: PopupProps) {
                             onHide();
                         }}
                         className="px-6 py-2
-                                bg-(--color-si-btn-error)
-                                hover:bg-(--color-si-btn-error-hover) shadow-lg
-                                text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                            bg-(--color-si-btn-error)
+                            hover:bg-(--color-si-btn-error-hover) shadow-lg
+                            disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                         Anuluj
                     </button>
 
@@ -221,9 +238,9 @@ function NewProjectPopup({show, onHide}: PopupProps) {
                         value={busy ? "Zapisywanie..." : "Zapisz"}
                         disabled={busy}
                         className="px-6 py-2
-                                    bg-(--color-si-btn)
-                                    hover:bg-(--color-si-btn-hover) shadow-lg
-                                    disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
+                            bg-(--color-si-btn)
+                            hover:bg-(--color-si-btn-hover) shadow-lg
+                            disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                     />
                 </div>
 
@@ -240,12 +257,28 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
     const fetcher = useFetcher();
     const busy = fetcher.state != "idle";
 
+    const [copiedToken, setCopiedToken] = useState<boolean>(false);
+    const [copiedLink, setCopiedLink] = useState<boolean>(false);
+
     const inviteCountRef = useRef<HTMLInputElement>(null);
+
     const inviteToken = fetcher.data?.ok ? fetcher.data.token : null;
+    const inviteLink = fetcher.data?.ok ? fetcher.data.inviteUrl : null;
+
+    const previousShowState = useDeferredValue(show);
+
+    if (fetcher.data && previousShowState && !show) {
+        fetcher.reset();
+    }
+
+    if (!show && (copiedToken || copiedLink)) {
+        setCopiedLink(false);
+        setCopiedToken(false);
+    }
 
     return (
         <Popup show={show} className={"w-full max-w-xl"}>
-            <fetcher.Form method="POST">
+            <fetcher.Form method="POST" onSubmit={() => fetcher.reset()}>
                 <h1 className="text-3xl font-bold text-(--color-si-label)">
                     Dodaj do organizacji
                 </h1>
@@ -259,9 +292,10 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                     </span>
 
                     <div className="flex items-center gap-3
-                                border border-(--color-si-input-border)
-                                rounded-lg px-3 py-2.5
-                                bg-(--color-si-input-bg) transition-colors">
+                            border border-(--color-si-input-border)
+                            rounded-lg px-3 py-2.5
+                            bg-(--color-si-input-bg) transition-colors">
+
                         <input
                             ref={inviteCountRef}
                             id={FORM_INVITE_COUNT}
@@ -275,13 +309,65 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                     </div>
                 </div>
 
-                <div
-                    hidden={!inviteToken}
-                    className="flex items-center gap-3 mb-3
-                                border border-(--color-si-input-border)
-                                rounded-lg px-3 py-2.5
-                                bg-(--color-si-input-bg) transition-colors">
-                    {inviteToken}
+                <div hidden={!inviteToken} className="flex flex-col gap-1.5">
+                    <span className="text-sm font-medium text-(--color-si-label)">Token do dołączenia:</span>
+                    <div
+                        className="flex items-center gap-3 mb-3
+                            border border-(--color-si-input-border)
+                            rounded-lg px-2.5 py-2
+                            bg-(--color-si-input-bg) transition-colors">
+
+                        <button
+                            form=""
+                            title="Skopiuj token"
+                            onClick={() => {
+                                navigator.clipboard.writeText(inviteToken)
+                                    .then(() => {
+                                        setCopiedToken(true);
+                                        setCopiedLink(false);
+                                    });
+                            }}
+                            className="p-2
+                                bg-(--color-si-btn)
+                                hover:bg-(--color-si-btn-hover)
+                                disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                            {copiedToken ? <IconCheck/> : <IconClipboard/>}
+                        </button>
+                        <span className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)">
+                            {inviteToken}
+                        </span>
+                    </div>
+                </div>
+
+                <div hidden={!inviteLink} className="flex flex-col gap-1.5">
+                    <span className="text-sm font-medium text-(--color-si-label)">Link do dołączenia:</span>
+                    <div
+                        className="flex items-center gap-3 mb-3
+                            border border-(--color-si-input-border)
+                            rounded-lg px-2.5 py-2
+                            bg-(--color-si-input-bg) transition-colors">
+
+                        <button
+                            form=""
+                            title="Skopiuj link"
+                            onClick={() => {
+                                navigator.clipboard.writeText(inviteLink)
+                                    .then(() => {
+                                        setCopiedToken(false);
+                                        setCopiedLink(true);
+                                    });
+                            }}
+                            className="p-2
+                                bg-(--color-si-btn)
+                                hover:bg-(--color-si-btn-hover)
+                                disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                            {copiedLink ? <IconCheck/> : <IconClipboard/>}
+                        </button>
+
+                        <span className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)">
+                            {inviteLink}
+                        </span>
+                    </div>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -291,20 +377,24 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                             onHide();
                         }}
                         className="px-6 py-2
-                                bg-(--color-si-btn-error)
-                                hover:bg-(--color-si-btn-error-hover) shadow-lg
-                                text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                            bg-(--color-si-btn-error)
+                            hover:bg-(--color-si-btn-error-hover) shadow-lg
+                            disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                         Zamknij
                     </button>
 
                     <input
                         type="submit"
+                        onSubmit={() => {
+                            setCopiedToken(false);
+                            setCopiedLink(false);
+                        }}
                         value={busy ? "Generowanie..." : "Wygeneruj"}
                         disabled={busy}
                         className="px-6 py-2
-                                    bg-(--color-si-btn)
-                                    hover:bg-(--color-si-btn-hover) shadow-lg
-                                    disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
+                            bg-(--color-si-btn)
+                            hover:bg-(--color-si-btn-hover) shadow-lg
+                            disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors duration-200"
                     />
                 </div>
 
@@ -379,7 +469,7 @@ function CreateOrganizationPopup({show, onHide}: PopupProps) {
     }
 
     return (
-        <Popup show={show} className={"w-full max-w-xl"} >
+        <Popup show={show} className={"w-full max-w-xl"}>
             <fetcher.Form method="POST" onSubmit={() => setPendingHide(true)}>
                 <h1 className="text-3xl font-bold text-(--color-si-label)">
                     Utwórz nową organizację
@@ -467,7 +557,7 @@ function JoinOrganizationPopup({show, onHide}: PopupProps) {
     }
 
     return (
-        <Popup show={show} className={"w-full max-w-xl"} >
+        <Popup show={show} className={"w-full max-w-xl"}>
             <fetcher.Form method="POST" onSubmit={() => setPendingHide(true)}>
                 <h1 className="text-3xl font-bold text-(--color-si-label)">
                     Podaj token z zaproszenia by dołączyć do organizacji:
