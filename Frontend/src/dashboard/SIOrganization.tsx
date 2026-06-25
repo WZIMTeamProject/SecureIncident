@@ -1,5 +1,5 @@
 import {AuthUserContext} from "../data/auth.ts";
-import {useContext, useEffect, useRef, useState} from "react";
+import {useContext, useDeferredValue, useEffect, useRef, useState} from "react";
 import type {Organization, Project} from "../data/project.ts";
 import {Popup} from "../components/Popup.tsx";
 import {
@@ -261,6 +261,12 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
     const inviteToken = fetcher.data?.ok ? fetcher.data.token : null;
     const inviteLink = fetcher.data?.ok ? fetcher.data.inviteUrl : null;
 
+    const previousShowState = useDeferredValue(show);
+
+    if (fetcher.data && previousShowState && !show) {
+        fetcher.reset();
+    }
+
     if (!show && (copiedToken || copiedLink)) {
         setCopiedLink(false);
         setCopiedToken(false);
@@ -268,7 +274,9 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
 
     return (
         <Popup show={show} className={"w-full max-w-xl"}>
-            <fetcher.Form method="POST">
+            <fetcher.Form method="POST" onSubmit={() => {
+                fetcher.reset();
+            }}>
                 <h1 className="text-3xl font-bold text-(--color-si-label)">
                     Dodaj do organizacji
                 </h1>
