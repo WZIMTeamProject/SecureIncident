@@ -1,7 +1,7 @@
 import {Link, Outlet, useLoaderData} from "react-router";
 import {AuthState, AuthUserContext} from "./data/auth.ts";
 import {useEffect, useState} from "react";
-import {IconClose, IconMenu} from "./components/icons.tsx";
+import {AppLogo, IconClose, IconMenu} from "./components/icons.tsx";
 import {THEME_PREFERENCE, THEME_PREFERENCE_DARK, THEME_PREFERENCE_LIGHT} from "./data/cookies.ts";
 import type {SIContext} from "./data/context.ts";
 
@@ -80,39 +80,38 @@ export function SIAppRoot() {
         <div className={dark ? "dark" : ""}>
             <AuthUserContext value={siContext.auth ?? null}>
                 <header className="bg-(--color-si-header)">
-                    <div className="flex items-center px-4 py-3">
-
-                        {/* TODO: LOGO!!!! */}
-                        <div className="flex flex-col leading-tight mr-4">
-                            <span className="text-base font-bold text-white">HELLO I'M THE LOGO</span>
-                            <span className="text-base font-bold text-white">PLACEHOLDER</span>
+                    <div className="flex items-center">
+                        <div className="min-h-full min-w-36 leading-tight ml-4">
+                            <AppLogo/>
                         </div>
 
-                        {/* Desktop toolbar — collapses into the mobile menu below md */}
-                        {siContext.auth ? <LoggedUserToolbar/> : <AnonymousUserToolbar/>}
+                        <div className="flex items-center px-4 py-3 w-full">
+                            {/* Desktop toolbar — collapses into the mobile menu below md */}
+                            {siContext.auth ? <LoggedUserToolbar/> : <AnonymousUserToolbar/>}
 
-                        <div className="flex-1"/>
+                            <div className="flex-1"/>
 
-                        {/* Mode switch */}
-                        <button
-                            onClick={() => setDark(!dark)}
-                            title={dark ? "Tryb jasny" : "Tryb ciemny"}
-                            className="p-2 rounded-lg text-white hover:bg-white/15 transition-colors"
-                        >
-                            {dark ? <IconSun/> : <IconMoon/>}
-                        </button>
+                            {/* Mode switch */}
+                            <button
+                                onClick={() => setDark(!dark)}
+                                title={dark ? "Tryb jasny" : "Tryb ciemny"}
+                                className="p-2 rounded-lg text-white hover:bg-white/15 transition-colors hover:cursor-pointer"
+                            >
+                                {dark ? <IconSun/> : <IconMoon/>}
+                            </button>
 
-                        {/* Hamburger — only below md */}
-                        <button
-                            onClick={() => setMenuOpen(!menuOpen)}
-                            aria-label={menuOpen ? "Zamknij menu" : "Otwórz menu"}
-                            aria-expanded={menuOpen}
-                            aria-controls="mobile-menu"
-                            className="md:hidden flex items-center justify-center min-h-11 min-w-11 ml-1 rounded-lg text-white hover:bg-white/15 transition-colors"
-                        >
-                            {menuOpen ? <IconClose/> : <IconMenu/>}
-                        </button>
+                            {/* Hamburger — only below md */}
+                            <button
+                                onClick={() => setMenuOpen(!menuOpen)}
+                                aria-label={menuOpen ? "Zamknij menu" : "Otwórz menu"}
+                                aria-expanded={menuOpen}
+                                aria-controls="mobile-menu"
+                                className="md:hidden flex items-center justify-center min-h-11 min-w-11 ml-1 rounded-lg text-white hover:bg-white/15 transition-colors"
+                            >
+                                {menuOpen ? <IconClose/> : <IconMenu/>}
+                            </button>
 
+                        </div>
                     </div>
 
                     {menuOpen && <MobileNav authState={siContext.auth ?? null} onNavigate={() => setMenuOpen(false)}/>}

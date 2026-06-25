@@ -1,3 +1,74 @@
+export function AppLogo() {
+    return <svg viewBox="0 0 144 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="bg" x1="24" y1="24" x2="56" y2="68" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#6d28d9"/>
+                <stop offset="42%" stop-color="#2563eb"/>
+                <stop offset="100%" stop-color="#06b6d4"/>
+            </linearGradient>
+            <linearGradient id="sh" x1="26" y1="26" x2="46" y2="50" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="white" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="white" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="gl" x1="40" y1="48" x2="40" y2="60" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="white" stop-opacity="0.25"/>
+                <stop offset="100%" stop-color="white" stop-opacity="0"/>
+            </linearGradient>
+            <radialGradient id="hl" cx="50%" cy="55%" r="50%">
+                <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.9"/>
+                <stop offset="40%" stop-color="#2563eb" stop-opacity="0.55"/>
+                <stop offset="75%" stop-color="#6d28d9" stop-opacity="0.25"/>
+                <stop offset="100%" stop-color="#6d28d9" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="gf" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="2.5" result="b"/>
+                <feMerge>
+                    <feMergeNode in="b"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+
+        <g transform="translate(8, 1) scale(0.58)">
+            <ellipse cx="40" cy="50" rx="44" ry="42" fill="url(#hl)"/>
+            <g filter="url(#gf)">
+                <path d="M40 4 L74 20 L74 48 Q74 74 40 88 Q6 74 6 48 L6 20 Z" fill="url(#bg)"/>
+                <path d="M40 10 L70 24 L70 38 Q58 26 40 22 Q22 26 10 38 L10 24 Z" fill="url(#sh)"/>
+                <path d="M40 14 L68 27 L68 48 Q68 68 40 80 Q12 68 12 48 L12 27 Z" stroke="white" stroke-width="1.4" stroke-opacity="0.25" fill="none"/>
+                <path d="M20 35 L20 45 L30 45" stroke="white" stroke-width="1.2" stroke-opacity="0.22" stroke-linecap="round" fill="none"/>
+                <circle cx="20" cy="35" r="2" fill="white" fill-opacity="0.28"/>
+                <circle cx="30" cy="45" r="1.5" fill="white" fill-opacity="0.2"/>
+                <path d="M60 35 L60 45 L50 45" stroke="white" stroke-width="1.2" stroke-opacity="0.22" stroke-linecap="round" fill="none"/>
+                <circle cx="60" cy="35" r="2" fill="white" fill-opacity="0.28"/>
+                <circle cx="50" cy="45" r="1.5" fill="white" fill-opacity="0.2"/>
+                <path d="M20 70 L30 70 L30 60" stroke="white" stroke-width="1.2" stroke-opacity="0.18" stroke-linecap="round" fill="none"/>
+                <circle cx="20" cy="70" r="2" fill="white" fill-opacity="0.2"/>
+                <circle cx="30" cy="60" r="1.5" fill="white" fill-opacity="0.18"/>
+                <path d="M60 70 L50 70 L50 60" stroke="white" stroke-width="1.2" stroke-opacity="0.18" stroke-linecap="round" fill="none"/>
+                <circle cx="60" cy="70" r="2" fill="white" fill-opacity="0.2"/>
+                <circle cx="50" cy="60" r="1.5" fill="white" fill-opacity="0.18"/>
+                <path d="M31 52 L31 38 Q31 26 40 26 Q49 26 49 38 L49 52" stroke="white" stroke-width="5.6" stroke-linecap="round" fill="none"/>
+                <path d="M34 52 L34 39 Q34 29 40 29 Q46 29 46 39 L46 52" stroke="white" stroke-width="1.8" stroke-opacity="0.3" stroke-linecap="round" fill="none"/>
+                <rect x="25" y="50" width="30" height="26" rx="5" fill="white" opacity="0.92"/>
+                <rect x="25" y="50" width="30" height="11" rx="5" fill="url(#gl)"/>
+                <rect x="25" y="50" width="30" height="26" rx="5" stroke="white" stroke-width="1" stroke-opacity="0.4" fill="none"/>
+                <rect x="35" y="63" width="10" height="4" rx="2" fill="#2563eb" opacity="0.5"/>
+            </g>
+        </g>
+
+        <text x="62" y="31" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800" fill="#ffffff" letter-spacing="-0.5">Secure</text>
+        <text x="62" y="46" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#e9d5ff" letter-spacing="1.5">INCI</text>
+
+        <g transform="translate(96, 37.4) scale(0.8)">
+            <path d="M2 6 L2 3 Q2 0 5 0 Q8 0 8 3 L8 6" stroke="#e9d5ff" stroke-width="1.9" stroke-linecap="round" fill="none"/>
+            <rect x="1" y="4.1" width="8" height="7" rx="1.5" fill="#e9d5ff"/>
+            <circle cx="5" cy="8" r="1.2" fill="#5a1b8a" opacity="0.7"/>
+        </g>
+
+        <text x="106" y="46" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#e9d5ff" letter-spacing="1.5">ENT</text>
+    </svg>;
+}
+
 /**
  * User icon (for the `username` field).
  */
