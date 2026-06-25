@@ -11,6 +11,8 @@ import {
     FORM_INCIDENT_PRIORITY, FORM_PROJECT_ID,
 } from "./forms.ts";
 import {Popup} from "../components/Popup.tsx";
+import * as React from "react";
+import type {ProjectMemberResponse, RoleResponse} from "../api";
 
 export function SIProject() {
     const urlParams = useParams();
@@ -53,10 +55,8 @@ export function SIProject() {
 }
 
 function ProjectView({project}: { project?: Project }) {
-    const [shownPopup, setShownPopup] = useState<ShownPopup>(null);
-    const hidePopup = () => setShownPopup(null);
-
     const [incidents, setIncidents] = useState<Incident[] | undefined>(undefined);
+    const [members, setMembers] = useState<ProjectMemberResponse[] | undefined>(undefined);
 
     if (incidents !== undefined && project === undefined) {
         setIncidents(undefined);
@@ -89,21 +89,24 @@ function ProjectView({project}: { project?: Project }) {
                 },
                 () => {setIncidents([])}
             );
+
+            Api.projects.projectsProjectIdMembersGet({
+                projectId: project.id,
+            }).then(
+                (memberResponse) => {
+                    if (!ignore) {
+                        setMembers(memberResponse.members);
+                    }
+                },
+                () => {setMembers([])}
+            );
         }
 
         return () => {ignore = true};
     }, [project]);
 
-    const disableButtons: boolean = project === undefined;
-
     return (
         <div>
-            {
-                project
-                    ? <NewIncidentPopup show={shownPopup == "new_incident"} onHide={hidePopup} project={project}/>
-                    : undefined
-            }
-
             <div className="p-3">
                 <h1 className="text-2xl font-bold text-(--color-si-label)">
                     {project?.name ?? "Wczytywanie..."}
@@ -113,9 +116,54 @@ function ProjectView({project}: { project?: Project }) {
                 </p>
             </div>
 
+            <div className="text-lg font-bold px-6 py-2
+                bg-(--color-si-card-border) text-(--color-si-card-bg)
+                rounded-t-lg w-fit shadow-lg">
+                Incydenty
+            </div>
+
+            <IncidentList show={true} project={project} incidents={incidents} />
+
+            <div className="flex flex-row justify-center gap-3">
+                <div className={"flex-1"}>
+                    <div className="text-lg font-bold px-6 py-2
+                        bg-(--color-si-card-border) text-(--color-si-card-bg)
+                        rounded-t-lg w-fit shadow-lg">
+                        Członkowie
+                    </div>
+                    <MemberList show={true} project={project} members={members} />
+                </div>
+
+                <div className={"flex-1"}>
+                    <div className="text-lg font-bold px-6 py-2
+                        bg-(--color-si-card-border) text-(--color-si-card-bg)
+                        rounded-t-lg w-fit shadow-lg">
+                        Role
+                    </div>
+                    <RoleList show={true} project={project} roles={[]} />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function IncidentList({show, project, incidents}: {show: boolean, project?: Project, incidents?: Incident[]}) {
+    const [shownPopup, setShownPopup] = useState<ShownPopup>(null);
+    const hidePopup = () => setShownPopup(null);
+
+    const disableButtons: boolean = project === undefined;
+
+    return (
+        <div hidden={!show}>
+            {
+                project
+                    ? <NewIncidentPopup show={shownPopup == "new_incident"} onHide={hidePopup} project={project}/>
+                    : undefined
+            }
+
             <div className="w-full h-96
                     border-5 border-(--color-si-card-border)
-                    rounded-2xl shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll text-(--color-si-input-text)">
+                    rounded-2xl rounded-tl-none shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll text-(--color-si-input-text)">
                 {
                     incidents?.map((incident) => {
                         return <p>
@@ -137,7 +185,29 @@ function ProjectView({project}: { project?: Project }) {
                         disabled:opacity-60 text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
                     Zgłoś nowy incydent
                 </button>
+            </div>
+        </div>
+    );
+}
 
+function MemberList({show, project, members} : {show: boolean, project?: Project, members?: ProjectMemberResponse[]}) {
+    const disableButtons: boolean = project === undefined;
+
+    return (
+        <div hidden={!show} className={"flex-1"}>
+            <div className="w-full h-96
+                    border-5 border-(--color-si-card-border)
+                    rounded-2xl rounded-tl-none shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll text-(--color-si-input-text)">
+                {
+                    members?.map((member) => {
+                        return <p>
+                            {member.username} - {member.roleName}
+                        </p>;
+                    }) ?? <h1>Ładowanie...</h1>
+                }
+            </div>
+
+            <div className="w-full flex gap-3 p-3 justify-end">
                 <button
                     disabled={disableButtons}
                     className="px-6 py-2
@@ -148,7 +218,38 @@ function ProjectView({project}: { project?: Project }) {
                 </button>
             </div>
         </div>
-    );
+    )
+}
+
+function RoleList({show, project, roles} : {show: boolean, project?: Project, roles?: RoleResponse[]}) {
+    const disableButtons: boolean = project === undefined;
+
+    return (
+        <div hidden={!show} className={"flex-1"}>
+            <div className="w-full h-96
+                    border-5 border-(--color-si-card-border)
+                    rounded-2xl rounded-tl-none shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll text-(--color-si-input-text)">
+                {
+                    roles?.map((role) => {
+                        return <p>
+                            {role.name}
+                        </p>;
+                    }) ?? <h1>Ładowanie...</h1>
+                }
+            </div>
+
+            <div className="w-full flex gap-3 p-3 justify-end">
+                <button
+                    disabled={disableButtons}
+                    className="px-6 py-2
+                        bg-(--color-si-btn)
+                        hover:bg-(--color-si-btn-hover) shadow-lg
+                        disabled:opacity-60 text-white text-md font-semibold rounded-lg cursor-pointer transition-colors duration-200">
+                    Utwórz nową rolę
+                </button>
+            </div>
+        </div>
+    )
 }
 
 type ShownPopup = "new_incident" | null;

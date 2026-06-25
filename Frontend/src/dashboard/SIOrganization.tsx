@@ -278,9 +278,7 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
 
     return (
         <Popup show={show} className={"w-full max-w-xl"}>
-            <fetcher.Form method="POST" onSubmit={() => {
-                fetcher.reset();
-            }}>
+            <fetcher.Form method="POST" onSubmit={() => fetcher.reset()}>
                 <h1 className="text-3xl font-bold text-(--color-si-label)">
                     Dodaj do organizacji
                 </h1>
