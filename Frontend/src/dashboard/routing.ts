@@ -53,6 +53,7 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
                     return {
                         ok: true,
                         token: inviteResponse.token,
+                        inviteUrl: inviteResponse.inviteUrl,
                     };
                 }
             }
@@ -76,7 +77,7 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
             const token = formData.get(FORM_INVITE_TOKEN)?.toString()?.trim();
 
             if (token) {
-                const organizationId = await Api.organization.organizationJoinPost({
+                const joinedSuccessfully = await Api.organization.organizationJoinPost({
                     joinByInviteRequest: {
                         token: token
                     }
@@ -85,7 +86,7 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
                     () => false
                 )
 
-                if (organizationId) {
+                if (joinedSuccessfully) {
                     return {ok: true};
                 }
             }

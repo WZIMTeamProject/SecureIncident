@@ -62,6 +62,10 @@ function IncidentView({incident}: { incident?: Incident }) {
     const [shownPopup, setShownPopup] = useState<IncidentPopupType>(null);
     const hidePopup = () => setShownPopup(null);
 
+    if (logs && incident === undefined) {
+        setLogs(undefined);
+    }
+
     useEffect(() => {
         if (incident) {
             Api.incidents.incidentsIncidentIdLogsGet({
@@ -174,7 +178,7 @@ function IncidentView({incident}: { incident?: Incident }) {
 
 function LogHistory({logs}: { logs?: IncidentLogEntry[] }) {
     const logNodes = useMemo(() => {
-        return logs?.map(log => <LogEntry log={log}/>);
+        return logs?.map(log => <LogEntry key={log.id} log={log}/>);
     }, [logs]);
 
     const [isShown, setIsShown] = useState(false);
@@ -339,7 +343,6 @@ function AddToIncidentPopup({incident, show, onHide}: { incident: Incident, show
                     type="hidden"
                     value={FORM_ACTION_INVITE_USER}/>
             </fetcher.Form>
-
         </Popup>
     );
 }

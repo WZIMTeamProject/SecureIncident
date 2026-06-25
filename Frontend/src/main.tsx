@@ -13,12 +13,19 @@ import {
     loginFormAction,
     logoutMiddleware,
     redirectToDashboardMiddleware,
-    registerFormAction, resetPasswordAction,
+    registerFormAction,
+    resetPasswordAction,
     SIForgotPassword,
     SILoginPage,
     SIRegisterPage
 } from "./login";
-import {AuthRouterContext, authUserLoader, getAuthState} from "./data/auth.ts";
+import {
+    authGuardMiddleware,
+    AuthRouterContext,
+    authUserLoader,
+    getAuthState,
+    organizationJoinLoader
+} from "./data/auth.ts";
 import {SIStartPage} from "./SIStartPage.tsx";
 import {SIPageNotFound} from "./SIPageNotFound.tsx";
 import {accountAction, SIAccountPage, SINotificationPage} from "./account";
@@ -27,7 +34,7 @@ import {THEME_PREFERENCE, THEME_PREFERENCE_DARK} from "./data/cookies.ts";
 import type {SIContext} from "./data/context.ts";
 import {SIOrganization} from "./dashboard/SIOrganization.tsx";
 import {SIIncident} from "./dashboard/SIIncident.tsx";
-import {dashboardIncidentsAction, dashboardOrganizationAction, dashboardProjectsAction} from "./dashboard/routing.ts";
+import {dashboardIncidentsAction, dashboardOrganizationAction, dashboardProjectsAction,} from "./dashboard/routing.ts";
 
 const appRootLoader: LoaderFunction = async ({context}) => {
     const middlewareContext = (context as Readonly<RouterContextProvider>);
@@ -73,6 +80,13 @@ const router = createBrowserRouter([
                         action: dashboardIncidentsAction,
                     }
                 ]
+            },
+
+            // Joining organization invites
+            {
+                path: "/join",
+                loader: organizationJoinLoader,
+                middleware: [authGuardMiddleware],
             },
 
             // Login related stuff
