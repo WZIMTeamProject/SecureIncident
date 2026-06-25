@@ -154,6 +154,27 @@
         }
       }
     },
+    "/auth/change-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Change password of current user",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ChangePasswordRequest" }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "Password changed successfully" },
+          "400": { "description": "Current password is incorrect, or the new password equals the current one" },
+          "401": { "description": "Not authenticated" },
+          "422": { "description": "Validation error (weak new password)" }
+        }
+      }
+    },
     "/auth/me": {
       "get": {
         "tags": ["Auth"],
@@ -826,6 +847,38 @@
         }
       }
     },
+    "/incidents/notifications": {
+      "get": {
+        "tags": ["Incidents"],
+        "summary": "Get notification feed for current user",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 0, "default": 0 }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notifications returned",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/IncidentLogListResponse" }
+              }
+            }
+          },
+          "401": { "description": "Not authenticated" }
+        }
+      }
+    },
     "/incidents/{incident_id}": {
       "get": {
         "tags": ["Incidents"],
@@ -1217,6 +1270,14 @@
         "required": ["reset_token", "new_password"],
         "properties": {
           "reset_token": { "type": "string", "minLength": 1, "maxLength": 255 },
+          "new_password": { "type": "string", "format": "password", "minLength": 8, "maxLength": 72 }
+        }
+      },
+      "ChangePasswordRequest": {
+        "type": "object",
+        "required": ["current_password", "new_password"],
+        "properties": {
+          "current_password": { "type": "string", "format": "password", "minLength": 1, "maxLength": 72 },
           "new_password": { "type": "string", "format": "password", "minLength": 8, "maxLength": 72 }
         }
       },

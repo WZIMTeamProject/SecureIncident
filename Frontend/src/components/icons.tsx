@@ -64,6 +64,28 @@ export function IconLockCheck() {
 }
 
 /**
+ * Image/picture icon (for the `profile picture URL` field).
+ */
+export function IconImage() {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 shrink-0">
+        <rect x="3" y="5" width="18" height="14" rx="2"/>
+        <circle cx="8.5" cy="10" r="1.5"/>
+        <path d="M21 16l-5-5L5 19"/>
+    </svg>;
+}
+
+/**
+ * Comment/chat bubble icon (for `COMMENT` notifications).
+ */
+export function IconComment() {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 shrink-0">
+        <path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-5 4V6a1 1 0 0 1 1-1z"/>
+        <line x1="8" y1="10" x2="16" y2="10"/>
+        <line x1="8" y1="13" x2="13" y2="13"/>
+    </svg>;
+}
+
+/**
  * Hamburger icon (opens the mobile navigation menu).
  */
 export function IconMenu() {

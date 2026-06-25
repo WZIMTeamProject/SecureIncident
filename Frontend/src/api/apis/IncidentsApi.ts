@@ -53,6 +53,11 @@ export interface IncidentsHistoryGetRequest {
     limit?: number;
 }
 
+export interface IncidentsNotificationsGetRequest {
+    offset?: number;
+    limit?: number;
+}
+
 export interface IncidentsIncidentIdAssigneePatchRequest {
     incidentId: string;
     updateIncidentAssigneeRequest: UpdateIncidentAssigneeRequest;
@@ -176,6 +181,48 @@ export class IncidentsApi extends runtime.BaseAPI {
      */
     async incidentsHistoryGet(requestParameters: IncidentsHistoryGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<IncidentLogListResponse> {
         const response = await this.incidentsHistoryGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get notification feed for current user
+     */
+    async incidentsNotificationsGetRaw(requestParameters: IncidentsNotificationsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<IncidentLogListResponse>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['offset'] != null) {
+            queryParameters['offset'] = requestParameters['offset'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/incidents/notifications`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => IncidentLogListResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get notification feed for current user
+     */
+    async incidentsNotificationsGet(requestParameters: IncidentsNotificationsGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<IncidentLogListResponse> {
+        const response = await this.incidentsNotificationsGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
