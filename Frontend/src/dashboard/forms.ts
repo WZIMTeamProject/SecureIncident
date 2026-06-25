@@ -24,3 +24,11 @@ export const FORM_ACTION_NEW_ROLE = "new_role";
 
 export const FORM_ACTION_CREATE_ORGANIZATION = "create_organization";
 export const FORM_ACTION_JOIN_ORGANIZATION = "join_organization";
+
+export const PERM_WRITE_TICKETS = "write_tickets";
+export const PERM_HELP = "help";
+export const PERM_ASSIGN_HELP = "assign_help";
+export const PERM_CHANGE_STATUS = "change_status";
+export const PERM_MAKE_ROLES = "make_roles";
+export const PERM_CHANGE_ROLES = "change_roles";
+export const PERM_ASSIGN_TO_PROJECT = "assign_to_project";

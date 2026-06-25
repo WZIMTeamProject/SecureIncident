@@ -1,17 +1,28 @@
+import * as React from "react";
 import {useEffect, useRef, useState} from "react";
 import type {Incident, Project} from "../data/project.ts";
 import {Link, useFetcher, useParams} from "react-router";
 import Api from "../data/Api.ts";
 import {
     FORM_ACTION,
-    FORM_ACTION_NEW_INCIDENT, FORM_ACTION_NEW_ROLE,
+    FORM_ACTION_NEW_INCIDENT,
+    FORM_ACTION_NEW_ROLE,
     FORM_INCIDENT_ASSIGNEES,
     FORM_INCIDENT_DESCRIPTION,
     FORM_INCIDENT_NAME,
-    FORM_INCIDENT_PRIORITY, FORM_PROJECT_ID, FORM_ROLE_NAME, FORM_ROLE_PERMISSION,
+    FORM_INCIDENT_PRIORITY,
+    FORM_PROJECT_ID,
+    FORM_ROLE_NAME,
+    FORM_ROLE_PERMISSION,
+    PERM_ASSIGN_HELP,
+    PERM_ASSIGN_TO_PROJECT,
+    PERM_CHANGE_ROLES,
+    PERM_CHANGE_STATUS,
+    PERM_HELP,
+    PERM_MAKE_ROLES,
+    PERM_WRITE_TICKETS,
 } from "./forms.ts";
 import {Popup} from "../components/Popup.tsx";
-import * as React from "react";
 import type {ProjectMemberResponse, RoleResponse} from "../api";
 
 export function SIProject() {
@@ -57,9 +68,18 @@ export function SIProject() {
 function ProjectView({project}: { project?: Project }) {
     const [incidents, setIncidents] = useState<Incident[] | undefined>(undefined);
     const [members, setMembers] = useState<ProjectMemberResponse[] | undefined>(undefined);
+    const [roles, setRoles] = useState<RoleResponse[] | undefined>(undefined);
 
-    if (incidents !== undefined && project === undefined) {
-        setIncidents(undefined);
+    if (project === undefined) {
+        if (incidents !== undefined) {
+            setIncidents(undefined);
+        }
+        if (members !== undefined) {
+            setMembers(undefined);
+        }
+        if (roles !== undefined) {
+            setRoles(undefined);
+        }
     }
 
     useEffect(() => {
@@ -87,7 +107,9 @@ function ProjectView({project}: { project?: Project }) {
                         setIncidents(fetchedIncidents);
                     }
                 },
-                () => {setIncidents([])}
+                () => {
+                    setIncidents([])
+                }
             );
 
             Api.projects.projectsProjectIdMembersGet({
@@ -98,11 +120,28 @@ function ProjectView({project}: { project?: Project }) {
                         setMembers(memberResponse.members);
                     }
                 },
-                () => {setMembers([])}
+                () => {
+                    setMembers([]);
+                }
+            );
+
+            Api.roles.projectsProjectIdRolesGet({
+                projectId: project.id,
+            }).then(
+                (roleResponse) => {
+                    if (!ignore) {
+                        setRoles(roleResponse.items);
+                    }
+                },
+                () => {
+                    setRoles([]);
+                }
             );
         }
 
-        return () => {ignore = true};
+        return () => {
+            ignore = true
+        };
     }, [project]);
 
     return (
@@ -122,7 +161,7 @@ function ProjectView({project}: { project?: Project }) {
                 Incydenty
             </div>
 
-            <IncidentList show={true} project={project} incidents={incidents} />
+            <IncidentList show={true} project={project} incidents={incidents}/>
 
             <div className="flex flex-row justify-center gap-3">
                 <div className={"flex-1"}>
@@ -131,7 +170,7 @@ function ProjectView({project}: { project?: Project }) {
                         rounded-t-lg w-fit shadow-lg">
                         Członkowie
                     </div>
-                    <MemberList show={true} project={project} members={members} />
+                    <MemberList show={true} project={project} members={members}/>
                 </div>
 
                 <div className={"flex-1"}>
@@ -140,14 +179,14 @@ function ProjectView({project}: { project?: Project }) {
                         rounded-t-lg w-fit shadow-lg">
                         Role
                     </div>
-                    <RoleList show={true} project={project} roles={[]} />
+                    <RoleList show={true} project={project} roles={roles}/>
                 </div>
             </div>
         </div>
     );
 }
 
-function IncidentList({show, project, incidents}: {show: boolean, project?: Project, incidents?: Incident[]}) {
+function IncidentList({show, project, incidents}: { show: boolean, project?: Project, incidents?: Incident[] }) {
     const [shownPopup, setShownPopup] = useState<ShownPopup>(null);
     const hidePopup = () => setShownPopup(null);
 
@@ -186,7 +225,7 @@ function IncidentList({show, project, incidents}: {show: boolean, project?: Proj
     );
 }
 
-function IncidentEntry({incident}: {incident: Incident}) {
+function IncidentEntry({incident}: { incident: Incident }) {
     return <div>
         <Link to={`/dashboard/incident/${incident.id}`} className={"hover:underline"}>
             {incident.title} - {incident.id}
@@ -194,7 +233,7 @@ function IncidentEntry({incident}: {incident: Incident}) {
     </div>
 }
 
-function MemberList({show, project, members} : {show: boolean, project?: Project, members?: ProjectMemberResponse[]}) {
+function MemberList({show, project, members}: { show: boolean, project?: Project, members?: ProjectMemberResponse[] }) {
     const disableButtons: boolean = project === undefined;
 
     return (
@@ -225,7 +264,7 @@ function MemberList({show, project, members} : {show: boolean, project?: Project
     )
 }
 
-function RoleList({show, project, roles} : {show: boolean, project?: Project, roles?: RoleResponse[]}) {
+function RoleList({show, project, roles}: { show: boolean, project?: Project, roles?: RoleResponse[] }) {
     const [showPopup, setShowPopup] = useState<boolean>(false);
     const hidePopup = () => setShowPopup(false);
 
@@ -413,7 +452,7 @@ function NewIncidentPopup({show, onHide, project}: { show: boolean, onHide: () =
     );
 }
 
-function NewRolePopup({show, onHide, project} : {show: boolean, onHide: () => void, project: Project}) {
+function NewRolePopup({show, onHide, project}: { show: boolean, onHide: () => void, project: Project }) {
     const fetcher = useFetcher();
     const busy = fetcher.state != "idle";
 
@@ -476,7 +515,7 @@ function NewRolePopup({show, onHide, project} : {show: boolean, onHide: () => vo
                                 type="checkbox"
                                 ref={rolePermWriteTicketRef}
                                 name={FORM_ROLE_PERMISSION}
-                                value="write_ticket"
+                                value={PERM_WRITE_TICKETS}
                                 className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
                             />
                             Tworzenie ticketów
@@ -487,7 +526,7 @@ function NewRolePopup({show, onHide, project} : {show: boolean, onHide: () => vo
                                 type="checkbox"
                                 ref={rolePermHelpRef}
                                 name={FORM_ROLE_PERMISSION}
-                                value="help"
+                                value={PERM_HELP}
                                 className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
                             />
                             Pomaganie
@@ -498,7 +537,7 @@ function NewRolePopup({show, onHide, project} : {show: boolean, onHide: () => vo
                                 type="checkbox"
                                 ref={rolePermAssignHelpRef}
                                 name={FORM_ROLE_PERMISSION}
-                                value="assign_help"
+                                value={PERM_ASSIGN_HELP}
                                 className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
                             />
                             Przypisywanie pomocników
@@ -509,7 +548,7 @@ function NewRolePopup({show, onHide, project} : {show: boolean, onHide: () => vo
                                 type="checkbox"
                                 ref={rolePermChangeStatusRef}
                                 name={FORM_ROLE_PERMISSION}
-                                value="change_status"
+                                value={PERM_CHANGE_STATUS}
                                 className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
                             />
                             Zmiana statusu
@@ -520,7 +559,7 @@ function NewRolePopup({show, onHide, project} : {show: boolean, onHide: () => vo
                                 type="checkbox"
                                 ref={rolePermMakeRoleRef}
                                 name={FORM_ROLE_PERMISSION}
-                                value="make_role"
+                                value={PERM_MAKE_ROLES}
                                 className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
                             />
                             Tworzenie ról
@@ -531,7 +570,7 @@ function NewRolePopup({show, onHide, project} : {show: boolean, onHide: () => vo
                                 type="checkbox"
                                 ref={rolePermChangeRoleRef}
                                 name={FORM_ROLE_PERMISSION}
-                                value="change_role"
+                                value={PERM_CHANGE_ROLES}
                                 className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
                             />
                             Edytowanie ról
@@ -542,7 +581,7 @@ function NewRolePopup({show, onHide, project} : {show: boolean, onHide: () => vo
                                 type="checkbox"
                                 ref={rolePermAssignToProjectRef}
                                 name={FORM_ROLE_PERMISSION}
-                                value="assign_to_project"
+                                value={PERM_ASSIGN_TO_PROJECT}
                                 className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
                             />
                             Przypisywanie do projektów
