@@ -8,11 +8,12 @@ export function SIForgotPassword() {
     const busy = fetcher.state != "idle";
     const isPostSend = fetcher.data?.ok;
 
-    // TODO: Make it more obvious the page is about resetting the password
-
     return (
         <div className="min-h-screen flex flex-col bg-(--color-si-page-bg) transition-colors duration-300">
             <Background>
+
+                <h1 className="text-(--color-si-join-us-text) text-4xl font-bold mb-7 mb-5">Zapomniałaś_eś hasła? </h1> 
+
                 <div className="w-full max-w-md
                     bg-(--color-si-card-bg)
                     border-5 border-(--color-si-card-border)
@@ -31,13 +32,24 @@ export function SIForgotPassword() {
                                 <span className="text-(--color-si-input-icon)"><IconUser/></span>
                                 <input
                                     id={FORM_USERNAME}
+                                    required={true}
                                     type="text"
                                     name={FORM_USERNAME}
-                                    placeholder="Email lub Nazwa użytkownika"
+                                    placeholder="E-mail lub nazwa użytkownika"
                                     className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                                 />
                             </div>
                         </div>
+
+                    <span className="text-(--color-si-label) text-sm">
+                        Na Twój adres e-mail zostanie wysłany link do resetu hasła.
+                    </span>
+
+
+                    {fetcher.data?.error && (
+                        <p className="text-red-500 dark:text-red-400 text-sm">{fetcher.data.error}</p>
+                    )}
+
 
                         {/* Submit */}
                         <div className={`flex items-center justify-between`}>
@@ -54,6 +66,7 @@ export function SIForgotPassword() {
                             />
                         </div>
                     </fetcher.Form>
+
                     <div className="flex flex-col gap-5" hidden={!isPostSend}>
                         <p className="text-lg font-bold text-(--color-si-input-text)">
                             Wysłano zapytanie

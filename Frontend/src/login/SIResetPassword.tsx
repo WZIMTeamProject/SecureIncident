@@ -10,11 +10,13 @@ export function SIResetPassword() {
     const busy = fetcher.state != "idle";
     const resetToken = searchParams.get("token");
 
-    // TODO: Make it more obvious the page is about resetting the password
-
     return (
         <div className="min-h-screen flex flex-col bg-(--color-si-page-bg) transition-colors duration-300">
             <Background>
+
+                <h1 className="text-(--color-si-join-us-text) text-4xl font-bold mb-7 mb-5">Zresetuj swoje hasło</h1> 
+
+
                 <div className="w-full max-w-md
                     bg-(--color-si-card-bg)
                     border-5 border-(--color-si-card-border)
@@ -59,7 +61,7 @@ export function SIResetPassword() {
                                     required={true}
                                     type="password"
                                     name={FORM_PASSWORD_REPEAT}
-                                    placeholder="Powtórz Hasło"
+                                    placeholder="Powtórz hasło"
                                     className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                                 />
                             </div>

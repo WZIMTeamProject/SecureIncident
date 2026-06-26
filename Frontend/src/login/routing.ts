@@ -108,7 +108,11 @@ export const forgotPasswordAction: ActionFunction = async ({request}) => {
 
     const emailOrUsername = formData.get(FORM_USERNAME)?.toString()?.trim();
 
-    if (emailOrUsername) {
+    if (!emailOrUsername) {
+        return { ok: false, error: "Podaj e-mail lub nazwę użytkownika." };
+    }
+
+    try {
         await Api.auth.authRequestPasswordResetPost({
             passwordResetRequest: {
                 emailOrUsername: emailOrUsername,
@@ -116,8 +120,8 @@ export const forgotPasswordAction: ActionFunction = async ({request}) => {
         });
 
         return { ok: true }
-    } else {
-        return { ok: false }
+    } catch (error) {
+        return { ok: false, error: "Nie udało się wysłać żądania. Spróbuj ponownie później." };
     }
 }
 

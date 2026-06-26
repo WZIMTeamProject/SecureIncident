@@ -31,11 +31,18 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
             }
         } else if (organizationAction === FormActions.InviteUser) {
             const maxUses = Number(formData.get(OrganizationForms.InviteCount));
+        } else if (organizationAction === FORM_ACTION_INVITE_USER) {
+            const maxUses = Number(formData.get(FORM_INVITE_COUNT));
+            const durationHours = Number(formData.get(FORM_INVITE_DURATION_HOURS));
 
             if (maxUses > 0) {
+                const expiresAt = durationHours > 0
+                    ? new Date(Date.now() + durationHours * 3600_000)
+                    : undefined;
+
                 const inviteResponse = await Api.organization.organizationInvitesPost({
                     createOrgInviteRequest: {
-                        expiresAt: undefined,
+                        expiresAt: expiresAt,
                         maxUses: maxUses,
                     }
                 }).catch(() => null);
