@@ -45,9 +45,24 @@ select = ["E", "F", "I", "UP"]
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
+# E402: route modules are imported at the bottom of the file and each registered
+# via include_router() immediately after, so they attach only once the app, CORS,
+# middleware and exception handlers are fully configured. The imports are
+# deliberately not in the top-of-file block.
 "backend/main.py" = ["E402"]
+# E402: sys.path.insert() must run before `from db import ...` — the local `db`
+# package is not importable until the backend dir is added to sys.path. This is
+# the standard Alembic env.py bootstrap and the imports cannot move to the top.
 "backend/alembic/env.py" = ["E402"]
+# F821: models annotate relationships as Mapped[User], Mapped[Project], etc.
+# without importing those sibling classes (importing them would create circular
+# imports between model modules). SQLAlchemy resolves the relationship at runtime
+# from the string class name (e.g. "User") via its registry, so the bare name is
+# undefined to static analysis and Ruff reports it as F821.
 "backend/db/models/*.py" = ["F821"]
+# S101: the flake8-bandit "assert used" rule — test code legitimately relies on
+# bare `assert`. NOTE: `S` is not in the `select` set above, so this currently has
+# no effect; it is kept defensively in case the S family is enabled later.
 "backend/tests/*.py" = ["S101"]
 # E711/E712: SQLAlchemy column comparisons require `== None` / `== True` to build
 # SQL IS NULL / = true clauses; `is None` would short-circuit to a Python bool and
@@ -60,7 +75,12 @@ quote-style = "double"
 [tool.vulture]
 min_confidence = 80
 paths = ["backend"]
+# Tests are excluded: fixtures, parametrized args and helpers look unused to a
+# static dead-code scanner (they are invoked by pytest, not by direct callers).
 exclude = ["*/tests/*"]
 
 [tool.bandit]
+# Tests are excluded from SAST: they intentionally use patterns bandit flags as
+# risky (bare `assert` -> B101, hardcoded throwaway passwords/secrets -> B105/B106)
+# which are safe and expected in test code, not in shipped backend code.
 exclude_dirs = ["backend/tests"]
