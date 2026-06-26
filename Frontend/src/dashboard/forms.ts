@@ -3,6 +3,7 @@ export enum OrganizationForms {
     ProjectName = "project_name",
     Description = "description",
     InviteCount = "invite_count",
+    DurationHours = "duration_hours",
     InviteToken = "invite_token",
 }
 

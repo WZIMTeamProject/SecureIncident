@@ -31,9 +31,7 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
             }
         } else if (organizationAction === FormActions.InviteUser) {
             const maxUses = Number(formData.get(OrganizationForms.InviteCount));
-        } else if (organizationAction === FORM_ACTION_INVITE_USER) {
-            const maxUses = Number(formData.get(FORM_INVITE_COUNT));
-            const durationHours = Number(formData.get(FORM_INVITE_DURATION_HOURS));
+            const durationHours = Number(formData.get(OrganizationForms.DurationHours));
 
             if (maxUses > 0) {
                 const expiresAt = durationHours > 0
