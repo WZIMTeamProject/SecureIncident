@@ -59,6 +59,17 @@ with open("build/tests.md", "r") as f:
 with open("build/tests.md", "w") as f:
     f.writelines([line + "\n" for line in lines[3:-3]])
 
+res = subprocess.run(
+    ["npm.cmd", "test"],
+    env=env, cwd="../Frontend", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, check=False
+)
+with open("../docs/build/tests.md", "a", encoding="utf-8") as f:
+    f.write(res.stdout)
+try:
+    res.check_returncode()
+except:
+    print("Error with tests")
+
 subprocess.run(
     ["npm.cmd", "run", "docs"],
     cwd="../Frontend", check=True
