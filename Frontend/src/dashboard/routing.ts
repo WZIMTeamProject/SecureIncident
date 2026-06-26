@@ -159,6 +159,8 @@ export const dashboardProjectsAction: ActionFunction = async ({request}) => {
                     return {ok: true};
                 }
             }
+        } else if (projectAction === FormActions.InviteUser) {
+            // TODO: user invitations
         }
     }
 
