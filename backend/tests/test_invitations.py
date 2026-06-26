@@ -133,7 +133,7 @@ class TestCreateInvite:
         auth_headers: dict,
         db: AsyncSession,
     ):
-        expires_at = datetime.now(UTC) + timedelta(days=7)
+        expires_at = datetime.now(UTC) + timedelta(hours=2)
         await client.post(
             f"/api/projects/{test_project.id}/invites",
             headers=auth_headers,
@@ -170,6 +170,105 @@ class TestCreateInvite:
         )
         invite = result.scalar_one_or_none()
         assert invite.max_uses == 3
+
+    async def test_create_invite_stores_supplied_expires_at_without_offset(
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_project,
+        test_role,
+        auth_headers: dict,
+        db: AsyncSession,
+    ):
+        expires_at = datetime.now(UTC) + timedelta(hours=2)
+        await client.post(
+            f"/api/projects/{test_project.id}/invites",
+            headers=auth_headers,
+            json={"role_id": str(test_role.id), "expires_at": expires_at.isoformat()},
+        )
+
+        result = await db.execute(
+            select(OrganizationInvite).where(
+                OrganizationInvite.project_id == test_project.id
+            )
+        )
+        invite = result.scalar_one_or_none()
+        expected = expires_at.astimezone(UTC).replace(tzinfo=None)
+        assert abs((invite.expires_at - expected).total_seconds()) < 5
+
+    async def test_create_invite_without_expires_at_applies_default(
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_project,
+        test_role,
+        auth_headers: dict,
+        db: AsyncSession,
+    ):
+        await client.post(
+            f"/api/projects/{test_project.id}/invites",
+            headers=auth_headers,
+            json={"role_id": str(test_role.id)},
+        )
+
+        result = await db.execute(
+            select(OrganizationInvite).where(
+                OrganizationInvite.project_id == test_project.id
+            )
+        )
+        invite = result.scalar_one_or_none()
+        assert invite.expires_at is not None
+        expected = datetime.now(UTC).replace(tzinfo=None) + timedelta(minutes=60)
+        assert abs((invite.expires_at - expected).total_seconds()) < 120
+
+    async def test_create_invite_with_past_expires_at_returns_422(
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_project,
+        test_role,
+        auth_headers: dict,
+    ):
+        expires_at = datetime.now(UTC) - timedelta(hours=1)
+        response = await client.post(
+            f"/api/projects/{test_project.id}/invites",
+            headers=auth_headers,
+            json={"role_id": str(test_role.id), "expires_at": expires_at.isoformat()},
+        )
+        assert response.status_code == 422
+
+    async def test_create_invite_beyond_max_cap_returns_422(
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_project,
+        test_role,
+        auth_headers: dict,
+    ):
+        expires_at = datetime.now(UTC) + timedelta(hours=48)
+        response = await client.post(
+            f"/api/projects/{test_project.id}/invites",
+            headers=auth_headers,
+            json={"role_id": str(test_role.id), "expires_at": expires_at.isoformat()},
+        )
+        assert response.status_code == 422
+
+    async def test_create_invite_exactly_at_cap_is_accepted(
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_project,
+        test_role,
+        auth_headers: dict,
+    ):
+        # 24h is the max dropdown value and equals the cap; the 5-min skew grace must let it through.
+        expires_at = datetime.now(UTC) + timedelta(hours=24)
+        response = await client.post(
+            f"/api/projects/{test_project.id}/invites",
+            headers=auth_headers,
+            json={"role_id": str(test_role.id), "expires_at": expires_at.isoformat()},
+        )
+        assert response.status_code == 201
 
 
 class TestGetInvitePreview:

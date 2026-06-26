@@ -1,10 +1,11 @@
 import logging
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from api.schemas.invitation.request import CreateInviteRequest
 from api.schemas.invitation.response import InvitePreviewResponse
 from core import security
+from core.config import settings
 from db import repositories
 from db.models.organization_invite import OrganizationInvite
 from db.models.user import User
@@ -12,6 +13,43 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
+
+
+def resolve_invite_expiry(expires_at: datetime | None) -> datetime:
+    """Resolve an invite expiry: default when omitted, reject past/over-cap.
+
+    Returns an aware-UTC datetime (the repository stores it UTC-naive). Shared by project and
+    organization invite creation so the rules cannot diverge.
+    """
+    now = datetime.now(UTC)
+    if expires_at is None:
+        return now + timedelta(minutes=settings.INVITE_EXPIRE_MINUTES)
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=UTC)
+    if expires_at <= now:
+        logger.warning("Invite expiry rejected: in the past expires_at=%s", expires_at)
+        raise HTTPException(status_code=422, detail="expires_at must be in the future")
+    # 5-minute grace absorbs client/server clock skew so a legitimate max-duration selection
+    # (== cap) is not spuriously rejected when the client clock runs slightly ahead.
+    cap = (
+        now
+        + timedelta(minutes=settings.INVITE_MAX_EXPIRE_MINUTES)
+        + timedelta(minutes=5)
+    )
+    if expires_at > cap:
+        logger.warning(
+            "Invite expiry rejected: beyond cap expires_at=%s cap_minutes=%s",
+            expires_at,
+            settings.INVITE_MAX_EXPIRE_MINUTES,
+        )
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"expires_at must be at most {settings.INVITE_MAX_EXPIRE_MINUTES} "
+                "minutes in the future"
+            ),
+        )
+    return expires_at
 
 
 async def create_project_invite(
@@ -73,7 +111,7 @@ async def create_project_invite(
         created_by_id=created_by.id,
         token_hash=token_hash,
         role_id=data.role_id,
-        expires_at=data.expires_at,
+        expires_at=resolve_invite_expiry(data.expires_at),
         max_uses=data.max_uses,
     )
     await db.commit()

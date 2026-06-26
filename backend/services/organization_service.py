@@ -12,6 +12,8 @@ from db.models.user import User
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from services.invitation_service import resolve_invite_expiry
+
 logger = logging.getLogger(__name__)
 
 
@@ -199,7 +201,7 @@ async def create_invite(
         organization_id=organization.id,
         created_by_id=current_user.id,
         token_hash=token_hash,
-        expires_at=data.expires_at,
+        expires_at=resolve_invite_expiry(data.expires_at),
         max_uses=data.max_uses,
     )
     await db.commit()
