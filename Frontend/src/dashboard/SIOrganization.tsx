@@ -10,6 +10,7 @@ import {
     FORM_ACTION_JOIN_ORGANIZATION,
     FORM_ACTION_NEW_PROJECT,
     FORM_INVITE_COUNT,
+    FORM_INVITE_DURATION_HOURS,
     FORM_INVITE_TOKEN,
     FORM_ORGANIZATION_DESCRIPTION,
     FORM_ORGANIZATION_NAME,
@@ -306,6 +307,31 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                             name={FORM_INVITE_COUNT}
                             className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
+                    </div>
+                </div>
+
+                <div className="flex gap-1.5 my-3 justify-center items-center">
+                    <label
+                        htmlFor={FORM_INVITE_DURATION_HOURS}
+                        className="text-(--color-si-input-icon)">
+                        Ważność zaproszenia:
+                    </label>
+
+                    <div className="flex items-center gap-3
+                            border border-(--color-si-input-border)
+                            rounded-lg px-3 py-2.5
+                            bg-(--color-si-input-bg) transition-colors">
+
+                        <select
+                            id={FORM_INVITE_DURATION_HOURS}
+                            name={FORM_INVITE_DURATION_HOURS}
+                            defaultValue={1}
+                            className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)">
+                            <option value={1}>1 godzina</option>
+                            <option value={6}>6 godzin</option>
+                            <option value={12}>12 godzin</option>
+                            <option value={24}>24 godziny</option>
+                        </select>
                     </div>
                 </div>
 

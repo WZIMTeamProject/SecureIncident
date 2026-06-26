@@ -111,6 +111,78 @@ class TestOrgInviteCreation:
         )
         assert response.status_code == 401
 
+    async def test_create_org_invite_stores_supplied_expires_at_without_offset(
+        self,
+        client: AsyncClient,
+        db: AsyncSession,
+        test_org: Organization,
+        org_owner_headers: dict,
+    ):
+        expires_at = datetime.now(UTC) + timedelta(hours=2)
+        await client.post(
+            "/api/organization/invites",
+            headers=org_owner_headers,
+            json={"expires_at": expires_at.isoformat()},
+        )
+
+        result = await db.execute(
+            select(OrganizationInvite).where(
+                OrganizationInvite.organization_id == test_org.id
+            )
+        )
+        invite = result.scalar_one_or_none()
+        expected = expires_at.astimezone(UTC).replace(tzinfo=None)
+        assert abs((invite.expires_at - expected).total_seconds()) < 5
+
+    async def test_create_org_invite_without_expires_at_applies_default(
+        self,
+        client: AsyncClient,
+        db: AsyncSession,
+        test_org: Organization,
+        org_owner_headers: dict,
+    ):
+        await client.post(
+            "/api/organization/invites",
+            headers=org_owner_headers,
+            json={},
+        )
+
+        result = await db.execute(
+            select(OrganizationInvite).where(
+                OrganizationInvite.organization_id == test_org.id
+            )
+        )
+        invite = result.scalar_one_or_none()
+        assert invite.expires_at is not None
+        expected = datetime.now(UTC).replace(tzinfo=None) + timedelta(minutes=60)
+        assert abs((invite.expires_at - expected).total_seconds()) < 120
+
+    async def test_create_org_invite_with_past_expires_at_returns_422(
+        self,
+        client: AsyncClient,
+        org_owner_headers: dict,
+    ):
+        expires_at = datetime.now(UTC) - timedelta(hours=1)
+        response = await client.post(
+            "/api/organization/invites",
+            headers=org_owner_headers,
+            json={"expires_at": expires_at.isoformat()},
+        )
+        assert response.status_code == 422
+
+    async def test_create_org_invite_beyond_max_cap_returns_422(
+        self,
+        client: AsyncClient,
+        org_owner_headers: dict,
+    ):
+        expires_at = datetime.now(UTC) + timedelta(hours=48)
+        response = await client.post(
+            "/api/organization/invites",
+            headers=org_owner_headers,
+            json={"expires_at": expires_at.isoformat()},
+        )
+        assert response.status_code == 422
+
 
 class TestOrgJoin:
     async def test_join_org_returns_204_with_valid_org_invite_token(
