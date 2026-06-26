@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import delete, or_, select, update
@@ -6,6 +6,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from db.models.organization_invite import OrganizationInvite
+
+
+def _to_naive_utc(expires_at: datetime | None) -> datetime | None:
+    """Normalize an expiry to UTC-naive for storage (naive input is treated as UTC)."""
+    if expires_at is None:
+        return None
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=UTC)
+    return expires_at.astimezone(UTC).replace(tzinfo=None)
 
 
 async def create_project_invite(
@@ -26,9 +35,7 @@ async def create_project_invite(
         created_by_id=created_by_id,
         token=token_hash,
         role_id=role_id,
-        expires_at=expires_at.replace(tzinfo=None) + timedelta(hours=1)
-        if expires_at is not None
-        else None,
+        expires_at=_to_naive_utc(expires_at),
         max_uses=max_uses,
         use_count=0,
     )
@@ -57,9 +64,7 @@ async def create_organization_invite(
         role_id=None,
         created_by_id=created_by_id,
         token=token_hash,
-        expires_at=expires_at.replace(tzinfo=None) + timedelta(hours=1)
-        if expires_at is not None
-        else None,
+        expires_at=_to_naive_utc(expires_at),
         max_uses=max_uses,
         use_count=0,
     )

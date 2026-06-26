@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     REMEMBER_ME_EXPIRE_MINUTES: int = 10080
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     PASSWORD_RESET_EXPIRE_MINUTES: int = 30
+    INVITE_EXPIRE_MINUTES: int = 60
+    INVITE_MAX_EXPIRE_MINUTES: int = 1440
     ALLOWED_ORIGINS: list[str] = ["http://localhost:5173"]
     SMTP_HOST: str = "mailpit"
     SMTP_PORT: int = 1025
