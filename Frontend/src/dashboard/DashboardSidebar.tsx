@@ -73,7 +73,7 @@ function ProjectLinks({projects, selected}: { projects: Project[] | undefined, s
     }
 
     const projectLinks = projects.map((project) => {
-        return <h2 className="overflow-x-clip">
+        return <h2 key={project.id} className="overflow-x-clip">
             <Link
                 to={`/dashboard/project/${project.id}`}
                 className={`hover:underline text-lg text-(--color-si-input-text)
@@ -85,7 +85,7 @@ function ProjectLinks({projects, selected}: { projects: Project[] | undefined, s
 
     if (projectLinks.length == 0) {
         projectLinks.push(
-            <h2 className="font-medium text-lg text-(--color-si-input-text) italic"> - Brak - </h2>
+            <h2 key={"EMPTY"} className="font-medium text-lg text-(--color-si-input-text) italic"> - Brak - </h2>
         );
     }
 
@@ -108,6 +108,7 @@ function IncidentLinks({incidents, selected}: { incidents: Incident[] | undefine
 
     const incidentLinks = incidents.map((incident) => {
         return <Link
+            key={incident.id}
             to={`/dashboard/incident/${incident.id}`}
             className={`hover:underline text-lg text-(--color-si-input-text)
                 ${selected && incident.id == selected ? "font-extrabold" : "font-medium"}`}>
@@ -117,7 +118,7 @@ function IncidentLinks({incidents, selected}: { incidents: Incident[] | undefine
 
     if (incidentLinks.length == 0) {
         incidentLinks.push(
-            <h2 className="font-medium text-lg text-(--color-si-input-text) italic"> - Brak - </h2>
+            <h2 key={"EMPTY"} className="font-medium text-lg text-(--color-si-input-text) italic"> - Brak - </h2>
         );
     }
 

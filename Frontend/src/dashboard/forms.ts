@@ -1,35 +1,46 @@
-export const FORM_PROJECT_NAME = "project_name";
-export const FORM_PROJECT_DESCRIPTION = "project_details";
-export const FORM_INVITE_NAME = "invite_name";
-export const FORM_INVITE_COUNT = "invite_count";
-export const FORM_INVITE_DURATION_HOURS = "invite_duration_hours";
-export const FORM_ORGANIZATION_NAME = "organization_name";
-export const FORM_INVITE_TOKEN = "invite_token";
-export const FORM_ORGANIZATION_DESCRIPTION = "organization_description";
+export enum OrganizationForms {
+    OrganizationName = "organization_name",
+    ProjectName = "project_name",
+    Description = "description",
+    InviteCount = "invite_count",
+    DurationHours = "duration_hours",
+    InviteToken = "invite_token",
+}
+
+export enum ProjectForms {
+    IncidentName = "incident_name",
+    IncidentDescription = "incident_description",
+    IncidentPriority = "incident_priority",
+    IncidentAssignees = "incident_assignees",
+    ProjectId = "project_id",
+    RoleName = "role_name",
+    RolePermissions = "role_permissions",
+    UserName = "user_name",
+    UserRole = "user_role",
+}
+
+export enum IncidentForms {
+    InviteName = "invite_name",
+}
+
 export const FORM_ACTION = "action";
-export const FORM_INCIDENT_NAME = "incident_name";
-export const FORM_INCIDENT_DESCRIPTION = "incident_details";
-export const FORM_INCIDENT_PRIORITY = "incident_priority";
-export const FORM_INCIDENT_ASSIGNEES = "incident_priority";
-export const FORM_PROJECT_ID = "project_id";
 
-export const FORM_ROLE_NAME = "role_name";
-export const FORM_ROLE_PERMISSION = "role_permission";
+export enum FormActions {
+    NewProject = "new_project",
+    InviteUser = "invite_user",
+    CreateOrganization = "create_organization",
+    DeleteOrganization = "delete_organization",
+    JoinOrganization = "join_organization",
+    NewIncident = "new_incident",
+    NewRole = "new_role",
+}
 
-export const FORM_ACTION_NEW_PROJECT = "new_project";
-export const FORM_ACTION_INVITE_USER = "invite_user";
-export const FORM_ACTION_DELETE_ORGANIZATION = "delete_organization";
-
-export const FORM_ACTION_NEW_INCIDENT = "new_incident";
-export const FORM_ACTION_NEW_ROLE = "new_role";
-
-export const FORM_ACTION_CREATE_ORGANIZATION = "create_organization";
-export const FORM_ACTION_JOIN_ORGANIZATION = "join_organization";
-
-export const PERM_WRITE_TICKETS = "write_tickets";
-export const PERM_HELP = "help";
-export const PERM_ASSIGN_HELP = "assign_help";
-export const PERM_CHANGE_STATUS = "change_status";
-export const PERM_MAKE_ROLES = "make_roles";
-export const PERM_CHANGE_ROLES = "change_roles";
-export const PERM_ASSIGN_TO_PROJECT = "assign_to_project";
+export enum UserPermissions {
+    WriteTickets = "write_tickets",
+    Help = "help",
+    AssignHelp = "assign_help",
+    ChangeStatus = "change_status",
+    MakeRoles = "make_roles",
+    ChangeRoles = "change_roles",
+    AssignToProject = "assign_to_project",
+}
