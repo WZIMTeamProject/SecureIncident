@@ -160,7 +160,26 @@ export const dashboardProjectsAction: ActionFunction = async ({request}) => {
                 }
             }
         } else if (projectAction === FormActions.InviteUser) {
-            // TODO: user invitations
+            const userId = formData.get(ProjectForms.UserName)?.toString()?.trim();
+            const roleId = formData.get(ProjectForms.UserRole)?.toString()?.trim();
+
+            if (projectId && userId && roleId) {
+                const result = await Api.projects.projectsProjectIdMembersPostRaw({
+                    projectId: projectId,
+                    addProjectMemberRequest: {
+                        userId: userId,
+                        roleId: roleId,
+                    }
+                }).catch(() => null);
+
+                if (result) {
+                    return {ok: true};
+                } else {
+                    return {ok: false};
+                }
+            } else {
+                return {ok: false};
+            }
         }
     }
 

@@ -27,7 +27,7 @@ export function RoleList({show, project, projectInfo}: { show: boolean, project?
                     rounded-2xl rounded-tl-none shadow-lg px-8 py-8 transition-colors duration-300 overflow-y-scroll text-(--color-si-input-text)">
                 {
                     roles?.map((role) => {
-                        return <p>
+                        return <p key={role.id}>
                             {role.name}
                         </p>;
                     }) ?? <h1>Ładowanie...</h1>
