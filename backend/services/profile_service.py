@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 async def get_profile(current_user: User) -> ProfileResponse:
-    """Return the authenticated user's profile."""
+    """Returns the current user's profile."""
     return ProfileResponse(
         id=current_user.id,
         username=current_user.username,
@@ -29,7 +29,7 @@ async def update_profile(
     current_user: User,
     data: UpdateProfileRequest,
 ) -> None:
-    """Update user profile with username uniqueness validation."""
+    """Updates the profile. Username must remain unique."""
     if data.username and data.username != current_user.username:
         existing = await user_repo.get_user_by_username(db, data.username)
         if existing:
@@ -52,7 +52,7 @@ async def search_users(
     query: str,
     current_user: User,
 ) -> UserSearchResponse:
-    """Search for users in the same organization or projects."""
+    """Search users by username. Limited to same organization or shared projects."""
     users = await user_repo.search_users_by_username(
         db=db,
         query=query,

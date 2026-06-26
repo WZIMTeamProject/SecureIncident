@@ -16,6 +16,7 @@ async def get_my_profile(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> ProfileResponse:
+    """Returns the current user's profile."""
     return await profile_service.get_profile(current_user)
 
 
@@ -25,4 +26,5 @@ async def update_my_profile(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> None:
+    """Updates the current user's profile."""
     await profile_service.update_profile(db, current_user, data)

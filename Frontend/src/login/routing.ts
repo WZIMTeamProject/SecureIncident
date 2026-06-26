@@ -24,7 +24,7 @@ export interface ResetPasswordActionResult {
 }
 
 /**
- * When used as routing middleware, redirects the user to their dashboard if they try accessing this page.
+ * Redirects authenticated users away from login/register pages to the dashboard.
  */
 export const redirectToDashboardMiddleware: MiddlewareFunction = async ({context}, next) => {
     if (context.get(AuthRouterContext)) {
@@ -34,6 +34,9 @@ export const redirectToDashboardMiddleware: MiddlewareFunction = async ({context
     return await next();
 };
 
+/**
+ * When the logout query parameter is present, clears session cookies and auth context.
+ */
 export const logoutMiddleware: MiddlewareFunction = async ({request, context}, next) => {
     const urlParams = new URL(request.url).searchParams;
 

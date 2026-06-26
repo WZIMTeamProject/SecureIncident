@@ -121,6 +121,7 @@ async def update_role(
 
 
 async def _get_project(db: AsyncSession, project_id: UUID) -> Project:
+    """Loads a project or raises 404."""
     project = await repositories.project_repo.get_project_by_id(db, project_id)
     if project is None:
         logger.warning(
@@ -135,6 +136,7 @@ async def _get_project(db: AsyncSession, project_id: UUID) -> Project:
 async def _require_member(
     db: AsyncSession, project_id: UUID, current_user: User
 ) -> Project:
+    """Loads a project and verifies the current user is a member."""
     project = await _get_project(db, project_id)
     membership = await repositories.project_repo.get_user_project(
         db, current_user.id, project_id
@@ -154,6 +156,7 @@ async def _require_member(
 async def _require_owner(
     db: AsyncSession, project_id: UUID, current_user: User
 ) -> Project:
+    """Verify current user is project owner (MVP: owner FK check, not full RBAC)."""
     project = await _get_project(db, project_id)
     if project.project_owner_id != current_user.id:
         logger.warning(

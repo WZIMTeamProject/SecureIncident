@@ -25,7 +25,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def create_access_token(user_id: str, remember_user: bool = False) -> str:
-    """Create JWT token."""
+    """Create JWT access token. Longer expiry when remember_user is true."""
     if remember_user:
         expire_minutes = settings.REMEMBER_ME_EXPIRE_MINUTES
     else:
@@ -65,6 +65,7 @@ def generate_token() -> str:
 
 
 def validate_password_strength(v: str) -> str:
+    """Validates password length, byte limit, and character-class requirements."""
     if len(v) < 8:
         raise ValueError("Password must be at least 8 characters")
     if len(v.encode("utf-8")) > 72:

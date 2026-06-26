@@ -248,10 +248,10 @@ export interface RegistrationResult {
 }
 
 /**
- * Gets the authentication state from the browser cookies.
+ * Gets the authentication state from browser cookies, optionally validated via `/me`.
  *
- * @param forceValidate If set to `false`, the function will blindly trust the data stored in cookies and not validate it with the server.
- * @returns The auth state of the current user, or `null` if not logged in.
+ * @param forceValidate When `false`, trusts cookie values without calling the API.
+ * @returns Auth state for the current user, or `null` if not logged in.
  */
 export async function getAuthState(forceValidate: boolean = true): Promise<AuthState | null> {
     const [idCookie, usernameCookie, organizationCookie] = await Promise.all([
@@ -318,7 +318,7 @@ export async function getAuthState(forceValidate: boolean = true): Promise<AuthS
 }
 
 /**
- * When used as router middleware, redirects the user to the login page if they are not logged in.
+ * Router middleware: redirects to login when no authenticated user is in context.
  */
 export const authGuardMiddleware: MiddlewareFunction = async ({context}, next) => {
     const currentAuthState = context.get(AuthRouterContext);
@@ -331,7 +331,7 @@ export const authGuardMiddleware: MiddlewareFunction = async ({context}, next) =
 }
 
 /**
- * Utility loader that works similarly to `authGuardMiddleware`, but allows getting the actual AuthState with `useLoaderData()`.
+ * Loader that requires auth (like `authGuardMiddleware`) and exposes `AuthState` via `useLoaderData()`.
  */
 export const authUserLoader: LoaderFunction = async ({context}) => {
     const middlewareContext = (context as Readonly<RouterContextProvider>);
@@ -346,9 +346,12 @@ export const authUserLoader: LoaderFunction = async ({context}) => {
 };
 
 /**
- * Attempts to log in a user with the given credentials.
+ * Attempts to log in with the given credentials.
  *
- * @returns Whether the user was successfully logged in.
+ * In dev, username `DEBUG@<name>` with any non-empty password creates a dummy session
+ * (no API call) for UI testing with arbitrary display names.
+ *
+ * @returns Whether login succeeded.
  */
 export async function attemptLogin(name: string, password: string, remember_user: boolean): Promise<boolean> {
     const currentUser = await getAuthState();
@@ -404,7 +407,7 @@ export async function attemptLogin(name: string, password: string, remember_user
 }
 
 /**
- * Logs out the current user. Safe to call even when no user is logged in.
+ * Logs out the current user. Safe to call when no user is logged in.
  */
 export async function attemptLogout() {
     // Always delete everything on logout, even if something fails, no login data should remain
@@ -416,6 +419,11 @@ export async function attemptLogout() {
     await cookieStore.delete(CURRENT_USER_ORGANIZATION_COOKIE).catch(() => null);
 }
 
+/**
+ * Registers a new user.
+ *
+ * Maps HTTP 422 to `username_too_short` (covers weak passwords and short usernames).
+ */
 export async function attemptRegistration(
     firstName: string,
     lastName: string,

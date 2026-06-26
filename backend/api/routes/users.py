@@ -16,4 +16,5 @@ async def search_users(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> UserSearchResponse:
+    """Searches users by username."""
     return await profile_service.search_users(db, query, current_user)
