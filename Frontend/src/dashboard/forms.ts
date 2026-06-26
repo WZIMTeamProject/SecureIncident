@@ -14,6 +14,8 @@ export enum ProjectForms {
     ProjectId = "project_id",
     RoleName = "role_name",
     RolePermissions = "role_permissions",
+    UserName = "user_name",
+    UserRole = "user_role",
 }
 
 export enum IncidentForms {
