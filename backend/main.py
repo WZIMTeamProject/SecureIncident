@@ -98,9 +98,15 @@ app = FastAPI(title="Secure Incident API", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    # Auth is a Bearer token in the Authorization header (no cookies), so credentials
+    # are not needed; keeping this False avoids exposing credentialed responses and
+    # the wildcard-origin restriction that allow_credentials=True would impose.
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PATCH", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
+    # X-Request-ID is set by LoggingMiddleware; expose it so the browser can read it
+    # for client-side error correlation.
+    expose_headers=["X-Request-ID"],
 )
 app.add_middleware(
     LoggingMiddleware
