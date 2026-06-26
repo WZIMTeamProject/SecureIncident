@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Class-based dark mode: drive `dark:` utilities off the `.dark` class toggled
+   in SIAppRoot (Tailwind v4 doesn't load the JS config's darkMode setting). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* COLORS */
 
 :root {
@@ -27,7 +31,7 @@
     --color-si-scrollbar-background: #d1c1e4;
 
 
-    /*Start page individual colors*/    
+    /*Start page individual colors*/
     --color-si-start-page-text: #8f5aba;
     --color-si-join-us-text: #7e2fba;
 }

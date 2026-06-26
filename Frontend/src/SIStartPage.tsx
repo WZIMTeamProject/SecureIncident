@@ -1,39 +1,33 @@
 import {Background} from "./components/Background.tsx";
-import {Link, useLoaderData} from "react-router";
+import {Link} from "react-router";
 import bgLockLight from "./components/images/Secure Incident lock bright.png";
 import bgLockDark from "./components/images/Secure Incident lock dark.png";
-
-
-// TODO: 1. add proper theme switch for bgLock picture (currently only Light is displayed)
-//       2. fix bgLock banner height (remove the cropping of lower part of the lock image)
-//       3. fix bgLock resizing during window resizing
-//       4. add shadow to h1 text to be fancy
 
 
 export function SIStartPage() {
 
     return (
     <Background>
-        
+
             <div className="w-full flex flex-col items-center ">
 
-                <section className="relative mt-3 w-screen mx-[calc(50%-50vw)]"> 
+                <section className="relative mt-3 w-screen mx-[calc(50%-50vw)] aspect-[1920/658] min-h-44 max-h-[420px] lg:max-h-[520px]">
                     <img
                         src={bgLockLight}
                         alt=""
                         aria-hidden="true"
-                        className="block dark:hidden w-full h-56 md:h-72 object-cover"
+                        className="block dark:hidden w-full h-full object-cover"
                     />
                     <img
                         src={bgLockDark}
                         alt=""
                         aria-hidden="true"
-                        className="hidden dark:block w-full h-56 md:h-72 object-cover"
+                        className="hidden dark:block w-full h-full object-cover"
                     />
 
                     <div className="absolute inset-0 flex items-center">
                         <div className="px-6 md:px-16 max-w-xl">
-                            <h1 className="text-white text-2xl md:text-3xl ml-10 font-bold leading-snug">
+                            <h1 className="text-white text-2xl md:text-3xl ml-10 font-bold leading-snug drop-shadow-md">
                                 Twój zaufany manager <br></br> incydentów
                             </h1>
                             <span className="block w-50 h-0.5 bg-white/70 mt-6 ml-23"/>
