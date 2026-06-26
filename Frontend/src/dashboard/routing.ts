@@ -1,15 +1,5 @@
 import {type ActionFunction} from "react-router";
-import {
-    FORM_ACTION, FORM_ACTION_CREATE_ORGANIZATION,
-    FORM_ACTION_DELETE_ORGANIZATION,
-    FORM_ACTION_INVITE_USER, FORM_ACTION_JOIN_ORGANIZATION, FORM_ACTION_NEW_INCIDENT,
-    FORM_ACTION_NEW_PROJECT, FORM_ACTION_NEW_ROLE,
-    FORM_INCIDENT_DESCRIPTION, FORM_INCIDENT_NAME,
-    FORM_INCIDENT_PRIORITY, FORM_INVITE_COUNT, FORM_INVITE_TOKEN, FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
-    FORM_PROJECT_DESCRIPTION, FORM_PROJECT_ID,
-    FORM_PROJECT_NAME, FORM_ROLE_NAME, FORM_ROLE_PERMISSION, PERM_ASSIGN_HELP, PERM_ASSIGN_TO_PROJECT,
-    PERM_CHANGE_ROLES, PERM_CHANGE_STATUS, PERM_HELP, PERM_MAKE_ROLES, PERM_WRITE_TICKETS
-} from "./forms.ts";
+import {FORM_ACTION, FormActions, OrganizationForms, ProjectForms, UserPermissions} from "./forms.ts";
 import Api from "../data/Api.ts";
 import type {IncidentPriority} from "../api";
 
@@ -22,9 +12,9 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
     }
 
     if (request.method === "POST") {
-        if (organizationAction === FORM_ACTION_NEW_PROJECT) {
-            const projectName = formData.get(FORM_PROJECT_NAME)?.toString()?.trim();
-            const projectDescription = formData.get(FORM_PROJECT_DESCRIPTION)?.toString()?.trim();
+        if (organizationAction === FormActions.NewProject) {
+            const projectName = formData.get(OrganizationForms.ProjectName)?.toString()?.trim();
+            const projectDescription = formData.get(OrganizationForms.Description)?.toString()?.trim();
 
             if (projectName) {
                 const createdId = await Api.projects.projectsPost({
@@ -39,8 +29,8 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
                     return {ok: true};
                 }
             }
-        } else if (organizationAction === FORM_ACTION_INVITE_USER) {
-            const maxUses = Number(formData.get(FORM_INVITE_COUNT));
+        } else if (organizationAction === FormActions.InviteUser) {
+            const maxUses = Number(formData.get(OrganizationForms.InviteCount));
 
             if (maxUses > 0) {
                 const inviteResponse = await Api.organization.organizationInvitesPost({
@@ -50,7 +40,7 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
                     }
                 }).catch(() => null);
 
-                if(inviteResponse) {
+                if (inviteResponse) {
                     return {
                         ok: true,
                         token: inviteResponse.token,
@@ -58,9 +48,9 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
                     };
                 }
             }
-        } else if (organizationAction === FORM_ACTION_CREATE_ORGANIZATION) {
-            const organizationName = formData.get(FORM_ORGANIZATION_NAME)?.toString()?.trim();
-            const organizationDescription = formData.get(FORM_ORGANIZATION_DESCRIPTION)?.toString()?.trim();
+        } else if (organizationAction === FormActions.CreateOrganization) {
+            const organizationName = formData.get(OrganizationForms.OrganizationName)?.toString()?.trim();
+            const organizationDescription = formData.get(OrganizationForms.Description)?.toString()?.trim();
 
             if (organizationName) {
                 const organizationId = await Api.organization.organizationPost({
@@ -74,8 +64,8 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
                     return {ok: true};
                 }
             }
-        } else if (organizationAction === FORM_ACTION_JOIN_ORGANIZATION) {
-            const token = formData.get(FORM_INVITE_TOKEN)?.toString()?.trim();
+        } else if (organizationAction === FormActions.JoinOrganization) {
+            const token = formData.get(OrganizationForms.InviteToken)?.toString()?.trim();
 
             if (token) {
                 const joinedSuccessfully = await Api.organization.organizationJoinPost({
@@ -93,7 +83,7 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
             }
         }
     } else if (request.method === "DELETE") {
-        if (organizationAction === FORM_ACTION_DELETE_ORGANIZATION) {
+        if (organizationAction === FormActions.DeleteOrganization) {
             // TODO
             return {ok: true}
         }
@@ -110,14 +100,14 @@ export const dashboardProjectsAction: ActionFunction = async ({request}) => {
         return {ok: false};
     }
 
-    const projectId = formData.get(FORM_PROJECT_ID)?.toString()?.trim();
+    const projectId = formData.get(ProjectForms.ProjectId)?.toString()?.trim();
 
     if (request.method === "POST") {
-        if (projectAction === FORM_ACTION_NEW_INCIDENT) {
-            const incidentName = formData.get(FORM_INCIDENT_NAME)?.toString()?.trim();
-            const incidentDescription = formData.get(FORM_INCIDENT_DESCRIPTION)?.toString()?.trim();
-            const incidentPriority = formData.get(FORM_INCIDENT_PRIORITY)?.toString()?.trim();
-            //const incidentAssignees = formData.get(FORM_INCIDENT_ASSIGNEES)?.toString()?.trim();
+        if (projectAction === FormActions.NewIncident) {
+            const incidentName = formData.get(ProjectForms.IncidentName)?.toString()?.trim();
+            const incidentDescription = formData.get(ProjectForms.IncidentDescription)?.toString()?.trim();
+            const incidentPriority = formData.get(ProjectForms.IncidentPriority)?.toString()?.trim();
+            // TODO: const incidentAssignees = ...
 
             if (incidentName && incidentDescription && projectId) {
                 const createdIncidentId = await Api.incidents.projectsProjectIdIncidentsPost({
@@ -131,22 +121,23 @@ export const dashboardProjectsAction: ActionFunction = async ({request}) => {
                     }
                 }).catch(() => null);
 
-                if (createdIncidentId){
+                if (createdIncidentId) {
                     return {ok: true};
                 }
             }
-        } else if (projectAction === FORM_ACTION_NEW_ROLE) {
-            const roleName = formData.get(FORM_ROLE_NAME)?.toString()?.trim();
-            const rolePermissions = formData.getAll(FORM_ROLE_PERMISSION).map((permission) => permission.toString());
+        } else if (projectAction === FormActions.NewRole) {
+            const roleName = formData.get(ProjectForms.RoleName)?.toString()?.trim();
+            const rolePermissions = formData.getAll(ProjectForms.RolePermissions)
+                .map((permission) => permission.toString());
 
             if (projectId && roleName) {
-                const canAssignToProjects = rolePermissions.includes(PERM_ASSIGN_TO_PROJECT);
-                const canChangeRoles = rolePermissions.includes(PERM_CHANGE_ROLES);
-                const canMakeRoles = rolePermissions.includes(PERM_MAKE_ROLES);
-                const canChangeStatus = rolePermissions.includes(PERM_CHANGE_STATUS);
-                const canAssignHelp = rolePermissions.includes(PERM_ASSIGN_HELP);
-                const canHelp = rolePermissions.includes(PERM_HELP);
-                const canWriteTickets = rolePermissions.includes(PERM_WRITE_TICKETS);
+                const canAssignToProjects = rolePermissions.includes(UserPermissions.AssignToProject);
+                const canChangeRoles = rolePermissions.includes(UserPermissions.ChangeRoles);
+                const canMakeRoles = rolePermissions.includes(UserPermissions.MakeRoles);
+                const canChangeStatus = rolePermissions.includes(UserPermissions.ChangeStatus);
+                const canAssignHelp = rolePermissions.includes(UserPermissions.AssignHelp);
+                const canHelp = rolePermissions.includes(UserPermissions.Help);
+                const canWriteTickets = rolePermissions.includes(UserPermissions.WriteTickets);
 
                 const createdRoleId = await Api.roles.projectsProjectIdRolesPost({
                     projectId: projectId,

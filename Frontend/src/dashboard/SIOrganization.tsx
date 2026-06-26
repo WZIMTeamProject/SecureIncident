@@ -2,22 +2,10 @@ import {AuthUserContext} from "../data/auth.ts";
 import {useContext, useDeferredValue, useEffect, useRef, useState} from "react";
 import type {Organization, Project} from "../data/project.ts";
 import {Popup} from "../components/Popup.tsx";
-import {
-    FORM_ACTION,
-    FORM_ACTION_CREATE_ORGANIZATION,
-    FORM_ACTION_DELETE_ORGANIZATION,
-    FORM_ACTION_INVITE_USER,
-    FORM_ACTION_JOIN_ORGANIZATION,
-    FORM_ACTION_NEW_PROJECT,
-    FORM_INVITE_COUNT,
-    FORM_INVITE_TOKEN,
-    FORM_ORGANIZATION_DESCRIPTION,
-    FORM_ORGANIZATION_NAME,
-    FORM_PROJECT_DESCRIPTION,
-    FORM_PROJECT_NAME
-} from "./forms.ts";
+import {FORM_ACTION, FormActions, OrganizationForms} from "./forms.ts";
 import {Link, useFetcher} from "react-router";
 import {IconCheck, IconClipboard} from "../components/icons.tsx";
+import {LoadingMessage} from "../components/LoadingMessage.tsx";
 
 export function SIOrganization() {
     const auth = useContext(AuthUserContext)!;
@@ -41,16 +29,6 @@ export function SIOrganization() {
                     ? <CreateOrganizationWidget/>
                     : <OrganizationView organization={organization}/>
             }
-        </div>
-    );
-}
-
-function LoadingMessage() {
-    return (
-        <div>
-            <div className="p-3">
-                <h1 className="text-2xl font-bold text-(--color-si-label)">Wczytywanie...</h1>
-            </div>
         </div>
     );
 }
@@ -194,10 +172,9 @@ function NewProjectPopup({show, onHide}: PopupProps) {
                                 bg-(--color-si-input-bg) transition-colors">
                         <input
                             ref={projectNameRef}
-                            id={FORM_PROJECT_NAME}
                             type="text"
                             required={true}
-                            name={FORM_PROJECT_NAME}
+                            name={OrganizationForms.ProjectName}
                             placeholder="Nazwa"
                             className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
@@ -209,9 +186,8 @@ function NewProjectPopup({show, onHide}: PopupProps) {
                                 bg-(--color-si-input-bg) transition-colors">
                         <input
                             ref={projectDescriptionRef}
-                            id={FORM_PROJECT_DESCRIPTION}
                             type="text"
-                            name={FORM_PROJECT_DESCRIPTION}
+                            name={OrganizationForms.Description}
                             placeholder="Opis (opcjonalny)"
                             className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
@@ -247,7 +223,7 @@ function NewProjectPopup({show, onHide}: PopupProps) {
                 <input
                     name={FORM_ACTION}
                     type="hidden"
-                    value={FORM_ACTION_NEW_PROJECT}/>
+                    value={FormActions.NewProject}/>
             </fetcher.Form>
         </Popup>
     );
@@ -298,12 +274,11 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
 
                         <input
                             ref={inviteCountRef}
-                            id={FORM_INVITE_COUNT}
                             type="number"
                             min={1}
                             max={20}
                             defaultValue={1}
-                            name={FORM_INVITE_COUNT}
+                            name={OrganizationForms.InviteCount}
                             className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
                     </div>
@@ -401,7 +376,7 @@ function AddToOrganizationPopup({show, onHide}: PopupProps) {
                 <input
                     name={FORM_ACTION}
                     type="hidden"
-                    value={FORM_ACTION_INVITE_USER}/>
+                    value={FormActions.InviteUser}/>
             </fetcher.Form>
 
         </Popup>
@@ -448,7 +423,7 @@ function DeleteOrganizationPopup({show, onHide}: PopupProps) {
                 <input
                     name={FORM_ACTION}
                     type="hidden"
-                    value={FORM_ACTION_DELETE_ORGANIZATION}/>
+                    value={FormActions.DeleteOrganization}/>
             </fetcher.Form>
         </Popup>
     );
@@ -486,9 +461,8 @@ function CreateOrganizationPopup({show, onHide}: PopupProps) {
                         <input
                             ref={organizationName}
                             required={true}
-                            id={FORM_ORGANIZATION_NAME}
                             type="text"
-                            name={FORM_ORGANIZATION_NAME}
+                            name={OrganizationForms.OrganizationName}
                             placeholder="Nazwa organizacji"
                             className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
@@ -500,9 +474,8 @@ function CreateOrganizationPopup({show, onHide}: PopupProps) {
                                 bg-(--color-si-input-bg) transition-colors">
                         <input
                             ref={organizationDescription}
-                            id={FORM_ORGANIZATION_DESCRIPTION}
                             type="text"
-                            name={FORM_ORGANIZATION_DESCRIPTION}
+                            name={OrganizationForms.Description}
                             placeholder="Opis (opcjonalny)"
                             className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
@@ -537,7 +510,7 @@ function CreateOrganizationPopup({show, onHide}: PopupProps) {
                 <input
                     name={FORM_ACTION}
                     type="hidden"
-                    value={FORM_ACTION_CREATE_ORGANIZATION}/>
+                    value={FormActions.CreateOrganization}/>
             </fetcher.Form>
         </Popup>
     );
@@ -571,9 +544,8 @@ function JoinOrganizationPopup({show, onHide}: PopupProps) {
                         <input
                             ref={tokenNameRef}
                             required={true}
-                            id={FORM_INVITE_TOKEN}
                             type="text"
-                            name={FORM_INVITE_TOKEN}
+                            name={OrganizationForms.InviteToken}
                             placeholder="Podaj token"
                             className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
@@ -607,7 +579,7 @@ function JoinOrganizationPopup({show, onHide}: PopupProps) {
                 <input
                     name={FORM_ACTION}
                     type="hidden"
-                    value={FORM_ACTION_JOIN_ORGANIZATION}/>
+                    value={FormActions.JoinOrganization}/>
             </fetcher.Form>
         </Popup>
     );

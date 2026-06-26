@@ -5,7 +5,8 @@ import type {Incident} from "../data/project.ts";
 import Api from "../data/Api.ts";
 import type {IncidentLogEntry, ProjectMemberResponse} from "../api";
 import {Popup} from "../components/Popup.tsx";
-import {FORM_ACTION, FORM_ACTION_INVITE_USER, FORM_INVITE_NAME} from "./forms.ts";
+import {FORM_ACTION, FormActions, IncidentForms} from "./forms.ts";
+import {LoadingMessage} from "../components/LoadingMessage.tsx";
 
 export function SIIncident() {
     const urlParams = useParams();
@@ -49,10 +50,6 @@ export function SIIncident() {
             {incident === null ? "ERROR" : <IncidentView incident={incident}/>}
         </div>
     );
-}
-
-function LoadingMessage() {
-    return <h1>Wczytywanie...</h1>;
 }
 
 type IncidentPopupType = "add_to_incident" | null;
@@ -295,10 +292,9 @@ function AddToIncidentPopup({incident, show, onHide}: { incident: Incident, show
                                 bg-(--color-si-input-bg) transition-colors">
                         <input
                             ref={usernameRef}
-                            id={FORM_INVITE_NAME}
                             type="text"
                             required={true}
-                            name={FORM_INVITE_NAME}
+                            name={IncidentForms.InviteName}
                             placeholder="Nazwa użytkownika"
                             className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
@@ -342,7 +338,7 @@ function AddToIncidentPopup({incident, show, onHide}: { incident: Incident, show
                 <input
                     name={FORM_ACTION}
                     type="hidden"
-                    value={FORM_ACTION_INVITE_USER}/>
+                    value={FormActions.InviteUser}/>
             </fetcher.Form>
         </Popup>
     );

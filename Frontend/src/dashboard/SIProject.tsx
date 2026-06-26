@@ -3,25 +3,7 @@ import {useContext, useEffect, useRef, useState} from "react";
 import type {Project} from "../data/project.ts";
 import {Link, useFetcher, useParams} from "react-router";
 import Api from "../data/Api.ts";
-import {
-    FORM_ACTION,
-    FORM_ACTION_NEW_INCIDENT,
-    FORM_ACTION_NEW_ROLE,
-    FORM_INCIDENT_ASSIGNEES,
-    FORM_INCIDENT_DESCRIPTION,
-    FORM_INCIDENT_NAME,
-    FORM_INCIDENT_PRIORITY,
-    FORM_PROJECT_ID,
-    FORM_ROLE_NAME,
-    FORM_ROLE_PERMISSION,
-    PERM_ASSIGN_HELP,
-    PERM_ASSIGN_TO_PROJECT,
-    PERM_CHANGE_ROLES,
-    PERM_CHANGE_STATUS,
-    PERM_HELP,
-    PERM_MAKE_ROLES,
-    PERM_WRITE_TICKETS,
-} from "./forms.ts";
+import {FORM_ACTION, FormActions, ProjectForms, UserPermissions} from "./forms.ts";
 import {Popup} from "../components/Popup.tsx";
 import type {IncidentSummary, ProjectMemberResponse, RoleResponse} from "../api";
 import {AuthUserContext} from "../data/auth.ts";
@@ -278,7 +260,7 @@ function MemberList({show, project, projectInfo}: { show: boolean, project?: Pro
     )
 }
 
-function RoleList({show, project, projectInfo}: { show: boolean, project?: Project, projectInfo?: ProjectInfo}) {
+function RoleList({show, project, projectInfo}: { show: boolean, project?: Project, projectInfo?: ProjectInfo }) {
     const [showPopup, setShowPopup] = useState<boolean>(false);
     const hidePopup = () => setShowPopup(false);
 
@@ -349,7 +331,7 @@ function NewIncidentPopup({show, onHide, project}: { show: boolean, onHide: () =
                 </h1>
 
                 <div className="flex flex-col gap-1.5 my-3">
-                    <label htmlFor={FORM_INCIDENT_NAME} className="text-sm font-medium text-(--color-si-label)">
+                    <label htmlFor={ProjectForms.IncidentName} className="text-sm font-medium text-(--color-si-label)">
                         Podaj nazwę incydentu:
                     </label>
                     <div className="flex items-center gap-3
@@ -358,10 +340,9 @@ function NewIncidentPopup({show, onHide, project}: { show: boolean, onHide: () =
                                 bg-(--color-si-input-bg) transition-colors">
                         <input
                             ref={incidentNameRef}
-                            id={FORM_INCIDENT_NAME}
                             type="text"
                             required={true}
-                            name={FORM_INCIDENT_NAME}
+                            name={ProjectForms.IncidentName}
                             placeholder="Nazwa"
                             className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
@@ -369,7 +350,8 @@ function NewIncidentPopup({show, onHide, project}: { show: boolean, onHide: () =
                 </div>
 
                 <div className="flex flex-col gap-1.5 my-3">
-                    <label htmlFor={FORM_INCIDENT_DESCRIPTION} className="text-sm font-medium text-(--color-si-label)">
+                    <label htmlFor={ProjectForms.IncidentDescription}
+                           className="text-sm font-medium text-(--color-si-label)">
                         Podaj opis incydentu:
                     </label>
                     <div className="flex items-center gap-3
@@ -378,10 +360,9 @@ function NewIncidentPopup({show, onHide, project}: { show: boolean, onHide: () =
                                 bg-(--color-si-input-bg) transition-colors">
                         <input
                             ref={incidentDescriptionRef}
-                            id={FORM_INCIDENT_DESCRIPTION}
                             type="text"
                             required={true}
-                            name={FORM_INCIDENT_DESCRIPTION}
+                            name={ProjectForms.IncidentDescription}
                             placeholder="Opis"
                             className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
@@ -389,7 +370,8 @@ function NewIncidentPopup({show, onHide, project}: { show: boolean, onHide: () =
                 </div>
 
                 <div className="flex flex-col gap-1.5 my-3">
-                    <label htmlFor={FORM_INCIDENT_PRIORITY} className="text-sm font-medium text-(--color-si-label)">
+                    <label htmlFor={ProjectForms.IncidentPriority}
+                           className="text-sm font-medium text-(--color-si-label)">
                         Podaj odpowiedni priorytet:
                     </label>
                     <div className="flex items-center gap-3
@@ -399,7 +381,7 @@ function NewIncidentPopup({show, onHide, project}: { show: boolean, onHide: () =
                         <select
                             ref={incidentPriorityRef}
                             required={true}
-                            name={FORM_INCIDENT_PRIORITY}
+                            name={ProjectForms.IncidentPriority}
                             className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)">
 
                             <option value={"LOW"}>Niski</option>
@@ -411,7 +393,8 @@ function NewIncidentPopup({show, onHide, project}: { show: boolean, onHide: () =
                 </div>
 
                 <div className="flex flex-col gap-1.5 my-3">
-                    <label htmlFor={FORM_INCIDENT_ASSIGNEES} className="text-sm font-medium text-(--color-si-label)">
+                    <label htmlFor={ProjectForms.IncidentAssignees}
+                           className="text-sm font-medium text-(--color-si-label)">
                         Przypisz użytkownika:
                     </label>
                     <div className="flex items-center gap-3
@@ -420,9 +403,8 @@ function NewIncidentPopup({show, onHide, project}: { show: boolean, onHide: () =
                                 bg-(--color-si-input-bg) transition-colors">
                         <input
                             ref={incidentAssigneesRef}
-                            id={FORM_INCIDENT_ASSIGNEES}
                             type="text"
-                            name={FORM_INCIDENT_ASSIGNEES}
+                            name={ProjectForms.IncidentAssignees}
                             placeholder="Wpisz nazwę użytkownika lub rolę (oddziel użytkowników przecinkiem)"
                             className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
@@ -458,13 +440,13 @@ function NewIncidentPopup({show, onHide, project}: { show: boolean, onHide: () =
                 </div>
 
                 <input
-                    name={FORM_PROJECT_ID}
+                    name={ProjectForms.ProjectId}
                     type="hidden"
                     value={project.id}/>
                 <input
                     name={FORM_ACTION}
                     type="hidden"
-                    value={FORM_ACTION_NEW_INCIDENT}/>
+                    value={FormActions.NewIncident}/>
             </fetcher.Form>
         </Popup>
     );
@@ -498,7 +480,7 @@ function NewRolePopup({show, onHide, project}: { show: boolean, onHide: () => vo
                 </h1>
 
                 <div className="flex flex-col gap-1.5 my-3">
-                    <label htmlFor={FORM_ROLE_NAME} className="text-sm font-medium text-(--color-si-label)">
+                    <label htmlFor={ProjectForms.RoleName} className="text-sm font-medium text-(--color-si-label)">
                         Podaj nazwę roli:
                     </label>
                     <div className="flex items-center gap-3
@@ -507,10 +489,9 @@ function NewRolePopup({show, onHide, project}: { show: boolean, onHide: () => vo
                                 bg-(--color-si-input-bg) transition-colors">
                         <input
                             ref={roleNameRef}
-                            id={FORM_ROLE_NAME}
                             type="text"
                             required={true}
-                            name={FORM_ROLE_NAME}
+                            name={ProjectForms.RoleName}
                             placeholder="Nazwa"
                             className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                         />
@@ -518,7 +499,8 @@ function NewRolePopup({show, onHide, project}: { show: boolean, onHide: () => vo
                 </div>
 
                 <div className="flex flex-col gap-1.5 my-3">
-                    <label htmlFor={FORM_ROLE_PERMISSION} className="text-sm font-medium text-(--color-si-label)">
+                    <label htmlFor={ProjectForms.RolePermissions}
+                           className="text-sm font-medium text-(--color-si-label)">
                         Pozwolenia:
                     </label>
 
@@ -532,19 +514,19 @@ function NewRolePopup({show, onHide, project}: { show: boolean, onHide: () => vo
                             <input
                                 type="checkbox"
                                 ref={rolePermWriteTicketRef}
-                                name={FORM_ROLE_PERMISSION}
-                                value={PERM_WRITE_TICKETS}
+                                name={ProjectForms.RolePermissions}
+                                value={UserPermissions.WriteTickets}
                                 className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
                             />
-                            Tworzenie ticketów
+                            Zgłaszanie incydentów
                         </div>
 
                         <div className="flex gap-1 items-center flex-1/2">
                             <input
                                 type="checkbox"
                                 ref={rolePermHelpRef}
-                                name={FORM_ROLE_PERMISSION}
-                                value={PERM_HELP}
+                                name={ProjectForms.RolePermissions}
+                                value={UserPermissions.Help}
                                 className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
                             />
                             Pomaganie
@@ -554,8 +536,8 @@ function NewRolePopup({show, onHide, project}: { show: boolean, onHide: () => vo
                             <input
                                 type="checkbox"
                                 ref={rolePermAssignHelpRef}
-                                name={FORM_ROLE_PERMISSION}
-                                value={PERM_ASSIGN_HELP}
+                                name={ProjectForms.RolePermissions}
+                                value={UserPermissions.AssignHelp}
                                 className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
                             />
                             Przypisywanie pomocników
@@ -565,8 +547,8 @@ function NewRolePopup({show, onHide, project}: { show: boolean, onHide: () => vo
                             <input
                                 type="checkbox"
                                 ref={rolePermChangeStatusRef}
-                                name={FORM_ROLE_PERMISSION}
-                                value={PERM_CHANGE_STATUS}
+                                name={ProjectForms.RolePermissions}
+                                value={UserPermissions.ChangeStatus}
                                 className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
                             />
                             Zmiana statusu
@@ -576,8 +558,8 @@ function NewRolePopup({show, onHide, project}: { show: boolean, onHide: () => vo
                             <input
                                 type="checkbox"
                                 ref={rolePermMakeRoleRef}
-                                name={FORM_ROLE_PERMISSION}
-                                value={PERM_MAKE_ROLES}
+                                name={ProjectForms.RolePermissions}
+                                value={UserPermissions.MakeRoles}
                                 className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
                             />
                             Tworzenie ról
@@ -587,8 +569,8 @@ function NewRolePopup({show, onHide, project}: { show: boolean, onHide: () => vo
                             <input
                                 type="checkbox"
                                 ref={rolePermChangeRoleRef}
-                                name={FORM_ROLE_PERMISSION}
-                                value={PERM_CHANGE_ROLES}
+                                name={ProjectForms.RolePermissions}
+                                value={UserPermissions.ChangeRoles}
                                 className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
                             />
                             Edytowanie ról
@@ -598,8 +580,8 @@ function NewRolePopup({show, onHide, project}: { show: boolean, onHide: () => vo
                             <input
                                 type="checkbox"
                                 ref={rolePermAssignToProjectRef}
-                                name={FORM_ROLE_PERMISSION}
-                                value={PERM_ASSIGN_TO_PROJECT}
+                                name={ProjectForms.RolePermissions}
+                                value={UserPermissions.AssignToProject}
                                 className="w-4 h-4 bg-(--color-si-input-bg) accent-(--color-si-btn) cursor-pointer"
                             />
                             Przypisywanie do projektów
@@ -640,13 +622,13 @@ function NewRolePopup({show, onHide, project}: { show: boolean, onHide: () => vo
                 </div>
 
                 <input
-                    name={FORM_PROJECT_ID}
+                    name={ProjectForms.ProjectId}
                     type="hidden"
                     value={project.id}/>
                 <input
                     name={FORM_ACTION}
                     type="hidden"
-                    value={FORM_ACTION_NEW_ROLE}/>
+                    value={FormActions.NewRole}/>
             </fetcher.Form>
         </Popup>
     );
