@@ -5,7 +5,7 @@ import {
     FORM_ACTION_INVITE_USER, FORM_ACTION_JOIN_ORGANIZATION, FORM_ACTION_NEW_INCIDENT,
     FORM_ACTION_NEW_PROJECT, FORM_ACTION_NEW_ROLE,
     FORM_INCIDENT_DESCRIPTION, FORM_INCIDENT_NAME,
-    FORM_INCIDENT_PRIORITY, FORM_INVITE_COUNT, FORM_INVITE_TOKEN, FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
+    FORM_INCIDENT_PRIORITY, FORM_INVITE_COUNT, FORM_INVITE_DURATION_HOURS, FORM_INVITE_TOKEN, FORM_ORGANIZATION_DESCRIPTION, FORM_ORGANIZATION_NAME,
     FORM_PROJECT_DESCRIPTION, FORM_PROJECT_ID,
     FORM_PROJECT_NAME, FORM_ROLE_NAME, FORM_ROLE_PERMISSION, PERM_ASSIGN_HELP, PERM_ASSIGN_TO_PROJECT,
     PERM_CHANGE_ROLES, PERM_CHANGE_STATUS, PERM_HELP, PERM_MAKE_ROLES, PERM_WRITE_TICKETS
@@ -41,11 +41,16 @@ export const dashboardOrganizationAction: ActionFunction = async ({request}) => 
             }
         } else if (organizationAction === FORM_ACTION_INVITE_USER) {
             const maxUses = Number(formData.get(FORM_INVITE_COUNT));
+            const durationHours = Number(formData.get(FORM_INVITE_DURATION_HOURS));
 
             if (maxUses > 0) {
+                const expiresAt = durationHours > 0
+                    ? new Date(Date.now() + durationHours * 3600_000)
+                    : undefined;
+
                 const inviteResponse = await Api.organization.organizationInvitesPost({
                     createOrgInviteRequest: {
-                        expiresAt: undefined,
+                        expiresAt: expiresAt,
                         maxUses: maxUses,
                     }
                 }).catch(() => null);
