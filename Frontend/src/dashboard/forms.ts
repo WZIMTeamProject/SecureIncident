@@ -2,6 +2,7 @@ export const FORM_PROJECT_NAME = "project_name";
 export const FORM_PROJECT_DESCRIPTION = "project_details";
 export const FORM_INVITE_NAME = "invite_name";
 export const FORM_INVITE_COUNT = "invite_count";
+export const FORM_INVITE_DURATION_HOURS = "invite_duration_hours";
 export const FORM_ORGANIZATION_NAME = "organization_name";
 export const FORM_INVITE_TOKEN = "invite_token";
 export const FORM_ORGANIZATION_DESCRIPTION = "organization_description";
