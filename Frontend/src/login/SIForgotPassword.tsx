@@ -33,7 +33,7 @@ export function SIForgotPassword() {
                                     id={FORM_USERNAME}
                                     type="text"
                                     name={FORM_USERNAME}
-                                    placeholder="Email lub Nazwa użytkownika"
+                                    placeholder="E-mail lub nazwa użytkownika"
                                     className="flex-1 bg-transparent outline-none text-sm text-(--color-si-input-text)"
                                 />
                             </div>

@@ -25,6 +25,11 @@
 
     --color-si-scrollbar-fill: #c091ea;
     --color-si-scrollbar-background: #d1c1e4;
+
+
+    /*Start page individual colors*/    
+    --color-si-start-page-text: #8f5aba;
+    --color-si-join-us-text: #7e2fba;
 }
 
 /* DARK */
@@ -51,6 +56,9 @@
 
     --color-si-scrollbar-fill: #8c52ff;
     --color-si-scrollbar-background: #d1c1e4;
+
+    --color-si-start-page-text: #bb89e5;
+    --color-si-join-us-text: #d1c1e4;
 
     color-scheme: dark;
 }
