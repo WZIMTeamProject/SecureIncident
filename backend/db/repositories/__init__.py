@@ -3,5 +3,7 @@ from db.repositories import incident_repo as incident_repo
 from db.repositories import invite_repo as invite_repo
 from db.repositories import organization_repo as organization_repo
 from db.repositories import project_repo as project_repo
+from db.repositories import refresh_token_repo as refresh_token_repo
+from db.repositories import revoked_family_repo as revoked_family_repo
 from db.repositories import revoked_token_repo as revoked_token_repo
 from db.repositories import user_repo as user_repo

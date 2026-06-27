@@ -1,9 +1,19 @@
 import datetime
+import uuid
 
+from core.config import settings
 from core.security import decode_token
-from db import repositories
 from db.models.user import User
-from fastapi import APIRouter, BackgroundTasks, Depends, Response, Security, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Request,
+    Response,
+    Security,
+    status,
+)
 from fastapi.security import HTTPAuthorizationCredentials
 from services import auth_service
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,8 +27,27 @@ from api.schemas.auth.request import (
     PasswordResetRequest,
     RegisterRequest,
 )
-from api.schemas.auth.response import CurrentUserResponse, LoginResponse
+from api.schemas.auth.response import (
+    CurrentUserResponse,
+    LoginResponse,
+    RefreshResponse,
+)
 from api.schemas.common.base import CreatedIdResponse, DetailResponse
+
+REFRESH_COOKIE_PATH = "/api/auth/refresh"
+
+
+def _set_refresh_cookie(response: Response, raw_token: str, max_age: int) -> None:
+    response.set_cookie(
+        settings.REFRESH_COOKIE_NAME,
+        raw_token,
+        httponly=True,
+        secure=settings.REFRESH_COOKIE_SECURE,
+        samesite=settings.REFRESH_COOKIE_SAMESITE,
+        path=REFRESH_COOKIE_PATH,
+        max_age=max_age,
+    )
+
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -33,16 +62,44 @@ async def register_user(data: RegisterRequest, db: AsyncSession = Depends(get_db
 
 
 @router.post("/login", response_model=LoginResponse)
-async def login_user(data: LoginRequest, db: AsyncSession = Depends(get_db)):
-    """Authenticate user and return JWT token."""
-    user, token = await auth_service.login_user(db, data)
+async def login_user(
+    data: LoginRequest,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+):
+    """Authenticate user, set the refresh cookie, and return the access token."""
+    result = await auth_service.login_user(db, data)
+    _set_refresh_cookie(response, result.raw_refresh_token, result.refresh_max_age)
     return LoginResponse(
-        access_token=token,
+        access_token=result.access_token,
+        expires_in=result.expires_in,
         user=CurrentUserResponse(
-            id=user.id,
-            username=user.username,
-            organization_id=user.organization_id,
+            id=result.user.id,
+            username=result.user.username,
+            organization_id=result.user.organization_id,
         ),
+    )
+
+
+@router.post("/refresh", response_model=RefreshResponse)
+async def refresh_tokens(
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+):
+    """Rotate the refresh cookie and issue a new access token (auth-exempt)."""
+    raw_token = request.cookies.get(settings.REFRESH_COOKIE_NAME)
+    if not raw_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    result = await auth_service.refresh_tokens(db, raw_token)
+    _set_refresh_cookie(response, result.raw_refresh_token, result.refresh_max_age)
+    return RefreshResponse(
+        access_token=result.access_token,
+        expires_in=result.expires_in,
     )
 
 
@@ -61,31 +118,36 @@ async def get_me(
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout_user(
+    response: Response,
     token_credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Log out the user by adding the token's unique JTI to the revocation list."""
-    token = token_credentials.credentials
-    payload = decode_token(token)
-    jti = payload.get("jti")
+    """Log out: denylist the access token's JTI and revoke its refresh family."""
+    payload = decode_token(token_credentials.credentials)
     exp_timestamp = payload.get("exp")
     expires_at = datetime.datetime.fromtimestamp(
         exp_timestamp, tz=datetime.UTC
     ).replace(tzinfo=None)
+    # Guard the parse: a malformed family_id claim must not 500 the logout — mirror
+    # the defensive handling in get_current_user and fall back to no family revoke.
+    family_raw = payload.get("family_id")
+    try:
+        family_id = uuid.UUID(family_raw) if family_raw else None
+    except ValueError:
+        family_id = None
 
-    await repositories.revoked_token_repo.add_revoked_token(
+    await auth_service.logout(
         db,
-        jti=jti,
-        user_id=current_user.id,
-        expires_at=expires_at,
+        current_user=current_user,
+        family_id=family_id,
+        access_jti=payload.get("jti"),
+        access_exp=expires_at,
     )
-    await db.commit()
 
-    await repositories.revoked_token_repo.cleanup_expired_revoked_tokens(db)
-    await db.commit()
-
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    response.delete_cookie(settings.REFRESH_COOKIE_NAME, path=REFRESH_COOKIE_PATH)
+    response.status_code = status.HTTP_204_NO_CONTENT
+    return response
 
 
 @router.post("/request-password-reset", status_code=status.HTTP_204_NO_CONTENT)

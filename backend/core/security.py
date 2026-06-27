@@ -24,17 +24,21 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     )
 
 
-def create_access_token(user_id: str, remember_user: bool = False) -> str:
-    """Create JWT access token. Longer expiry when remember_user is true."""
-    if remember_user:
-        expire_minutes = settings.REMEMBER_ME_EXPIRE_MINUTES
-    else:
-        expire_minutes = settings.ACCESS_TOKEN_EXPIRE_MINUTES
+def create_access_token(user_id: str, family_id: str | None = None) -> str:
+    """Create a short-lived access JWT bound to a refresh-token family.
 
-    expire = datetime.now(UTC) + timedelta(minutes=expire_minutes)
+    family_id ties the access token to its rotation lineage so logout / reuse
+    detection can revoke every token in the family. When omitted (e.g. test
+    helpers minting a standalone token) a fresh family is generated.
+    """
+    if family_id is None:
+        family_id = uuid.uuid4()
+
+    expire = datetime.now(UTC) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
     payload = {
         "sub": str(user_id),
+        "family_id": str(family_id),
         "exp": expire,
         "iat": datetime.now(UTC),
         "jti": str(uuid.uuid4()),

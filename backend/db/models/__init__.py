@@ -7,6 +7,8 @@ from db.models.organization import Organization
 from db.models.organization_invite import OrganizationInvite
 from db.models.password_reset_token import PasswordResetToken
 from db.models.project import Project
+from db.models.refresh_token import RefreshToken
+from db.models.revoked_family import RevokedFamily
 from db.models.revoked_token import RevokedToken
 from db.models.role import Role
 from db.models.user import User
@@ -26,4 +28,6 @@ __all__ = [
     "OrganizationInvite",
     "PasswordResetToken",
     "RevokedToken",
+    "RefreshToken",
+    "RevokedFamily",
 ]
