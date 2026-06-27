@@ -1,9 +1,11 @@
 import {
+  attemptLogin,
   attemptLogout,
   attemptRegistration,
   authGuardMiddleware,
   authUserLoader,
   AuthState,
+  getAuthState,
 } from '../src/data/auth'
 import Api from '../src/data/Api'
 import { ResponseError } from '../src/api'
@@ -20,6 +22,8 @@ vi.mock('../src/data/Api', () => ({
   __esModule: true,
   default: {
     auth: {
+      authMeGet: vi.fn(),
+      authLoginPost: vi.fn(),
       authLogoutPost: vi.fn(),
       authRegisterPost: vi.fn(),
     },
@@ -185,5 +189,146 @@ describe('authUserLoader', () => {
     }
 
     await expect(authUserLoader({ context } as never)).rejects.toThrow()
+  })
+})
+
+describe('getAuthState', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    Object.defineProperty(globalThis, 'cookieStore', {
+      value: createCookieStoreMock(),
+      configurable: true,
+    })
+  })
+
+  test('test_get_auth_state_returns_auth_state_when_api_returns_200', async () => {
+    mockedApi.auth.authMeGet.mockResolvedValue({
+      id: 'user-123',
+      username: 'jan',
+      organizationId: 'organization-123',
+    })
+
+    const result = await getAuthState(true)
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: 'user-123',
+        name: 'jan',
+        organization: 'organization-123',
+        isDummyUser: false,
+      })
+    )
+  })
+
+  test('test_get_auth_state_returns_null_when_api_returns_401', async () => {
+    mockedApi.auth.authMeGet.mockRejectedValue(
+      new ResponseError(new Response(null, { status: 401 }), 'Unauthorized')
+    )
+
+    const result = await getAuthState(true)
+
+    expect(result).toBeNull()
+    expect(cookieStore.delete).toHaveBeenCalledWith(BEARER_AUTH_COOKIE)
+  })
+
+  test('test_get_auth_state_returns_null_when_api_returns_403', async () => {
+    mockedApi.auth.authMeGet.mockRejectedValue(
+      new ResponseError(new Response(null, { status: 403 }), 'Forbidden')
+    )
+
+    const result = await getAuthState(true)
+
+    expect(result).toBeNull()
+    expect(cookieStore.delete).toHaveBeenCalledWith(BEARER_AUTH_COOKIE)
+  })
+})
+
+describe('attemptLogin', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    Object.defineProperty(globalThis, 'cookieStore', {
+      value: createCookieStoreMock(),
+      configurable: true,
+    })
+  })
+
+  test('test_attempt_login_returns_true_and_stores_token_when_api_returns_200', async () => {
+    mockedApi.auth.authMeGet.mockRejectedValue(new Error('Not logged in'))
+    mockedApi.auth.authLoginPost.mockResolvedValue({
+      accessToken: 'access-token-123',
+    } as Awaited<ReturnType<typeof Api.auth.authLoginPost>>)
+
+    const result = await attemptLogin('jan', 'secret-password', true)
+
+    expect(result).toBe(true)
+    expect(cookieStore.set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: BEARER_AUTH_COOKIE,
+        value: 'access-token-123',
+        sameSite: 'strict',
+      })
+    )
+  })
+
+  test('test_attempt_login_returns_false_when_api_returns_401', async () => {
+    mockedApi.auth.authMeGet.mockRejectedValue(new Error('Not logged in'))
+    mockedApi.auth.authLoginPost.mockRejectedValue(
+      new ResponseError(new Response(null, { status: 401 }), 'Unauthorized')
+    )
+
+    const result = await attemptLogin('jan', 'wrong-password', false)
+
+    expect(result).toBe(false)
+  })
+
+  test('test_attempt_login_returns_false_when_api_returns_403', async () => {
+    mockedApi.auth.authMeGet.mockRejectedValue(new Error('Not logged in'))
+    mockedApi.auth.authLoginPost.mockRejectedValue(
+      new ResponseError(new Response(null, { status: 403 }), 'Forbidden')
+    )
+
+    const result = await attemptLogin('jan', 'secret-password', false)
+
+    expect(result).toBe(false)
+  })
+})
+
+describe('attemptRegistration', () => {
+  test('test_attempt_registration_returns_unknown_when_api_returns_401', async () => {
+    mockedApi.auth.authRegisterPost.mockRejectedValue(
+      new ResponseError(new Response(null, { status: 401 }), 'Unauthorized')
+    )
+
+    const result = await attemptRegistration(
+      'Jan',
+      'Kowalski',
+      'jkowalski',
+      'jan@example.com',
+      'secret-password'
+    )
+
+    expect(result).toEqual({
+      success: false,
+      errorCause: 'unknown',
+    })
+  })
+
+  test('test_attempt_registration_returns_unknown_when_api_returns_403', async () => {
+    mockedApi.auth.authRegisterPost.mockRejectedValue(
+      new ResponseError(new Response(null, { status: 403 }), 'Forbidden')
+    )
+
+    const result = await attemptRegistration(
+      'Jan',
+      'Kowalski',
+      'jkowalski',
+      'jan@example.com',
+      'secret-password'
+    )
+
+    expect(result).toEqual({
+      success: false,
+      errorCause: 'unknown',
+    })
   })
 })
