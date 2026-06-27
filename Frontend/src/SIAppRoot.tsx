@@ -1,7 +1,7 @@
-import {Link, Outlet, useLoaderData} from "react-router";
+import {Link, NavLink, Outlet, useLoaderData} from "react-router";
 import {AuthState, AuthUserContext} from "./data/auth.ts";
 import {useEffect, useState} from "react";
-import {AppLogo, IconClose, IconMenu} from "./components/icons.tsx";
+import {AppLogo, IconClose, IconDashboard, IconLogout, IconMenu} from "./components/icons.tsx";
 import {THEME_PREFERENCE, THEME_PREFERENCE_DARK, THEME_PREFERENCE_LIGHT} from "./data/cookies.ts";
 import type {SIContext} from "./data/context.ts";
 
@@ -45,16 +45,17 @@ const IconHome = () => (
 
 // Helpers
 
-const NavLink = ({to, children}: { to: string; children: React.ReactNode }) => (
+const TextNavLink = ({to, children}: { to: string; children: React.ReactNode }) => (
     <Link to={to} className="px-3 py-1.5 rounded-lg text-white text-sm font-medium hover:bg-white/15 transition-colors">
         {children}
     </Link>
 );
 
 const NavIconLink = ({to, label, children}: { to: string; label: string; children: React.ReactNode }) => (
-    <Link to={to} title={label} className="p-2 rounded-lg text-white hover:bg-white/15 transition-colors">
+    <NavLink to={to} title={label} className={({isActive}) => `flex items-center gap-2 px-3 py-2 rounded-lg text-white transition-colors ${isActive ? 'bg-white/25' : 'hover:bg-white/15'}`}>
         {children}
-    </Link>
+        <span className="text-sm font-medium">{label}</span>
+    </NavLink>
 );
 
 
@@ -127,11 +128,11 @@ export function SIAppRoot() {
 function AnonymousUserToolbar() {
     return (
         <nav className="hidden md:flex items-center gap-7 ml-2">
-            <NavLink to="/">Strona główna</NavLink>
+            <TextNavLink to="/">Strona główna</TextNavLink>
             <span className="text-white/50">|</span>
-            <NavLink to="/login">Logowanie</NavLink>
+            <TextNavLink to="/login">Logowanie</TextNavLink>
             <span className="text-white/50">|</span>
-            <NavLink to="/login/register">Rejestracja</NavLink>
+            <TextNavLink to="/login/register">Rejestracja</TextNavLink>
         </nav>
     );
 }
@@ -141,9 +142,8 @@ function LoggedUserToolbar() {
         <nav className="hidden md:flex items-center">
             <NavIconLink to="/" label="Strona główna"><IconHome/></NavIconLink>
             <NavIconLink to="/account" label="Moje Konto"><IconUser/></NavIconLink>
-            <NavIconLink to="/dashboard" label="Dashboard">DASHBOARD TEMP</NavIconLink>
-            <NavIconLink to="/login?logout=true" label="Wyloguj">LOGOUT TEMP</NavIconLink>
-            {/* TODO Ikonki do dashboardu i wylogowywanie (pamiętać też o MobileNav poniżej) */}
+            <NavIconLink to="/dashboard" label="Dashboard"><IconDashboard/></NavIconLink>
+            <NavIconLink to="/login?logout=true" label="Wyloguj"><IconLogout/></NavIconLink>
         </nav>
     );
 }
@@ -157,8 +157,8 @@ function MobileNav({authState, onNavigate}: { authState: AuthState | null; onNav
                 <>
                     <Link to="/" onClick={onNavigate} className={linkClass}><IconHome/>Strona główna</Link>
                     <Link to="/account" onClick={onNavigate} className={linkClass}><IconUser/>Moje Konto</Link>
-                    <Link to="/dashboard" onClick={onNavigate} className={linkClass}>Dashboard</Link>
-                    <Link to="/login?logout=true" onClick={onNavigate} className={linkClass}>Wyloguj</Link>
+                    <Link to="/dashboard" onClick={onNavigate} className={linkClass}><IconDashboard/>Dashboard</Link>
+                    <Link to="/login?logout=true" onClick={onNavigate} className={linkClass}><IconLogout/>Wyloguj</Link>
                 </>
             ) : (
                 <>

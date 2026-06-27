@@ -35,7 +35,7 @@ export const redirectToDashboardMiddleware: MiddlewareFunction = async ({context
 };
 
 /**
- * When the logout query parameter is present, clears session cookies and auth context.
+ * When the logout query parameter is present, clears session cookies and auth context, then redirects to the home page.
  */
 export const logoutMiddleware: MiddlewareFunction = async ({request, context}, next) => {
     const urlParams = new URL(request.url).searchParams;
@@ -43,6 +43,7 @@ export const logoutMiddleware: MiddlewareFunction = async ({request, context}, n
     if (urlParams.has(FORM_LOGOUT)) {
         await attemptLogout();
         context.set(AuthRouterContext, null);
+        throw redirect("/");
     }
 
     return await next();

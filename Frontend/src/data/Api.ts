@@ -42,9 +42,11 @@ const silentRefreshMiddleware: Middleware = {
         }
 
         // Never intercept the endpoints that establish or rotate the session itself:
-        // /auth/refresh would recurse, and /auth/login must surface its own 401
-        // (wrong credentials) to the login flow rather than triggering a refresh.
-        if (url.includes("/auth/refresh") || url.includes("/auth/login")) {
+        // /auth/refresh would recurse, /auth/login must surface its own 401
+        // (wrong credentials), and /auth/me is the initial auth probe used by
+        // getAuthState() — a 401 there means the user is anonymous, not that the
+        // session expired, so the caller handles it rather than triggering a refresh.
+        if (url.includes("/auth/refresh") || url.includes("/auth/login") || url.includes("/auth/me")) {
             return;
         }
 
