@@ -9,6 +9,7 @@ import {
     type RefreshResponse,
     type ResponseContext,
     RolesApi,
+    UsersApi
 } from "../api";
 import {BEARER_AUTH_COOKIE} from "./cookies.ts";
 import {clearClientAuthCookies, setBearerAuthCookie} from "./auth.ts";
