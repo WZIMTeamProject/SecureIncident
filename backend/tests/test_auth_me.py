@@ -32,9 +32,7 @@ class TestGetMe:
     async def test_get_me_returns_401_with_expired_token(
         self, client: AsyncClient, test_user: User
     ):
-        expired_token = security.create_access_token(
-            str(test_user.id), remember_user=False
-        )
+        expired_token = security.create_access_token(str(test_user.id))
         payload = security.decode_token(expired_token)
         payload["exp"] = payload["exp"] - 3600
         import jwt

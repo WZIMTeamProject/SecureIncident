@@ -1,9 +1,19 @@
 from unittest.mock import AsyncMock, patch
 
+from core import security
+from core.config import settings
 from db.models.revoked_token import RevokedToken
 from db.models.user import User
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.exc import SQLAlchemyError
+
+
+def _refresh_cookie_value(response: object) -> str:
+    """Extract the raw refresh-token value from the Set-Cookie header."""
+    for header in response.headers.get_list("set-cookie"):
+        if header.startswith(f"{settings.REFRESH_COOKIE_NAME}="):
+            return header.split(";", 1)[0].split("=", 1)[1]
+    raise AssertionError("refresh_token Set-Cookie header not found")
 
 
 def test_revoked_token_model_has_no_updated_at():
@@ -55,6 +65,82 @@ class TestLogout:
         # Attempt to access a protected endpoint — must be rejected with an auth error
         response = await client.get("/api/auth/me", headers=auth_headers)
         assert response.status_code == 401
+
+    async def test_logout_revokes_same_family_access_token(
+        self, client: AsyncClient, test_user: User
+    ):
+        """A still-valid SAME-FAMILY access token is rejected after logout.
+
+        Logout revokes the whole refresh family, so a fresh token minted in that
+        family (different jti — bypasses the jti denylist) is caught by the new
+        family check, not the jti check.
+        """
+        login = await client.post(
+            "/api/auth/login",
+            json={
+                "username": test_user.username,
+                "password": "TestPassword123!",
+                "remember_user": False,
+            },
+        )
+        original_token = login.json()["access_token"]
+        family_id = security.decode_token(original_token)["family_id"]
+
+        # Mint a fresh, still-unexpired token in the SAME family (new jti).
+        same_family_token = security.create_access_token(test_user.id, family_id)
+
+        logout = await client.post(
+            "/api/auth/logout",
+            headers={"Authorization": f"Bearer {original_token}"},
+        )
+        assert logout.status_code == 204
+
+        me = await client.get(
+            "/api/auth/me",
+            headers={"Authorization": f"Bearer {same_family_token}"},
+        )
+        assert me.status_code == 401
+        assert me.json()["detail"] == "Token has been revoked"
+
+    async def test_me_rejects_access_token_from_reuse_revoked_family(
+        self, client: AsyncClient, test_user: User
+    ):
+        """Reuse detection revokes the family; its access tokens are then rejected.
+
+        Replaying a consumed refresh token trips reuse detection and denylists the
+        family. A fresh access token minted in that family must fail at /me.
+        """
+        login = await client.post(
+            "/api/auth/login",
+            json={
+                "username": test_user.username,
+                "password": "TestPassword123!",
+                "remember_user": False,
+            },
+        )
+        family_id = security.decode_token(login.json()["access_token"])["family_id"]
+        first_refresh_cookie = _refresh_cookie_value(login)
+
+        # Consume the original refresh token once (rotates to a new one).
+        client.cookies.clear()
+        client.cookies.set(settings.REFRESH_COOKIE_NAME, first_refresh_cookie)
+        first = await client.post("/api/auth/refresh")
+        assert first.status_code == 200
+
+        # Replay the now-consumed token -> reuse detected -> family revoked.
+        client.cookies.clear()
+        client.cookies.set(settings.REFRESH_COOKIE_NAME, first_refresh_cookie)
+        replay = await client.post("/api/auth/refresh")
+        assert replay.status_code == 401
+
+        # A fresh access token in the revoked family is rejected by /me.
+        revoked_family_token = security.create_access_token(test_user.id, family_id)
+        me = await client.get(
+            "/api/auth/me",
+            headers={"Authorization": f"Bearer {revoked_family_token}"},
+        )
+        assert me.status_code == 401
+        assert me.json()["detail"] == "Token has been revoked"
 
     async def test_logout_returns_500_when_db_raises(
         self, db, test_user: User, auth_headers: dict

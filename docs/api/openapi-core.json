@@ -193,6 +193,31 @@
         }
       }
     },
+    "/auth/refresh": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Rotate the refresh token and issue a new access token",
+        "description": "Auth-exempt: this endpoint does NOT require an Authorization bearer token. It reads the HttpOnly `refresh_token` cookie (scoped to path `/api/auth/refresh`) sent automatically by the browser, rotates it (issuing a new `refresh_token` Set-Cookie), and returns a fresh access token. Returns 401 when the refresh cookie is missing, invalid, expired, or already used (reuse detection).",
+        "responses": {
+          "200": {
+            "description": "New access token issued; rotated refresh cookie set",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RefreshResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired, or reused refresh token",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/organization": {
       "post": {
         "tags": ["Organization"],
@@ -1242,11 +1267,21 @@
       },
       "LoginResponse": {
         "type": "object",
-        "required": ["access_token", "token_type", "user"],
+        "required": ["access_token", "token_type", "expires_in", "user"],
         "properties": {
           "access_token": { "type": "string" },
           "token_type": { "type": "string", "default": "bearer" },
+          "expires_in": { "type": "integer", "description": "Lifetime of the access token in seconds." },
           "user": { "$ref": "#/components/schemas/CurrentUserResponse" }
+        }
+      },
+      "RefreshResponse": {
+        "type": "object",
+        "required": ["access_token", "token_type", "expires_in"],
+        "properties": {
+          "access_token": { "type": "string" },
+          "token_type": { "type": "string", "default": "bearer" },
+          "expires_in": { "type": "integer", "description": "Lifetime of the access token in seconds." }
         }
       },
       "CurrentUserResponse": {
