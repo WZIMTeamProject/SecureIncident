@@ -22,6 +22,7 @@ import type {
     LoginResponse,
     PasswordResetConfirmRequest,
     PasswordResetRequest,
+    RefreshResponse,
     RegisterRequest,
 } from '../models/index';
 import {
@@ -32,6 +33,7 @@ import {
     LoginResponseFromJSON,
     PasswordResetConfirmRequestToJSON,
     PasswordResetRequestToJSON,
+    RefreshResponseFromJSON,
     RegisterRequestToJSON,
 } from '../models/index';
 
@@ -205,6 +207,34 @@ export class AuthApi extends runtime.BaseAPI {
      */
     async authMeGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CurrentUserResponse> {
         const response = await this.authMeGetRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Auth-exempt: reads the HttpOnly refresh_token cookie, rotates it, and returns a fresh access token.
+     * Rotate the refresh token and issue a new access token
+     */
+    async authRefreshPostRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RefreshResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/auth/refresh`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => RefreshResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Auth-exempt: reads the HttpOnly refresh_token cookie, rotates it, and returns a fresh access token.
+     * Rotate the refresh token and issue a new access token
+     */
+    async authRefreshPost(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RefreshResponse> {
+        const response = await this.authRefreshPostRaw(initOverrides);
         return await response.value();
     }
 

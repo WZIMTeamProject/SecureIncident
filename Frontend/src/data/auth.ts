@@ -392,18 +392,39 @@ export async function attemptLogin(name: string, password: string, remember_user
     }).catch(() => null);
 
     if (loggedUser != null) {
-        const token: string = loggedUser.accessToken;
-        const tokenLifetime: number = 1000 * 60 * 60 * 24 * 7; // 1 week
-
-        await cookieStore.set({
-            name: BEARER_AUTH_COOKIE,
-            value: token,
-            sameSite: "strict",
-            expires: Date.now() + tokenLifetime,
-        });
+        // The bearerAuth cookie must expire exactly when the access token does, so the
+        // client stops sending a dead token and lets the silent-refresh interceptor
+        // rotate the session. `expires_in` is the access-token lifetime in seconds.
+        await setBearerAuthCookie(loggedUser.accessToken, loggedUser.expiresIn);
     }
 
     return loggedUser != null;
+}
+
+/**
+ * Sets the JS-visible bearerAuth cookie used to send `Authorization: Bearer` on
+ * every request. `expiresInSeconds` is the access-token lifetime, so the cookie
+ * dies together with the token it carries.
+ */
+export async function setBearerAuthCookie(token: string, expiresInSeconds: number): Promise<void> {
+    await cookieStore.set({
+        name: BEARER_AUTH_COOKIE,
+        value: token,
+        sameSite: "strict",
+        expires: Date.now() + expiresInSeconds * 1000,
+    });
+}
+
+/**
+ * Clears all JS-visible auth cookies. The HttpOnly refresh cookie cannot be removed
+ * from JS — only the server can clear it via Set-Cookie on logout/failed refresh.
+ */
+export async function clearClientAuthCookies(): Promise<void> {
+    await cookieStore.delete(BEARER_AUTH_COOKIE).catch(() => null);
+    await cookieStore.delete(CURRENT_USER_ID_COOKIE).catch(() => null);
+    await cookieStore.delete(CURRENT_USER_NAME_COOKIE).catch(() => null);
+    await cookieStore.delete(CURRENT_USER_IS_DEBUG_COOKIE).catch(() => null);
+    await cookieStore.delete(CURRENT_USER_ORGANIZATION_COOKIE).catch(() => null);
 }
 
 /**
@@ -495,4 +516,3 @@ export const organizationJoinLoader: LoaderFunction = async ({request}) => {
 
     return redirect("/dashboard?invalid_invite=empty");
 };
-

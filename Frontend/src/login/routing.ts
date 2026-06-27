@@ -123,7 +123,7 @@ export const forgotPasswordAction: ActionFunction = async ({request}) => {
         });
 
         return { ok: true }
-    } catch (error) {
+    } catch {
         return { ok: false, error: "Nie udało się wysłać żądania. Spróbuj ponownie później." };
     }
 }

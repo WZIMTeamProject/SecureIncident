@@ -57,12 +57,31 @@ async def get_current_user(
 
     jti: str | None = payload.get("jti")
     if jti and await repositories.revoked_token_repo.is_token_revoked(db, jti):
-        logger.warning("Token validation failed: token revoked jti=%s", jti)
+        logger.warning("Token validation failed: token revoked")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has been revoked",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    # Optional family check: tokens predating rotation lack the claim and skip it
+    # (backward compatible). family_id ties the token to its rotation lineage so
+    # logout / reuse detection can revoke every token in the family at once.
+    family_id_str: str | None = payload.get("family_id")
+    if family_id_str:
+        try:
+            family_id = UUID(family_id_str)
+        except ValueError:
+            family_id = None
+        if family_id and await repositories.revoked_family_repo.is_family_revoked(
+            db, family_id
+        ):
+            logger.warning("Token validation failed: family revoked")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has been revoked",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
     user_id_str: str | None = payload.get("sub")
     if not user_id_str:
@@ -76,9 +95,7 @@ async def get_current_user(
     try:
         user_id = UUID(user_id_str)
     except ValueError:
-        logger.warning(
-            "Token validation failed: sub claim is not a valid UUID raw=%s", user_id_str
-        )
+        logger.warning("Token validation failed: sub claim is not a valid UUID")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token payload",
