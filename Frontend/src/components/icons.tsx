@@ -162,6 +162,30 @@ export function IconComment() {
 }
 
 /**
+ * Monitor/screen icon (for the Dashboard navigation link).
+ */
+export function IconDashboard() {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"
+                strokeLinejoin="round" className="w-5 h-5 shrink-0" aria-hidden="true">
+        <rect x="2" y="3" width="20" height="14" rx="2"/>
+        <line x1="12" y1="17" x2="12" y2="21"/>
+        <line x1="8" y1="21" x2="16" y2="21"/>
+    </svg>;
+}
+
+/**
+ * Door with exit arrow icon (for the logout action).
+ */
+export function IconLogout() {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"
+                strokeLinejoin="round" className="w-5 h-5 shrink-0" aria-hidden="true">
+        <path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/>
+        <line x1="15" y1="12" x2="21" y2="12"/>
+        <polyline points="18 9 21 12 18 15"/>
+    </svg>;
+}
+
+/**
  * Hamburger icon (opens the mobile navigation menu).
  */
 export function IconMenu() {
