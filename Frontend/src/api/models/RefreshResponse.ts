@@ -12,57 +12,47 @@
  * Do not edit the class manually.
  */
 
-import type {CurrentUserResponse} from './CurrentUserResponse';
-import {CurrentUserResponseFromJSON, CurrentUserResponseToJSON,} from './CurrentUserResponse';
-
 /**
  *
  * @export
- * @interface LoginResponse
+ * @interface RefreshResponse
  */
-export interface LoginResponse {
+export interface RefreshResponse {
     /**
      *
      * @type {string}
-     * @memberof LoginResponse
+     * @memberof RefreshResponse
      */
     accessToken: string;
     /**
      *
      * @type {string}
-     * @memberof LoginResponse
+     * @memberof RefreshResponse
      */
     tokenType: string;
     /**
      * Lifetime of the access token in seconds.
      * @type {number}
-     * @memberof LoginResponse
+     * @memberof RefreshResponse
      */
     expiresIn: number;
-    /**
-     *
-     * @type {CurrentUserResponse}
-     * @memberof LoginResponse
-     */
-    user: CurrentUserResponse;
 }
 
 /**
- * Check if a given object implements the LoginResponse interface.
+ * Check if a given object implements the RefreshResponse interface.
  */
-export function instanceOfLoginResponse(value: object): value is LoginResponse {
+export function instanceOfRefreshResponse(value: object): value is RefreshResponse {
     if (!('accessToken' in value) || value['accessToken'] === undefined) return false;
     if (!('tokenType' in value) || value['tokenType'] === undefined) return false;
     if (!('expiresIn' in value) || value['expiresIn'] === undefined) return false;
-    if (!('user' in value) || value['user'] === undefined) return false;
     return true;
 }
 
-export function LoginResponseFromJSON(json: any): LoginResponse {
-    return LoginResponseFromJSONTyped(json, false);
+export function RefreshResponseFromJSON(json: any): RefreshResponse {
+    return RefreshResponseFromJSONTyped(json, false);
 }
 
-export function LoginResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): LoginResponse {
+export function RefreshResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): RefreshResponse {
     if (json == null) {
         return json;
     }
@@ -71,11 +61,10 @@ export function LoginResponseFromJSONTyped(json: any, ignoreDiscriminator: boole
         'accessToken': json['access_token'],
         'tokenType': json['token_type'],
         'expiresIn': json['expires_in'],
-        'user': CurrentUserResponseFromJSON(json['user']),
     };
 }
 
-export function LoginResponseToJSON(value?: LoginResponse | null): any {
+export function RefreshResponseToJSON(value?: RefreshResponse | null): any {
     if (value == null) {
         return value;
     }
@@ -84,6 +73,5 @@ export function LoginResponseToJSON(value?: LoginResponse | null): any {
         'access_token': value['accessToken'],
         'token_type': value['tokenType'],
         'expires_in': value['expiresIn'],
-        'user': CurrentUserResponseToJSON(value['user']),
     };
 }

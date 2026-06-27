@@ -43,6 +43,7 @@ export * from './ProjectMemberListResponse';
 export * from './ProjectMemberResponse';
 export * from './ProjectResponse';
 export * from './ProjectScope';
+export * from './RefreshResponse';
 export * from './RegisterRequest';
 export * from './RoleListResponse';
 export * from './RolePermissions';
