@@ -28,8 +28,29 @@ jobs:
         working-directory: Frontend
         run: npm audit --audit-level=high
 
-  build:
+  test:
     needs: security-scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+
+      - name: Install dependencies
+        working-directory: Frontend
+        run: npm ci
+
+      - name: Run tests
+        working-directory: Frontend
+        run: npm test
+
+  build:
+    needs: [security-scan, test]
     runs-on: ubuntu-latest
     permissions:
       contents: read
