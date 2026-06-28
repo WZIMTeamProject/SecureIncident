@@ -7,33 +7,10 @@ import {
 import Api from '../src/data/Api.ts'
 import {
   FORM_ACTION,
-  FORM_ACTION_CREATE_ORGANIZATION,
-  FORM_ACTION_DELETE_ORGANIZATION,
-  FORM_ACTION_INVITE_USER,
-  FORM_ACTION_JOIN_ORGANIZATION,
-  FORM_ACTION_NEW_INCIDENT,
-  FORM_ACTION_NEW_PROJECT,
-  FORM_ACTION_NEW_ROLE,
-  FORM_INCIDENT_DESCRIPTION,
-  FORM_INCIDENT_NAME,
-  FORM_INCIDENT_PRIORITY,
-  FORM_INVITE_COUNT,
-  FORM_INVITE_DURATION_HOURS,
-  FORM_INVITE_TOKEN,
-  FORM_ORGANIZATION_DESCRIPTION,
-  FORM_ORGANIZATION_NAME,
-  FORM_PROJECT_DESCRIPTION,
-  FORM_PROJECT_ID,
-  FORM_PROJECT_NAME,
-  FORM_ROLE_NAME,
-  FORM_ROLE_PERMISSION,
-  PERM_ASSIGN_HELP,
-  PERM_ASSIGN_TO_PROJECT,
-  PERM_CHANGE_ROLES,
-  PERM_CHANGE_STATUS,
-  PERM_HELP,
-  PERM_MAKE_ROLES,
-  PERM_WRITE_TICKETS,
+  FormActions,
+  OrganizationForms,
+  ProjectForms,
+  UserPermissions,
 } from '../src/dashboard/forms.ts'
 
 vi.mock('../src/data/Api.ts', () => ({
@@ -97,9 +74,9 @@ describe('dashboardOrganizationAction', () => {
   )
 
   const request = createFormRequest({
-    [FORM_ACTION]: FORM_ACTION_NEW_PROJECT,
-    [FORM_PROJECT_NAME]: 'Security project',
-    [FORM_PROJECT_DESCRIPTION]: 'Internal project',
+    [FORM_ACTION]: FormActions.NewProject,
+    [OrganizationForms.ProjectName]: 'Security project',
+    [OrganizationForms.Description]: 'Internal project',
   })
 
   const result = await dashboardOrganizationAction({ request } as never)
@@ -116,8 +93,8 @@ describe('dashboardOrganizationAction', () => {
 
   test('test_dashboard_organization_returns_false_when_project_name_missing', async () => {
     const request = createFormRequest({
-      [FORM_ACTION]: FORM_ACTION_NEW_PROJECT,
-      [FORM_PROJECT_DESCRIPTION]: 'Internal project',
+      [FORM_ACTION]: FormActions.NewProject,
+      [OrganizationForms.Description]: 'Internal project',
     })
 
     const result = await dashboardOrganizationAction({ request } as never)
@@ -130,8 +107,8 @@ describe('dashboardOrganizationAction', () => {
     mockedApi.projects.projectsPost.mockRejectedValue(new Error('API error'))
 
     const request = createFormRequest({
-      [FORM_ACTION]: FORM_ACTION_NEW_PROJECT,
-      [FORM_PROJECT_NAME]: 'Security project',
+      [FORM_ACTION]: FormActions.NewProject,
+      [OrganizationForms.ProjectName]: 'Security project',
     })
 
     const result = await dashboardOrganizationAction({ request } as never)
@@ -146,9 +123,9 @@ describe('dashboardOrganizationAction', () => {
     })
 
     const request = createFormRequest({
-      [FORM_ACTION]: FORM_ACTION_INVITE_USER,
-      [FORM_INVITE_COUNT]: '3',
-      [FORM_INVITE_DURATION_HOURS]: '24',
+      [FORM_ACTION]: FormActions.InviteUser,
+      [OrganizationForms.InviteCount]: '3',
+      [OrganizationForms.DurationHours]: '24',
     })
 
     const result = await dashboardOrganizationAction({ request } as never)
@@ -162,9 +139,9 @@ describe('dashboardOrganizationAction', () => {
 
   test('test_dashboard_organization_returns_false_when_invite_count_is_zero', async () => {
     const request = createFormRequest({
-      [FORM_ACTION]: FORM_ACTION_INVITE_USER,
-      [FORM_INVITE_COUNT]: '0',
-      [FORM_INVITE_DURATION_HOURS]: '24',
+      [FORM_ACTION]: FormActions.InviteUser,
+      [OrganizationForms.InviteCount]: '0',
+      [OrganizationForms.DurationHours]: '24',
     })
 
     const result = await dashboardOrganizationAction({ request } as never)
@@ -179,9 +156,9 @@ describe('dashboardOrganizationAction', () => {
     )
 
     const request = createFormRequest({
-      [FORM_ACTION]: FORM_ACTION_CREATE_ORGANIZATION,
-      [FORM_ORGANIZATION_NAME]: 'Secure Org',
-      [FORM_ORGANIZATION_DESCRIPTION]: 'Main organization',
+      [FORM_ACTION]: FormActions.CreateOrganization,
+      [OrganizationForms.OrganizationName]: 'Secure Org',
+      [OrganizationForms.Description]: 'Main organization',
     })
 
     const result = await dashboardOrganizationAction({ request } as never)
@@ -197,8 +174,8 @@ describe('dashboardOrganizationAction', () => {
 
   test('test_dashboard_organization_returns_false_when_organization_name_missing', async () => {
     const request = createFormRequest({
-      [FORM_ACTION]: FORM_ACTION_CREATE_ORGANIZATION,
-      [FORM_ORGANIZATION_DESCRIPTION]: 'Main organization',
+      [FORM_ACTION]: FormActions.CreateOrganization,
+      [OrganizationForms.Description]: 'Main organization',
     })
 
     const result = await dashboardOrganizationAction({ request } as never)
@@ -211,8 +188,8 @@ describe('dashboardOrganizationAction', () => {
     mockedApi.organization.organizationJoinPost.mockResolvedValue(undefined)
 
     const request = createFormRequest({
-      [FORM_ACTION]: FORM_ACTION_JOIN_ORGANIZATION,
-      [FORM_INVITE_TOKEN]: 'invite-token-123',
+      [FORM_ACTION]: FormActions.JoinOrganization,
+      [OrganizationForms.InviteToken]: 'invite-token-123',
     })
 
     const result = await dashboardOrganizationAction({ request } as never)
@@ -224,8 +201,8 @@ describe('dashboardOrganizationAction', () => {
     mockedApi.organization.organizationJoinPost.mockRejectedValue(new Error('Invalid token'))
 
     const request = createFormRequest({
-      [FORM_ACTION]: FORM_ACTION_JOIN_ORGANIZATION,
-      [FORM_INVITE_TOKEN]: 'invalid-token',
+      [FORM_ACTION]: FormActions.JoinOrganization,
+      [OrganizationForms.InviteToken]: 'invalid-token',
     })
 
     const result = await dashboardOrganizationAction({ request } as never)
@@ -236,7 +213,7 @@ describe('dashboardOrganizationAction', () => {
   test('test_dashboard_organization_returns_true_when_delete_organization_action_used', async () => {
     const request = createFormRequest(
       {
-        [FORM_ACTION]: FORM_ACTION_DELETE_ORGANIZATION,
+        [FORM_ACTION]: FormActions.DeleteOrganization,
       },
       'DELETE'
     )
@@ -266,11 +243,11 @@ describe('dashboardProjectsAction', () => {
     )
 
     const request = createFormRequest({
-      [FORM_ACTION]: FORM_ACTION_NEW_INCIDENT,
-      [FORM_PROJECT_ID]: 'project-123',
-      [FORM_INCIDENT_NAME]: 'Login broken',
-      [FORM_INCIDENT_DESCRIPTION]: 'Users cannot log in',
-      [FORM_INCIDENT_PRIORITY]: 'HIGH',
+      [FORM_ACTION]: FormActions.NewIncident,
+      [ProjectForms.ProjectId]: 'project-123',
+      [ProjectForms.IncidentName]: 'Login broken',
+      [ProjectForms.IncidentDescription]: 'Users cannot log in',
+      [ProjectForms.IncidentPriority]: 'HIGH',
     })
 
     const result = await dashboardProjectsAction({ request } as never)
@@ -288,10 +265,10 @@ describe('dashboardProjectsAction', () => {
 
   test('test_dashboard_projects_returns_false_when_incident_description_missing', async () => {
     const request = createFormRequest({
-      [FORM_ACTION]: FORM_ACTION_NEW_INCIDENT,
-      [FORM_PROJECT_ID]: 'project-123',
-      [FORM_INCIDENT_NAME]: 'Login broken',
-      [FORM_INCIDENT_PRIORITY]: 'HIGH',
+      [FORM_ACTION]: FormActions.NewIncident,
+      [ProjectForms.ProjectId]: 'project-123',
+      [ProjectForms.IncidentName]: 'Login broken',
+      [ProjectForms.IncidentPriority]: 'HIGH',
     })
 
     const result = await dashboardProjectsAction({ request } as never)
@@ -304,11 +281,11 @@ describe('dashboardProjectsAction', () => {
     mockedApi.incidents.projectsProjectIdIncidentsPost.mockRejectedValue(new Error('API error'))
 
     const request = createFormRequest({
-      [FORM_ACTION]: FORM_ACTION_NEW_INCIDENT,
-      [FORM_PROJECT_ID]: 'project-123',
-      [FORM_INCIDENT_NAME]: 'Login broken',
-      [FORM_INCIDENT_DESCRIPTION]: 'Users cannot log in',
-      [FORM_INCIDENT_PRIORITY]: 'HIGH',
+      [FORM_ACTION]: FormActions.NewIncident,
+      [ProjectForms.ProjectId]: 'project-123',
+      [ProjectForms.IncidentName]: 'Login broken',
+      [ProjectForms.IncidentDescription]: 'Users cannot log in',
+      [ProjectForms.IncidentPriority]: 'HIGH',
     })
 
     const result = await dashboardProjectsAction({ request } as never)
@@ -322,13 +299,13 @@ describe('dashboardProjectsAction', () => {
     )
 
     const request = createFormRequest({
-      [FORM_ACTION]: FORM_ACTION_NEW_ROLE,
-      [FORM_PROJECT_ID]: 'project-123',
-      [FORM_ROLE_NAME]: 'Coordinator',
-      [FORM_ROLE_PERMISSION]: [
-        PERM_ASSIGN_TO_PROJECT,
-        PERM_CHANGE_STATUS,
-        PERM_WRITE_TICKETS,
+      [FORM_ACTION]: FormActions.NewRole,
+      [ProjectForms.ProjectId]: 'project-123',
+      [ProjectForms.RoleName]: 'Coordinator',
+      [ProjectForms.RolePermissions]: [
+        UserPermissions.AssignToProject,
+        UserPermissions.ChangeStatus,
+        UserPermissions.WriteTickets,
       ],
     })
 
@@ -358,17 +335,17 @@ describe('dashboardProjectsAction', () => {
     )
 
     const request = createFormRequest({
-      [FORM_ACTION]: FORM_ACTION_NEW_ROLE,
-      [FORM_PROJECT_ID]: 'project-123',
-      [FORM_ROLE_NAME]: 'Admin',
-      [FORM_ROLE_PERMISSION]: [
-        PERM_ASSIGN_HELP,
-        PERM_ASSIGN_TO_PROJECT,
-        PERM_CHANGE_ROLES,
-        PERM_CHANGE_STATUS,
-        PERM_HELP,
-        PERM_MAKE_ROLES,
-        PERM_WRITE_TICKETS,
+      [FORM_ACTION]: FormActions.NewRole,
+      [ProjectForms.ProjectId]: 'project-123',
+      [ProjectForms.RoleName]: 'Admin',
+      [ProjectForms.RolePermissions]: [
+        UserPermissions.AssignHelp,
+        UserPermissions.AssignToProject,
+        UserPermissions.ChangeRoles,
+        UserPermissions.ChangeStatus,
+        UserPermissions.Help,
+        UserPermissions.MakeRoles,
+        UserPermissions.WriteTickets,
       ],
     })
 
@@ -394,9 +371,9 @@ describe('dashboardProjectsAction', () => {
 
   test('test_dashboard_projects_returns_false_when_role_name_missing', async () => {
     const request = createFormRequest({
-      [FORM_ACTION]: FORM_ACTION_NEW_ROLE,
-      [FORM_PROJECT_ID]: 'project-123',
-      [FORM_ROLE_PERMISSION]: [PERM_WRITE_TICKETS],
+      [FORM_ACTION]: FormActions.NewRole,
+      [ProjectForms.ProjectId]: 'project-123',
+      [ProjectForms.RolePermissions]: [UserPermissions.WriteTickets],
     })
 
     const result = await dashboardProjectsAction({ request } as never)
@@ -409,10 +386,10 @@ describe('dashboardProjectsAction', () => {
     mockedApi.roles.projectsProjectIdRolesPost.mockRejectedValue(new Error('API error'))
 
     const request = createFormRequest({
-      [FORM_ACTION]: FORM_ACTION_NEW_ROLE,
-      [FORM_PROJECT_ID]: 'project-123',
-      [FORM_ROLE_NAME]: 'Coordinator',
-      [FORM_ROLE_PERMISSION]: [PERM_WRITE_TICKETS],
+      [FORM_ACTION]: FormActions.NewRole,
+      [ProjectForms.ProjectId]: 'project-123',
+      [ProjectForms.RoleName]: 'Coordinator',
+      [ProjectForms.RolePermissions]: [UserPermissions.WriteTickets],
     })
 
     const result = await dashboardProjectsAction({ request } as never)

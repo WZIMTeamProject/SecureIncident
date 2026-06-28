@@ -132,9 +132,10 @@ describe('logoutMiddleware', () => {
     const request = createRequest(`http://localhost/login?${FORM_LOGOUT}=1`)
     const next = vi.fn<() => Promise<unknown>>().mockResolvedValue('ok')
 
-    const result = await logoutMiddleware({ request, context } as never, next)
+    await expect(
+      logoutMiddleware({ request, context } as never, next)
+    ).rejects.toThrow()
 
-    expect(result).toBe('ok')
     expect(mockedAttemptLogout).toHaveBeenCalled()
     expect(context.set).toHaveBeenCalledWith(AuthRouterContext, null)
   })
